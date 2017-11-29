@@ -143,6 +143,14 @@ impl<'a> TypeProperties<'a> {
             Sizedness::Sized => quote! { ::opaque_typedef::OpaqueTypedef },
             Sizedness::Unsized => quote! { ::opaque_typedef::OpaqueTypedefUnsized },
         };
+        let ty_deref_target = quote! { #ty_inner };
+        let deref_conv =
+            |var: quote::Tokens| quote! { <#ty_outer as #basic_trait>::as_inner(#var) };
+        let deref_mut_conv = |var: quote::Tokens| {
+            quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } }
+        };
+        let self_deref = deref_conv(quote!(self));
+        let self_deref_mut = deref_mut_conv(quote!(self));
         let self_as_inner = quote! { <#ty_outer as #basic_trait>::as_inner(self) };
         let self_as_inner_mut =
             quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(self) } };
@@ -175,16 +183,16 @@ impl<'a> TypeProperties<'a> {
                 },
                 (Derive::Deref, _) => quote! {
                     impl ::std::ops::Deref for #ty_outer {
-                        type Target = #ty_inner;
+                        type Target = #ty_deref_target;
                         fn deref(&self) -> &Self::Target {
-                            #self_as_inner
+                            #self_deref
                         }
                     }
                 },
                 (Derive::DerefMut, _) => quote! {
                     impl ::std::ops::DerefMut for #ty_outer {
                         fn deref_mut(&mut self) -> &mut Self::Target {
-                            #self_as_inner_mut
+                            #self_deref_mut
                         }
                     }
                 },
