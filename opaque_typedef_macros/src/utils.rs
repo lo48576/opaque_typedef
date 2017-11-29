@@ -162,14 +162,14 @@ impl<'a> TypeProperties<'a> {
 
         for &derive in &self.derives {
             let impl_toks = match (derive, self.inner_sizedness) {
-                (Derive::AsRef, _) => quote! {
+                (Derive::AsRefInner, _) => quote! {
                     impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
                         fn as_ref(&self) -> &#ty_inner {
                             #self_as_inner
                         }
                     }
                 },
-                (Derive::AsMut, _) => quote! {
+                (Derive::AsMutInner, _) => quote! {
                     impl<'a> ::std::convert::AsMut<#ty_inner> for #ty_outer {
                         fn as_mut(&mut self) -> &mut #ty_inner {
                             #self_as_inner_mut
