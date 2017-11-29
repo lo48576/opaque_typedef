@@ -30,6 +30,13 @@ mod my_str {
         let my_str = <&MyStr as Default>::default();
         ensure_eq_inner(ok_str, my_str);
     }
+
+    #[test]
+    fn deref() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let _: &str = my_str;
+    }
 }
 
 mod my_string {
@@ -49,5 +56,12 @@ mod my_string {
         let my_string = MyString::from_string(ok_string.clone());
         assert_eq!(&ok_string, as_inner(&my_string));
         assert_eq!(ok_string, into_inner(my_string));
+    }
+
+    #[test]
+    fn deref() {
+        let ok_string = "foobar".to_owned();
+        let my_string = MyString::from_string(ok_string);
+        let _: &String = &my_string;
     }
 }

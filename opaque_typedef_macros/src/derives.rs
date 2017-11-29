@@ -9,6 +9,7 @@ use names;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr)]
 pub enum Derive {
     DefaultRef,
+    Deref,
 }
 
 impl Derive {
@@ -34,6 +35,7 @@ impl Derive {
                 NestedMetaItem::MetaItem(MetaItem::Word(ref ident)) => {
                     let derive: &[_] = match ident.as_ref() {
                         "DefaultRef" => &[Derive::DefaultRef],
+                        "Deref" => &[Derive::Deref],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",
                             names::DERIVE,

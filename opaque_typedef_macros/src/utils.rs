@@ -152,6 +152,22 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::Deref, Sizedness::Sized) => quote! {
+                    impl ::std::ops::Deref for #ty_outer {
+                        type Target = #ty_inner;
+                        fn deref(&self) -> &Self::Target {
+                            <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
+                        }
+                    }
+                },
+                (Derive::Deref, Sizedness::Unsized) => quote! {
+                    impl ::std::ops::Deref for #ty_outer {
+                        type Target = #ty_inner;
+                        fn deref(&self) -> &Self::Target {
+                            <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
+                        }
+                    }
+                },
                 (derive, sizedness) => {
                     let sizedness_str = match sizedness {
                         Sizedness::Sized => "sized",
