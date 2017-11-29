@@ -168,6 +168,24 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::DerefMut, Sizedness::Sized) => quote! {
+                    impl ::std::ops::DerefMut for #ty_outer {
+                        fn deref_mut(&mut self) -> &mut Self::Target {
+                            unsafe {
+                                <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner_mut(self)
+                            }
+                        }
+                    }
+                },
+                (Derive::DerefMut, Sizedness::Unsized) => quote! {
+                    impl ::std::ops::DerefMut for #ty_outer {
+                        fn deref_mut(&mut self) -> &mut Self::Target {
+                            unsafe {
+                                <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner_mut(self)
+                            }
+                        }
+                    }
+                },
                 (derive, sizedness) => {
                     let sizedness_str = match sizedness {
                         Sizedness::Sized => "sized",

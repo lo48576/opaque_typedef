@@ -10,6 +10,7 @@ use names;
 pub enum Derive {
     DefaultRef,
     Deref,
+    DerefMut,
 }
 
 impl Derive {
@@ -36,6 +37,7 @@ impl Derive {
                     let derive: &[_] = match ident.as_ref() {
                         "DefaultRef" => &[Derive::DefaultRef],
                         "Deref" => &[Derive::Deref],
+                        "DerefMut" => &[Derive::DerefMut],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",
                             names::DERIVE,

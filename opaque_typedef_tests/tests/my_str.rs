@@ -37,6 +37,14 @@ mod my_str {
         let my_str = MyStr::new(ok_str);
         let _: &str = my_str;
     }
+
+    #[test]
+    fn deref_mut() {
+        let mut ok_string = "foobar".to_owned();
+        let ok_str: &mut str = &mut ok_string;
+        let my_str: &mut MyStr = MyStr::new_mut(ok_str);
+        let _: &mut str = my_str;
+    }
 }
 
 mod my_string {
@@ -63,5 +71,12 @@ mod my_string {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string);
         let _: &String = &my_string;
+    }
+
+    #[test]
+    fn deref_mut() {
+        let ok_string = "foobar".to_owned();
+        let mut my_string = MyString::from_string(ok_string);
+        let _: &mut String = &mut my_string;
     }
 }
