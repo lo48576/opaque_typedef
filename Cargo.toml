@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "opaque_typedef_macros",
+    "opaque_typedef_tests",
+]

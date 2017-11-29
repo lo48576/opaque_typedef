@@ -1,0 +1,15 @@
+array_layout = "Block"  # RFC.
+chain_indent = "Block"  # Default.
+closure_block_indent_threshold = -1
+error_on_line_overflow = false
+fn_args_layout = "Block"  # Default.
+fn_args_paren_newline = false  # Default.
+fn_call_style = "Block"  # Default.
+fn_return_indent = "WithWhereClause"
+match_block_trailing_comma = true
+newline_style = "Unix"  # Default.
+# Separate `std`, other crates, and `self` manually.
+reorder_imports = false  # Default.
+trailing_comma = "Vertical"  # Default.
+
+# This file is for =rustfmt-nightly-0.2.7

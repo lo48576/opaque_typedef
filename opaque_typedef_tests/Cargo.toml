@@ -1,0 +1,10 @@
+[package]
+name = "opaque_typedef_tests"
+version = "0.1.0"
+authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
+license = "MIT/Apache-2.0"
+readme = "../README.md"
+
+[dependencies]
+#opaque_typedef_macros = "^0.0.1"
+opaque_typedef_macros = { path = "../opaque_typedef_macros" }
