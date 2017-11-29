@@ -139,21 +139,34 @@ impl<'a> TypeProperties<'a> {
     pub fn impl_auto_derive(&self) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let ty_inner = self.ty_inner;
+        let (self_as_inner, self_as_inner_mut) = match self.inner_sizedness {
+            Sizedness::Sized => {
+                let self_as_inner = quote! {
+                    <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
+                };
+                let self_as_inner_mut = quote! {
+                    unsafe { <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner_mut(self) }
+                };
+                (self_as_inner, self_as_inner_mut)
+            },
+            Sizedness::Unsized => {
+                let self_as_inner = quote! {
+                    <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
+                };
+                let self_as_inner_mut = quote! {
+                    unsafe { <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner_mut(self) }
+                };
+                (self_as_inner, self_as_inner_mut)
+            },
+        };
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
             let impl_toks = match (derive, self.inner_sizedness) {
-                (Derive::AsRef, Sizedness::Sized) => quote! {
+                (Derive::AsRef, _) => quote! {
                     impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
                         fn as_ref(&self) -> &#ty_inner {
-                            <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
-                        }
-                    }
-                },
-                (Derive::AsRef, Sizedness::Unsized) => quote! {
-                    impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
-                        fn as_ref(&self) -> &#ty_inner {
-                            <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
+                            #self_as_inner
                         }
                     }
                 },
@@ -166,37 +179,18 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
-                (Derive::Deref, Sizedness::Sized) => quote! {
+                (Derive::Deref, _) => quote! {
                     impl ::std::ops::Deref for #ty_outer {
                         type Target = #ty_inner;
                         fn deref(&self) -> &Self::Target {
-                            <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
+                            #self_as_inner
                         }
                     }
                 },
-                (Derive::Deref, Sizedness::Unsized) => quote! {
-                    impl ::std::ops::Deref for #ty_outer {
-                        type Target = #ty_inner;
-                        fn deref(&self) -> &Self::Target {
-                            <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
-                        }
-                    }
-                },
-                (Derive::DerefMut, Sizedness::Sized) => quote! {
+                (Derive::DerefMut, _) => quote! {
                     impl ::std::ops::DerefMut for #ty_outer {
                         fn deref_mut(&mut self) -> &mut Self::Target {
-                            unsafe {
-                                <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner_mut(self)
-                            }
-                        }
-                    }
-                },
-                (Derive::DerefMut, Sizedness::Unsized) => quote! {
-                    impl ::std::ops::DerefMut for #ty_outer {
-                        fn deref_mut(&mut self) -> &mut Self::Target {
-                            unsafe {
-                                <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner_mut(self)
-                            }
+                            #self_as_inner_mut
                         }
                     }
                 },
