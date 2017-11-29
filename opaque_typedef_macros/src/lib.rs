@@ -1,4 +1,5 @@
 //! Custom derives for easy opaque typedef.
+#![recursion_limit = "128"]
 
 extern crate proc_macro;
 #[macro_use]
@@ -92,6 +93,71 @@ impl<'a> TypeProperties<'a> {
 
     /// Generates codes for the target type.
     pub fn impl_traits(&self) -> quote::Tokens {
-        quote!{}
+        let mut tokens = quote!{};
+        tokens.append(self.impl_basic_helper_trait());
+        tokens
+    }
+
+    pub fn impl_basic_helper_trait(&self) -> quote::Tokens {
+        let ty_outer = self.ty_outer;
+        let ty_inner = self.ty_inner;
+        let field_inner = &self.field_inner;
+        match self.inner_sizedness {
+            Sizedness::Sized => {
+                let validation_expr = quote! { inner };
+                quote! {
+                    impl ::opaque_typedef::OpaqueTypedef for #ty_outer {
+                        type Inner = #ty_inner;
+                        type Error = ::opaque_typedef::Never;
+
+                        unsafe fn from_inner_unchecked(inner: Self::Inner) -> Self {
+                            Self { #field_inner: inner }
+                        }
+                        fn from_inner(inner: Self::Inner) -> Result<Self, Self::Error> {
+                            Ok(Self { #field_inner: #validation_expr })
+                        }
+                        fn into_inner(self) -> Self::Inner {
+                            self.#field_inner
+                        }
+                        fn as_inner(&self) -> &Self::Inner {
+                            &self.#field_inner
+                        }
+                        unsafe fn as_inner_mut(&mut self) -> &mut Self::Inner {
+                            &mut self.#field_inner
+                        }
+                    }
+                }
+            },
+            Sizedness::Unsized => {
+                let validation_expr = quote!{};
+                quote! {
+                    impl ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer {
+                        type Inner = #ty_inner;
+                        type Error = ::opaque_typedef::Never;
+
+                        unsafe fn from_inner_unchecked(inner: &Self::Inner) -> &Self {
+                            ::std::mem::transmute(inner)
+                        }
+                        unsafe fn from_inner_unchecked_mut(inner: &mut Self::Inner) -> &mut Self {
+                            ::std::mem::transmute(inner)
+                        }
+                        fn from_inner(inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                            #validation_expr;
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(inner) })
+                        }
+                        fn from_inner_mut(inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                            #validation_expr;
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(inner) })
+                        }
+                        fn as_inner(&self) -> &Self::Inner {
+                            &self.#field_inner
+                        }
+                        unsafe fn as_inner_mut(&mut self) -> &mut Self::Inner {
+                            &mut self.#field_inner
+                        }
+                    }
+                }
+            },
+        }
     }
 }
