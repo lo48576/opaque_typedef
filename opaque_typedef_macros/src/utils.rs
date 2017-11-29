@@ -170,6 +170,13 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::AsMut, _) => quote! {
+                    impl<'a> ::std::convert::AsMut<#ty_inner> for #ty_outer {
+                        fn as_mut(&mut self) -> &mut #ty_inner {
+                            #self_as_inner_mut
+                        }
+                    }
+                },
                 (Derive::DefaultRef, Sizedness::Unsized) => quote! {
                     impl<'a> ::std::default::Default for &'a #ty_outer {
                         fn default() -> Self {

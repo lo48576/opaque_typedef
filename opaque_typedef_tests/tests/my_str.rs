@@ -25,6 +25,14 @@ mod my_str {
     }
 
     #[test]
+    fn as_mut() {
+        let mut ok_string = "foobar".to_owned();
+        let ok_str: &mut str = &mut ok_string;
+        let my_str: &mut MyStr = MyStr::new_mut(ok_str);
+        let _: &mut str = AsMut::<str>::as_mut(my_str);
+    }
+
+    #[test]
     fn as_ref() {
         let ok_str = "foobar";
         let my_str = MyStr::new(ok_str);
@@ -78,6 +86,13 @@ mod my_string {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string);
         let _: &String = AsRef::<String>::as_ref(&my_string);
+    }
+
+    #[test]
+    fn as_mut() {
+        let ok_string = "foobar".to_owned();
+        let mut my_string = MyString::from_string(ok_string);
+        let _: &mut String = AsMut::<String>::as_mut(&mut my_string);
     }
 
     #[test]
