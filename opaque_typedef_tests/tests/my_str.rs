@@ -60,6 +60,12 @@ mod my_str {
         let my_str: &mut MyStr = MyStr::new_mut(ok_str);
         let _: &mut str = my_str;
     }
+
+    #[test]
+    fn from_inner() {
+        let ok_str = "foobar";
+        let _: &MyStr = <&MyStr as From<&str>>::from(ok_str);
+    }
 }
 
 mod my_string {
@@ -121,5 +127,11 @@ mod my_string {
         let ok_string = "foobar".to_owned();
         let mut my_string = MyString::from_string(ok_string);
         let _: &mut str = &mut my_string;
+    }
+
+    #[test]
+    fn from_inner() {
+        let ok_string = "foobar".to_owned();
+        let _: MyString = <MyString as From<String>>::from(ok_string);
     }
 }

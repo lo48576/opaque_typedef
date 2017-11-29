@@ -3,7 +3,7 @@
 
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
-#[opaque_typedef(derive(AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut))]
+#[opaque_typedef(derive(AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut, FromInner))]
 pub struct MyStr {
     #[opaque_typedef(inner)] inner: str,
 }
@@ -28,7 +28,8 @@ impl MyStr {
 
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut))]
+#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
+                        FromInner))]
 #[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
                        deref_mut = "MyString::as_mut_str"))]
 pub struct MyString {
