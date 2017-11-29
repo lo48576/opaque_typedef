@@ -4,6 +4,7 @@ use quote;
 use syn;
 
 use attrs;
+use derives::Derive;
 use fields;
 use names;
 
@@ -43,6 +44,8 @@ pub struct TypeProperties<'a> {
     field_inner: syn::Ident,
     /// Sizedness of the inner type.
     inner_sizedness: Sizedness,
+    /// Traits to auto-derive.
+    derives: Vec<Derive>,
 }
 
 impl<'a> TypeProperties<'a> {
@@ -51,11 +54,13 @@ impl<'a> TypeProperties<'a> {
         let ty_outer = &ast.ident;
         let attrs = attrs::get_metaitems(&ast.attrs, names::ATTR_NAME);
         let (field_inner, ty_inner) = fields::get_inner_name_and_ty(ast);
+        let derives = Derive::from_metaitems(&attrs);
         Self {
             ty_outer,
             ty_inner,
             field_inner,
             inner_sizedness,
+            derives,
         }
     }
 

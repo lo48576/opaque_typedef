@@ -5,3 +5,5 @@
 pub const ATTR_NAME: &str = "opaque_typedef";
 /// `#[ATTR_NAME(INNER_FIELD)]`
 pub const INNER_FIELD: &str = "inner";
+/// `#[ATTR_NAME(DERIVE(...))]`.
+pub const DERIVE: &str = "derive";

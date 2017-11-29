@@ -4,6 +4,9 @@
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;
+extern crate strum;
+#[macro_use]
+extern crate strum_macros;
 extern crate syn;
 
 use proc_macro::TokenStream;
@@ -11,6 +14,7 @@ use proc_macro::TokenStream;
 use utils::{Sizedness, TypeProperties};
 
 mod attrs;
+mod derives;
 mod fields;
 mod names;
 mod utils;
