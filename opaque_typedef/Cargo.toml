@@ -1,0 +1,8 @@
+[package]
+name = "opaque_typedef"
+version = "0.0.1"
+authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
+license = "MIT/Apache-2.0"
+readme = "../README.md"
+
+[dependencies]
