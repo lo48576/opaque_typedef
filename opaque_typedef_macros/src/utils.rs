@@ -1,5 +1,6 @@
 //! Utility functions and types.
 
+use std::collections::HashMap;
 use quote;
 use syn;
 
@@ -33,6 +34,88 @@ impl Sizedness {
 }
 
 
+/// Deref-related specification.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DerefSpec {
+    target: quote::Tokens,
+    conv_deref: quote::Tokens,
+    conv_deref_mut: quote::Tokens,
+}
+
+impl DerefSpec {
+    /// Get deref spec from the given attributes.
+    pub fn from_metaitems(metaitems: &[&syn::MetaItem]) -> Option<Self> {
+        use syn::{MetaItem, NestedMetaItem};
+
+        let props: HashMap<&str, &str> = metaitems
+            .iter()
+            .filter_map(|&meta| {
+                if let MetaItem::List(ref ident, ref nested) = *meta {
+                    if ident == names::DEREF {
+                        return Some(nested);
+                    }
+                }
+                None
+            })
+            .flat_map(|nested| nested)
+            .filter_map(|nested| {
+                match *nested {
+                    // `deref(name = "value")` style.
+                    NestedMetaItem::MetaItem(
+                        MetaItem::NameValue(ref ident, syn::Lit::Str(ref value, _style)),
+                    ) => Some((ident.as_ref(), value.as_str())),
+                    _ => None,
+                }
+            })
+            .collect();
+        if props.is_empty() {
+            return None;
+        }
+        let get_field = |name| {
+            match props.get(name) {
+                Some(v) => v,
+                None => panic!(
+                    "`#[opaque_typedef({}(..))]` is specified but `#[opaque_typedef({}({} = \"some_value\"))]` property was not found",
+                    names::DEREF,
+                    names::DEREF,
+                    name
+                ),
+            }
+        };
+        let target = get_field(names::DEREF_TARGET);
+        let conv_deref = get_field(names::DEREF_CONV);
+        let conv_deref_mut = get_field(names::DEREF_CONV_MUT);
+        let quote = |var| {
+            let mut q = quote!{};
+            q.append(var);
+            q
+        };
+        Some(Self {
+            target: quote(target),
+            conv_deref: quote(conv_deref),
+            conv_deref_mut: quote(conv_deref_mut),
+        })
+    }
+
+    /// Returns the target type.
+    pub fn target(&self) -> &quote::Tokens {
+        &self.target
+    }
+
+    /// Returns the expression of dereferenced outer value.
+    pub fn conv_deref(&self, expr_outer: quote::Tokens) -> quote::Tokens {
+        let conv = &self.conv_deref;
+        quote! { #conv(#expr_outer) }
+    }
+
+    /// Returns the expression of mutably dereferenced outer value.
+    pub fn conv_deref_mut(&self, expr_outer: quote::Tokens) -> quote::Tokens {
+        let conv = &self.conv_deref_mut;
+        quote! { #conv(#expr_outer) }
+    }
+}
+
+
 /// Properties of the type.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeProperties<'a> {
@@ -46,6 +129,8 @@ pub struct TypeProperties<'a> {
     inner_sizedness: Sizedness,
     /// Traits to auto-derive.
     derives: Vec<Derive>,
+    /// Deref spec.
+    deref_spec: Option<DerefSpec>,
 }
 
 impl<'a> TypeProperties<'a> {
@@ -55,12 +140,14 @@ impl<'a> TypeProperties<'a> {
         let attrs = attrs::get_metaitems(&ast.attrs, names::ATTR_NAME);
         let (field_inner, ty_inner) = fields::get_inner_name_and_ty(ast);
         let derives = Derive::from_metaitems(&attrs);
+        let deref_spec = DerefSpec::from_metaitems(&attrs);
         Self {
             ty_outer,
             ty_inner,
             field_inner,
             inner_sizedness,
             derives,
+            deref_spec,
         }
     }
 
@@ -143,11 +230,17 @@ impl<'a> TypeProperties<'a> {
             Sizedness::Sized => quote! { ::opaque_typedef::OpaqueTypedef },
             Sizedness::Unsized => quote! { ::opaque_typedef::OpaqueTypedefUnsized },
         };
-        let ty_deref_target = quote! { #ty_inner };
-        let deref_conv =
-            |var: quote::Tokens| quote! { <#ty_outer as #basic_trait>::as_inner(#var) };
-        let deref_mut_conv = |var: quote::Tokens| {
-            quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } }
+        let ty_deref_target = self.deref_spec
+            .as_ref()
+            .map(|spec| spec.target().clone())
+            .unwrap_or(quote! { #ty_inner });
+        let deref_conv = |var: quote::Tokens| match self.deref_spec {
+            Some(ref spec) => spec.conv_deref(var),
+            None => quote! { <#ty_outer as #basic_trait>::as_inner(#var) },
+        };
+        let deref_mut_conv = |var: quote::Tokens| match self.deref_spec {
+            Some(ref spec) => spec.conv_deref_mut(var),
+            None => quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } },
         };
         let self_deref = deref_conv(quote!(self));
         let self_deref_mut = deref_mut_conv(quote!(self));

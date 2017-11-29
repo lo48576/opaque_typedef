@@ -82,14 +82,28 @@ mod my_string {
     }
 
     #[test]
-    fn as_ref() {
+    fn as_ref_deref() {
+        let ok_string = "foobar".to_owned();
+        let my_string = MyString::from_string(ok_string);
+        let _: &str = AsRef::<str>::as_ref(&my_string);
+    }
+
+    #[test]
+    fn as_ref_inner() {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string);
         let _: &String = AsRef::<String>::as_ref(&my_string);
     }
 
     #[test]
-    fn as_mut() {
+    fn as_mut_deref() {
+        let ok_string = "foobar".to_owned();
+        let mut my_string = MyString::from_string(ok_string);
+        let _: &mut str = AsMut::<str>::as_mut(&mut my_string);
+    }
+
+    #[test]
+    fn as_mut_inner() {
         let ok_string = "foobar".to_owned();
         let mut my_string = MyString::from_string(ok_string);
         let _: &mut String = AsMut::<String>::as_mut(&mut my_string);
@@ -99,13 +113,13 @@ mod my_string {
     fn deref() {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string);
-        let _: &String = &my_string;
+        let _: &str = &my_string;
     }
 
     #[test]
     fn deref_mut() {
         let ok_string = "foobar".to_owned();
         let mut my_string = MyString::from_string(ok_string);
-        let _: &mut String = &mut my_string;
+        let _: &mut str = &mut my_string;
     }
 }

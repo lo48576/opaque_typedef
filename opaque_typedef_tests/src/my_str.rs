@@ -28,7 +28,9 @@ impl MyStr {
 
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMutInner, AsRefInner, Deref, DerefMut))]
+#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut))]
+#[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
+                       deref_mut = "MyString::as_mut_str"))]
 pub struct MyString {
     inner: String,
 }
@@ -42,5 +44,10 @@ impl MyString {
     /// Returns a reference to the inner string slice.
     pub fn as_str(&self) -> &str {
         &self.inner
+    }
+
+    /// Returns a mutable reference to the inner string slice.
+    pub fn as_mut_str(&mut self) -> &mut str {
+        self.inner.as_mut_str()
     }
 }
