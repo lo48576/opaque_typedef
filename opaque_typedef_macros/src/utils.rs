@@ -139,26 +139,13 @@ impl<'a> TypeProperties<'a> {
     pub fn impl_auto_derive(&self) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let ty_inner = self.ty_inner;
-        let (self_as_inner, self_as_inner_mut) = match self.inner_sizedness {
-            Sizedness::Sized => {
-                let self_as_inner = quote! {
-                    <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
-                };
-                let self_as_inner_mut = quote! {
-                    unsafe { <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner_mut(self) }
-                };
-                (self_as_inner, self_as_inner_mut)
-            },
-            Sizedness::Unsized => {
-                let self_as_inner = quote! {
-                    <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
-                };
-                let self_as_inner_mut = quote! {
-                    unsafe { <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner_mut(self) }
-                };
-                (self_as_inner, self_as_inner_mut)
-            },
+        let basic_trait = match self.inner_sizedness {
+            Sizedness::Sized => quote! { ::opaque_typedef::OpaqueTypedef },
+            Sizedness::Unsized => quote! { ::opaque_typedef::OpaqueTypedefUnsized },
         };
+        let self_as_inner = quote! { <#ty_outer as #basic_trait>::as_inner(self) };
+        let self_as_inner_mut =
+            quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(self) } };
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
@@ -181,7 +168,7 @@ impl<'a> TypeProperties<'a> {
                     impl<'a> ::std::default::Default for &'a #ty_outer {
                         fn default() -> Self {
                             let inner_default = <&'a #ty_inner as ::std::default::Default>::default();
-                            let outer_res = <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner(inner_default);
+                            let outer_res = <#ty_outer as #basic_trait>::from_inner(inner_default);
                             outer_res.unwrap()
                         }
                     }
