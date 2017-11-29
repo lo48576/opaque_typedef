@@ -336,6 +336,20 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::IntoInner, Sizedness::Sized) => quote! {
+                    impl ::std::convert::Into<#ty_inner> for #ty_outer {
+                        fn into(self) -> #ty_inner {
+                            <#ty_outer as #basic_trait>::into_inner(self)
+                        }
+                    }
+                },
+                (Derive::IntoInner, Sizedness::Unsized) => quote! {
+                    impl<'a> ::std::convert::Into<&'a #ty_inner> for &'a #ty_outer {
+                        fn into(self) -> &'a #ty_inner {
+                            <#ty_outer as #basic_trait>::as_inner(self)
+                        }
+                    }
+                },
                 (derive, sizedness) => {
                     let sizedness_str = match sizedness {
                         Sizedness::Sized => "sized",

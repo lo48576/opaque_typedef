@@ -9,12 +9,12 @@ use opaque_typedef_tests::my_str::{MyStr, MyString};
 mod my_str {
     use super::*;
 
-    fn as_inner(s: &MyStr) -> &str {
+    fn sys_as_inner(s: &MyStr) -> &str {
         ::opaque_typedef::OpaqueTypedefUnsized::as_inner(s)
     }
 
     fn ensure_eq_inner(x: &str, y: &MyStr) {
-        assert_eq!(x, as_inner(y));
+        assert_eq!(x, sys_as_inner(y));
     }
 
     #[test]
@@ -66,16 +66,24 @@ mod my_str {
         let ok_str = "foobar";
         let _: &MyStr = <&MyStr as From<&str>>::from(ok_str);
     }
+
+    #[test]
+    fn into_inner() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let inner = <&MyStr as Into<&str>>::into(my_str);
+        assert_eq!(ok_str, inner);
+    }
 }
 
 mod my_string {
     use super::*;
 
-    fn as_inner(s: &MyString) -> &String {
+    fn sys_as_inner(s: &MyString) -> &String {
         ::opaque_typedef::OpaqueTypedef::as_inner(s)
     }
 
-    fn into_inner(s: MyString) -> String {
+    fn sys_into_inner(s: MyString) -> String {
         ::opaque_typedef::OpaqueTypedef::into_inner(s)
     }
 
@@ -83,8 +91,8 @@ mod my_string {
     fn basic_traits() {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string.clone());
-        assert_eq!(&ok_string, as_inner(&my_string));
-        assert_eq!(ok_string, into_inner(my_string));
+        assert_eq!(&ok_string, sys_as_inner(&my_string));
+        assert_eq!(ok_string, sys_into_inner(my_string));
     }
 
     #[test]
@@ -133,5 +141,13 @@ mod my_string {
     fn from_inner() {
         let ok_string = "foobar".to_owned();
         let _: MyString = <MyString as From<String>>::from(ok_string);
+    }
+
+    #[test]
+    fn into_inner() {
+        let ok_string = "foobar".to_owned();
+        let my_string = MyString::from_string(ok_string.clone());
+        let inner = <MyString as Into<String>>::into(my_string);
+        assert_eq!(ok_string, inner);
     }
 }
