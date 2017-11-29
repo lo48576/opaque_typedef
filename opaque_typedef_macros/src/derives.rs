@@ -15,6 +15,7 @@ pub enum Derive {
     DefaultRef,
     Deref,
     DerefMut,
+    Display,
     FromInner,
     IntoInner,
 }
@@ -48,6 +49,7 @@ impl Derive {
                         "DefaultRef" => &[Derive::DefaultRef],
                         "Deref" => &[Derive::Deref],
                         "DerefMut" => &[Derive::DerefMut],
+                        "Display" => &[Derive::Display],
                         "FromInner" => &[Derive::FromInner],
                         "IntoInner" => &[Derive::IntoInner],
                         target => panic!(

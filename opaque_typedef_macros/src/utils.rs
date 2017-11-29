@@ -322,6 +322,13 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::Display, _) => quote! {
+                    impl ::std::fmt::Display for #ty_outer {
+                        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                            <#ty_inner as ::std::fmt::Display>::fmt(#self_as_inner, f)
+                        }
+                    }
+                },
                 (Derive::FromInner, Sizedness::Sized) => quote! {
                     impl ::std::convert::From<#ty_inner> for #ty_outer {
                         fn from(inner: #ty_inner) -> Self {
