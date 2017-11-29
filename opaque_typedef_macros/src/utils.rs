@@ -143,6 +143,20 @@ impl<'a> TypeProperties<'a> {
 
         for &derive in &self.derives {
             let impl_toks = match (derive, self.inner_sizedness) {
+                (Derive::AsRef, Sizedness::Sized) => quote! {
+                    impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
+                        fn as_ref(&self) -> &#ty_inner {
+                            <#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(self)
+                        }
+                    }
+                },
+                (Derive::AsRef, Sizedness::Unsized) => quote! {
+                    impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
+                        fn as_ref(&self) -> &#ty_inner {
+                            <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(self)
+                        }
+                    }
+                },
                 (Derive::DefaultRef, Sizedness::Unsized) => quote! {
                     impl<'a> ::std::default::Default for &'a #ty_outer {
                         fn default() -> Self {

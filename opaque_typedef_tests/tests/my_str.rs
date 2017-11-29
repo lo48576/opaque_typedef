@@ -25,6 +25,13 @@ mod my_str {
     }
 
     #[test]
+    fn as_ref() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let _: &str = AsRef::<str>::as_ref(my_str);
+    }
+
+    #[test]
     fn default_ref() {
         let ok_str = <&str as Default>::default();
         let my_str = <&MyStr as Default>::default();
@@ -64,6 +71,13 @@ mod my_string {
         let my_string = MyString::from_string(ok_string.clone());
         assert_eq!(&ok_string, as_inner(&my_string));
         assert_eq!(ok_string, into_inner(my_string));
+    }
+
+    #[test]
+    fn as_ref() {
+        let ok_string = "foobar".to_owned();
+        let my_string = MyString::from_string(ok_string);
+        let _: &String = AsRef::<String>::as_ref(&my_string);
     }
 
     #[test]

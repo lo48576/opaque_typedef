@@ -8,6 +8,7 @@ use names;
 /// Auto-derive target trait.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr)]
 pub enum Derive {
+    AsRef,
     DefaultRef,
     Deref,
     DerefMut,
@@ -35,6 +36,7 @@ impl Derive {
                 // `derive(ident)` style.
                 NestedMetaItem::MetaItem(MetaItem::Word(ref ident)) => {
                     let derive: &[_] = match ident.as_ref() {
+                        "AsRef" => &[Derive::AsRef],
                         "DefaultRef" => &[Derive::DefaultRef],
                         "Deref" => &[Derive::Deref],
                         "DerefMut" => &[Derive::DerefMut],
