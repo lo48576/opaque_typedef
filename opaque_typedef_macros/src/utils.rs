@@ -151,9 +151,13 @@ impl<'a> TypeProperties<'a> {
         };
         let self_deref = deref_conv(quote!(self));
         let self_deref_mut = deref_mut_conv(quote!(self));
-        let self_as_inner = quote! { <#ty_outer as #basic_trait>::as_inner(self) };
-        let self_as_inner_mut =
-            quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(self) } };
+        let as_inner_conv =
+            |var: quote::Tokens| quote! { <#ty_outer as #basic_trait>::as_inner(#var) };
+        let as_inner_mut_conv = |var: quote::Tokens| {
+            quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } }
+        };
+        let self_as_inner = as_inner_conv(quote!(self));
+        let self_as_inner_mut = as_inner_mut_conv(quote!(self));
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
