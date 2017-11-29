@@ -39,7 +39,7 @@ impl Sizedness {
 struct DerefSpec {
     target: quote::Tokens,
     conv_deref: quote::Tokens,
-    conv_deref_mut: quote::Tokens,
+    conv_deref_mut: Option<quote::Tokens>,
 }
 
 impl DerefSpec {
@@ -84,7 +84,7 @@ impl DerefSpec {
         };
         let target = get_field(names::DEREF_TARGET);
         let conv_deref = get_field(names::DEREF_CONV);
-        let conv_deref_mut = get_field(names::DEREF_CONV_MUT);
+        let conv_deref_mut = props.get(names::DEREF_CONV_MUT);
         let quote = |var| {
             let mut q = quote!{};
             q.append(var);
@@ -93,7 +93,7 @@ impl DerefSpec {
         Some(Self {
             target: quote(target),
             conv_deref: quote(conv_deref),
-            conv_deref_mut: quote(conv_deref_mut),
+            conv_deref_mut: conv_deref_mut.map(quote),
         })
     }
 
@@ -110,7 +110,14 @@ impl DerefSpec {
 
     /// Returns the expression of mutably dereferenced outer value.
     pub fn conv_deref_mut(&self, expr_outer: quote::Tokens) -> quote::Tokens {
-        let conv = &self.conv_deref_mut;
+        let conv = match self.conv_deref_mut {
+            Some(ref v) => v,
+            None => panic!(
+                "`#[opaque_typedef({}({} = \"foo\"))]` property is required but not specified",
+                names::DEREF,
+                names::DEREF_CONV_MUT
+            ),
+        };
         quote! { #conv(#expr_outer) }
     }
 }
@@ -239,11 +246,13 @@ impl<'a> TypeProperties<'a> {
             None => quote! { <#ty_outer as #basic_trait>::as_inner(#var) },
         };
         let deref_mut_conv = |var: quote::Tokens| match self.deref_spec {
+            // Note that `spec.conv_deref_mut()` may panic.
             Some(ref spec) => spec.conv_deref_mut(var),
             None => quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } },
         };
         let self_deref = deref_conv(quote!(self));
-        let self_deref_mut = deref_mut_conv(quote!(self));
+        // This may panic.
+        let get_self_deref_mut = || deref_mut_conv(quote!(self));
         let as_inner_conv =
             |var: quote::Tokens| quote! { <#ty_outer as #basic_trait>::as_inner(#var) };
         let as_inner_mut_conv = |var: quote::Tokens| {
@@ -269,10 +278,13 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
-                (Derive::AsMutDeref, _) => quote! {
-                    impl<'a> ::std::convert::AsMut<#ty_deref_target> for #ty_outer {
-                        fn as_mut(&mut self) -> &mut #ty_deref_target {
-                            #self_deref_mut
+                (Derive::AsMutDeref, _) => {
+                    let self_deref_mut = get_self_deref_mut();
+                    quote! {
+                        impl<'a> ::std::convert::AsMut<#ty_deref_target> for #ty_outer {
+                            fn as_mut(&mut self) -> &mut #ty_deref_target {
+                                #self_deref_mut
+                            }
                         }
                     }
                 },
@@ -300,10 +312,13 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
-                (Derive::DerefMut, _) => quote! {
-                    impl ::std::ops::DerefMut for #ty_outer {
-                        fn deref_mut(&mut self) -> &mut Self::Target {
-                            #self_deref_mut
+                (Derive::DerefMut, _) => {
+                    let self_deref_mut = get_self_deref_mut();
+                    quote! {
+                        impl ::std::ops::DerefMut for #ty_outer {
+                            fn deref_mut(&mut self) -> &mut Self::Target {
+                                #self_deref_mut
+                            }
                         }
                     }
                 },
