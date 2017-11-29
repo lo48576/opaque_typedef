@@ -13,11 +13,22 @@ mod my_str {
         ::opaque_typedef::OpaqueTypedefUnsized::as_inner(s)
     }
 
+    fn ensure_eq_inner(x: &str, y: &MyStr) {
+        assert_eq!(x, as_inner(y));
+    }
+
     #[test]
     fn basic_traits() {
         let ok_str = "foobar";
         let my_str = MyStr::new(ok_str);
-        assert_eq!(ok_str, as_inner(my_str));
+        ensure_eq_inner(ok_str, my_str);
+    }
+
+    #[test]
+    fn default_ref() {
+        let ok_str = <&str as Default>::default();
+        let my_str = <&MyStr as Default>::default();
+        ensure_eq_inner(ok_str, my_str);
     }
 }
 

@@ -68,6 +68,7 @@ impl<'a> TypeProperties<'a> {
     pub fn impl_traits(&self) -> quote::Tokens {
         let mut tokens = quote!{};
         tokens.append(self.impl_basic_helper_trait());
+        tokens.append(self.impl_auto_derive());
         tokens
     }
 
@@ -132,5 +133,41 @@ impl<'a> TypeProperties<'a> {
                 }
             },
         }
+    }
+
+    /// Generates impls for auto-derive targets.
+    pub fn impl_auto_derive(&self) -> quote::Tokens {
+        let ty_outer = self.ty_outer;
+        let ty_inner = self.ty_inner;
+        let mut tokens = quote!{};
+
+        for &derive in &self.derives {
+            let impl_toks = match (derive, self.inner_sizedness) {
+                (Derive::DefaultRef, Sizedness::Unsized) => quote! {
+                    impl<'a> ::std::default::Default for &'a #ty_outer {
+                        fn default() -> Self {
+                            let inner_default = <&'a #ty_inner as ::std::default::Default>::default();
+                            let outer_res = <#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner(inner_default);
+                            outer_res.unwrap()
+                        }
+                    }
+                },
+                (derive, sizedness) => {
+                    let sizedness_str = match sizedness {
+                        Sizedness::Sized => "sized",
+                        Sizedness::Unsized => "unsized",
+                    };
+                    panic!(
+                        "`#[opaque_typedef({}({}))]` is specified for `{}` but it is not supported for {} types",
+                        names::DERIVE,
+                        derive.as_ref(),
+                        ty_outer,
+                        sizedness_str
+                    );
+                },
+            };
+            tokens.append(impl_toks);
+        }
+        tokens
     }
 }
