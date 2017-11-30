@@ -260,10 +260,37 @@ impl<'a> TypeProperties<'a> {
         };
         let self_as_inner = as_inner_conv(quote!(self));
         let self_as_inner_mut = as_inner_mut_conv(quote!(self));
+        let other_as_inner = as_inner_conv(quote!(other));
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
             let impl_toks = match (derive, self.inner_sizedness) {
+                (Derive::AsciiExt, _) => {
+                    let ty_inner_as_asciiext = quote! { <#ty_inner as ::std::ascii::AsciiExt> };
+                    quote! {
+                        impl ::std::ascii::AsciiExt for #ty_outer {
+                            type Owned = #ty_inner_as_asciiext::Owned;
+                            fn is_ascii(&self) -> bool {
+                                #ty_inner_as_asciiext::is_ascii(#self_as_inner)
+                            }
+                            fn to_ascii_uppercase(&self) -> Self::Owned {
+                                #ty_inner_as_asciiext::to_ascii_uppercase(#self_as_inner)
+                            }
+                            fn to_ascii_lowercase(&self) -> Self::Owned {
+                                #ty_inner_as_asciiext::to_ascii_lowercase(#self_as_inner)
+                            }
+                            fn eq_ignore_ascii_case(&self, other: &Self) -> bool {
+                                #ty_inner_as_asciiext::eq_ignore_ascii_case(#self_as_inner, #other_as_inner)
+                            }
+                            fn make_ascii_uppercase(&mut self) {
+                                #ty_inner_as_asciiext::make_ascii_uppercase(#self_as_inner_mut)
+                            }
+                            fn make_ascii_lowercase(&mut self) {
+                                #ty_inner_as_asciiext::make_ascii_lowercase(#self_as_inner_mut)
+                            }
+                        }
+                    }
+                },
                 (Derive::AsRefDeref, _) => quote! {
                     impl<'a> ::std::convert::AsRef<#ty_deref_target> for #ty_outer {
                         fn as_ref(&self) -> &#ty_deref_target {

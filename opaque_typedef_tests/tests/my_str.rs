@@ -25,6 +25,18 @@ mod my_str {
     }
 
     #[test]
+    fn ascii_ext() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let ok_upper = "FOOBAR";
+        let my_str_upper = MyStr::new(ok_upper);
+        assert!(<MyStr as ::std::ascii::AsciiExt>::eq_ignore_ascii_case(
+            my_str,
+            my_str_upper
+        ));
+    }
+
+    #[test]
     fn as_mut() {
         let mut ok_string = "foobar".to_owned();
         let ok_str: &mut str = &mut ok_string;

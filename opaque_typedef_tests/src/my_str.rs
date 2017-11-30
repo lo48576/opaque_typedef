@@ -3,8 +3,8 @@
 
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
-#[opaque_typedef(derive(AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut, Display, FromInner,
-                        IntoInner))]
+#[opaque_typedef(derive(AsciiExt, AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut, Display,
+                        FromInner, IntoInner))]
 pub struct MyStr {
     #[opaque_typedef(inner)] inner: str,
 }
