@@ -138,6 +138,8 @@ pub struct TypeProperties<'a> {
     derives: Vec<Derive>,
     /// Deref spec.
     deref_spec: Option<DerefSpec>,
+    /// Whether the use of mutable reference to inner value is allowed.
+    mut_ref_allowed: bool,
 }
 
 impl<'a> TypeProperties<'a> {
@@ -148,6 +150,7 @@ impl<'a> TypeProperties<'a> {
         let (field_inner, ty_inner) = fields::get_inner_name_and_ty(ast);
         let derives = Derive::from_metaitems(&attrs);
         let deref_spec = DerefSpec::from_metaitems(&attrs);
+        let mut_ref_allowed = attrs::has_word_prop(&attrs, names::ALLOW_MUT_REF_INNER);
         Self {
             ty_outer,
             ty_inner,
@@ -155,6 +158,7 @@ impl<'a> TypeProperties<'a> {
             inner_sizedness,
             derives,
             deref_spec,
+            mut_ref_allowed,
         }
     }
 
@@ -264,6 +268,18 @@ impl<'a> TypeProperties<'a> {
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
+            if !self.mut_ref_allowed && derive.requires_mut_inner() {
+                // The target trait equires `&mut self.#field_inner` but it is not allowed.
+                panic!(
+                    concat!(
+                        "`#[opaque_typedef({}({}))]` requires inner value to be mutably referenced but it is not allowed.\n",
+                        "To allow that, specify `#[opaque_typedef({})]`."
+                    ),
+                    names::DERIVE,
+                    derive.as_ref(),
+                    names::ALLOW_MUT_REF_INNER
+                );
+            }
             let impl_toks = match (derive, self.inner_sizedness) {
                 (Derive::AsciiExt, _) => {
                     let ty_inner_as_asciiext = quote! { <#ty_inner as ::std::ascii::AsciiExt> };

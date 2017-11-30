@@ -5,6 +5,7 @@
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut, Display,
                         FromInner, IntoInner))]
+#[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
     #[opaque_typedef(inner)] inner: str,
 }
@@ -33,6 +34,7 @@ impl MyStr {
                         Display, FromInner, IntoInner))]
 #[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
                        deref_mut = "MyString::as_mut_str"))]
+#[opaque_typedef(allow_mut_ref)]
 pub struct MyString {
     inner: String,
 }

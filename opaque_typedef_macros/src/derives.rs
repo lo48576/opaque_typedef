@@ -74,4 +74,12 @@ impl Derive {
         }
         derives
     }
+
+    /// Returns whether the target trait requires mutable reference to the inner type.
+    pub fn requires_mut_inner(&self) -> bool {
+        match *self {
+            Derive::AsciiExt | Derive::AsMutDeref | Derive::AsMutInner | Derive::DerefMut => true,
+            _ => false,
+        }
+    }
 }

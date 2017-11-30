@@ -3,6 +3,8 @@
 
 /// `#[ATTR_NAME]`.
 pub const ATTR_NAME: &str = "opaque_typedef";
+/// `#[ATTR_NAME(ALLOW_MUT_REF_INNER)]`.
+pub const ALLOW_MUT_REF_INNER: &str = "allow_mut_ref";
 /// `#[ATTR_NAME(INNER_FIELD)]`
 pub const INNER_FIELD: &str = "inner";
 /// `#[ATTR_NAME(DERIVE(...))]`.
