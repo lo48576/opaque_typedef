@@ -308,20 +308,6 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
-                (Derive::AsRefDeref, _) => quote! {
-                    impl<'a> ::std::convert::AsRef<#ty_deref_target> for #ty_outer {
-                        fn as_ref(&self) -> &#ty_deref_target {
-                            #self_deref
-                        }
-                    }
-                },
-                (Derive::AsRefInner, _) => quote! {
-                    impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
-                        fn as_ref(&self) -> &#ty_inner {
-                            #self_as_inner
-                        }
-                    }
-                },
                 (Derive::AsMutDeref, _) => {
                     let self_deref_mut = get_self_deref_mut();
                     quote! {
@@ -336,6 +322,20 @@ impl<'a> TypeProperties<'a> {
                     impl<'a> ::std::convert::AsMut<#ty_inner> for #ty_outer {
                         fn as_mut(&mut self) -> &mut #ty_inner {
                             #self_as_inner_mut
+                        }
+                    }
+                },
+                (Derive::AsRefDeref, _) => quote! {
+                    impl<'a> ::std::convert::AsRef<#ty_deref_target> for #ty_outer {
+                        fn as_ref(&self) -> &#ty_deref_target {
+                            #self_deref
+                        }
+                    }
+                },
+                (Derive::AsRefInner, _) => quote! {
+                    impl<'a> ::std::convert::AsRef<#ty_inner> for #ty_outer {
+                        fn as_ref(&self) -> &#ty_inner {
+                            #self_as_inner
                         }
                     }
                 },
