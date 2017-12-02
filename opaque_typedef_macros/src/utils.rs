@@ -237,7 +237,6 @@ impl<'a> TypeProperties<'a> {
     pub fn impl_auto_derive(&self) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let ty_inner = self.ty_inner;
-        let field_inner = &self.field_inner;
         let basic_trait = match self.inner_sizedness {
             Sizedness::Sized => quote! { ::opaque_typedef::OpaqueTypedef },
             Sizedness::Unsized => quote! { ::opaque_typedef::OpaqueTypedefUnsized },
@@ -404,7 +403,7 @@ impl<'a> TypeProperties<'a> {
                 (Derive::IntoArc, Sizedness::Unsized) => quote! {
                     impl<'a> ::std::convert::From<&'a #ty_outer> for ::std::sync::Arc<#ty_outer> {
                         fn from(other: &'a #ty_outer) -> Self {
-                            let arc_inner = ::std::sync::Arc::<#ty_inner>::from(&other.#field_inner);
+                            let arc_inner = ::std::sync::Arc::<#ty_inner>::from(#other_as_inner);
                             let rw = ::std::sync::Arc::into_raw(arc_inner) as *mut #ty_outer;
                             unsafe { ::std::sync::Arc::from_raw(rw) }
                         }
@@ -413,7 +412,7 @@ impl<'a> TypeProperties<'a> {
                 (Derive::IntoBox, Sizedness::Unsized) => quote! {
                     impl<'a> ::std::convert::From<&'a #ty_outer> for ::std::boxed::Box<#ty_outer> {
                         fn from(other: &'a #ty_outer) -> Self {
-                            let boxed_inner = ::std::boxed::Box::<#ty_inner>::from(&other.#field_inner);
+                            let boxed_inner = ::std::boxed::Box::<#ty_inner>::from(#other_as_inner);
                             let rw = ::std::boxed::Box::into_raw(boxed_inner) as *mut #ty_outer;
                             unsafe { ::std::boxed::Box::from_raw(rw) }
                         }
@@ -422,7 +421,7 @@ impl<'a> TypeProperties<'a> {
                 (Derive::IntoRc, Sizedness::Unsized) => quote! {
                     impl<'a> ::std::convert::From<&'a #ty_outer> for ::std::rc::Rc<#ty_outer> {
                         fn from(other: &'a #ty_outer) -> Self {
-                            let rc_inner = ::std::rc::Rc::<#ty_inner>::from(&other.#field_inner);
+                            let rc_inner = ::std::rc::Rc::<#ty_inner>::from(#other_as_inner);
                             let rw = ::std::rc::Rc::into_raw(rc_inner) as *mut #ty_outer;
                             unsafe { ::std::rc::Rc::from_raw(rw) }
                         }
