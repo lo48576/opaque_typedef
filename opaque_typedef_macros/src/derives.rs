@@ -18,6 +18,7 @@ pub enum Derive {
     DerefMut,
     Display,
     FromInner,
+    IntoBox,
     IntoInner,
 }
 
@@ -53,6 +54,7 @@ impl Derive {
                         "DerefMut" => &[Derive::DerefMut],
                         "Display" => &[Derive::Display],
                         "FromInner" => &[Derive::FromInner],
+                        "IntoBox" => &[Derive::IntoBox],
                         "IntoInner" => &[Derive::IntoInner],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",

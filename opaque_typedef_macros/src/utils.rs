@@ -237,6 +237,7 @@ impl<'a> TypeProperties<'a> {
     pub fn impl_auto_derive(&self) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let ty_inner = self.ty_inner;
+        let field_inner = &self.field_inner;
         let basic_trait = match self.inner_sizedness {
             Sizedness::Sized => quote! { ::opaque_typedef::OpaqueTypedef },
             Sizedness::Unsized => quote! { ::opaque_typedef::OpaqueTypedefUnsized },
@@ -383,6 +384,15 @@ impl<'a> TypeProperties<'a> {
                     impl<'a> ::std::convert::From<&'a #ty_inner> for &'a #ty_outer {
                         fn from(inner: &'a #ty_inner) -> Self {
                             <#ty_outer as #basic_trait>::from_inner(inner).unwrap()
+                        }
+                    }
+                },
+                (Derive::IntoBox, Sizedness::Unsized) => quote! {
+                    impl<'a> ::std::convert::From<&'a #ty_outer> for ::std::boxed::Box<#ty_outer> {
+                        fn from(other: &'a #ty_outer) -> Self {
+                            let boxed_inner = ::std::boxed::Box::<#ty_inner>::from(&other.#field_inner);
+                            let rw = ::std::boxed::Box::into_raw(boxed_inner) as *mut #ty_outer;
+                            unsafe { ::std::boxed::Box::from_raw(rw) }
                         }
                     }
                 },

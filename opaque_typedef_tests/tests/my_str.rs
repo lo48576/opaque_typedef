@@ -87,6 +87,15 @@ mod my_str {
     }
 
     #[test]
+    fn into_box() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let my_str_box = Box::<MyStr>::from(my_str);
+        let inner = <&MyStr as Into<&str>>::into(&*my_str_box);
+        assert_eq!(ok_str, inner);
+    }
+
+    #[test]
     fn into_inner() {
         let ok_str = "foobar";
         let my_str = MyStr::new(ok_str);
