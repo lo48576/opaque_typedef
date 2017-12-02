@@ -18,8 +18,10 @@ pub enum Derive {
     DerefMut,
     Display,
     FromInner,
+    IntoArc,
     IntoBox,
     IntoInner,
+    IntoRc,
 }
 
 impl Derive {
@@ -55,7 +57,9 @@ impl Derive {
                         "Display" => &[Derive::Display],
                         "FromInner" => &[Derive::FromInner],
                         "IntoBox" => &[Derive::IntoBox],
+                        "IntoArc" => &[Derive::IntoArc],
                         "IntoInner" => &[Derive::IntoInner],
+                        "IntoRc" => &[Derive::IntoRc],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",
                             names::DERIVE,

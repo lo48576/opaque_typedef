@@ -4,7 +4,7 @@
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsRefDeref, DefaultRef, Deref, DerefMut, Display,
-                        FromInner, IntoBox, IntoInner))]
+                        FromInner, IntoArc, IntoBox, IntoRc, IntoInner))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
     #[opaque_typedef(inner)] inner: str,
