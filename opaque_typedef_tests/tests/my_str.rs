@@ -45,10 +45,25 @@ mod my_str {
     }
 
     #[test]
+    fn as_mut_self() {
+        let mut ok_string = "foobar".to_owned();
+        let ok_str: &mut str = &mut ok_string;
+        let my_str: &mut MyStr = MyStr::new_mut(ok_str);
+        let _: &mut MyStr = AsMut::<MyStr>::as_mut(my_str);
+    }
+
+    #[test]
     fn as_ref() {
         let ok_str = "foobar";
         let my_str = MyStr::new(ok_str);
         let _: &str = AsRef::<str>::as_ref(my_str);
+    }
+
+    #[test]
+    fn as_ref_self() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let _: &MyStr = AsRef::<MyStr>::as_ref(my_str);
     }
 
     #[test]

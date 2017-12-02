@@ -325,6 +325,13 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
+                (Derive::AsMutSelf, _) => quote! {
+                    impl ::std::convert::AsMut<#ty_outer> for #ty_outer {
+                        fn as_mut(&mut self) -> &mut Self {
+                            self
+                        }
+                    }
+                },
                 (Derive::AsRefDeref, _) => quote! {
                     impl<'a> ::std::convert::AsRef<#ty_deref_target> for #ty_outer {
                         fn as_ref(&self) -> &#ty_deref_target {
@@ -336,6 +343,13 @@ impl<'a> TypeProperties<'a> {
                     impl ::std::convert::AsRef<#ty_inner> for #ty_outer {
                         fn as_ref(&self) -> &#ty_inner {
                             #self_as_inner
+                        }
+                    }
+                },
+                (Derive::AsRefSelf, _) => quote! {
+                    impl ::std::convert::AsRef<#ty_outer> for #ty_outer {
+                        fn as_ref(&self) -> &Self {
+                            self
                         }
                     }
                 },
