@@ -24,6 +24,10 @@ pub enum Derive {
     IntoBox,
     IntoInner,
     IntoRc,
+    PartialEqInner,
+    PartialEqInnerCow,
+    PartialEqSelfCow,
+    PartialEqSelfCowAndInner,
 }
 
 impl Derive {
@@ -64,6 +68,10 @@ impl Derive {
                         "IntoArc" => &[Derive::IntoArc],
                         "IntoInner" => &[Derive::IntoInner],
                         "IntoRc" => &[Derive::IntoRc],
+                        "PartialEqInner" => &[Derive::PartialEqInner],
+                        "PartialEqInnerCow" => &[Derive::PartialEqInnerCow],
+                        "PartialEqSelfCow" => &[Derive::PartialEqSelfCow],
+                        "PartialEqSelfCowAndInner" => &[Derive::PartialEqSelfCowAndInner],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",
                             names::DERIVE,

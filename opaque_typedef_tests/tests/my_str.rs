@@ -135,6 +135,67 @@ mod my_str {
         let inner = <&MyStr as Into<&str>>::into(my_str);
         assert_eq!(ok_str, inner);
     }
+
+    #[test]
+    fn partial_eq_inner() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        assert!(<MyStr as PartialEq<str>>::eq(my_str, ok_str));
+        assert!(<MyStr as PartialEq<&str>>::eq(my_str, &ok_str));
+        assert!(<&MyStr as PartialEq<str>>::eq(&my_str, ok_str));
+        assert!(<&MyStr as PartialEq<&str>>::eq(&my_str, &ok_str));
+        assert!(<str as PartialEq<MyStr>>::eq(ok_str, my_str));
+        assert!(<str as PartialEq<&MyStr>>::eq(ok_str, &my_str));
+        assert!(<&str as PartialEq<MyStr>>::eq(&ok_str, my_str));
+        assert!(<&str as PartialEq<&MyStr>>::eq(&ok_str, &my_str));
+    }
+
+    /*
+    // `str` is the inner type of `MyStr`.
+    // `OsStr` is the inner type of `Path`.
+    // So the assertions like the below should be successful for `str` and `MyStr`.
+    #[test]
+    fn sample_partial_eq_path() {
+        use std::path::Path;
+        use std::ffi::OsStr;
+        let ok_str = OsStr::new("foobar");
+        let my_str = Path::new(ok_str);
+        assert!(<Path as PartialEq<OsStr>>::eq(my_str, ok_str));
+        assert!(<Path as PartialEq<&OsStr>>::eq(my_str, &ok_str));
+        assert!(<&Path as PartialEq<OsStr>>::eq(&my_str, ok_str));
+        assert!(<&Path as PartialEq<&OsStr>>::eq(&my_str, &ok_str));
+        assert!(<OsStr as PartialEq<Path>>::eq(ok_str, my_str));
+        assert!(<OsStr as PartialEq<&Path>>::eq(ok_str, &my_str));
+        assert!(<&OsStr as PartialEq<Path>>::eq(&ok_str, my_str));
+        assert!(<&OsStr as PartialEq<&Path>>::eq(&ok_str, &my_str));
+    }
+    */
+
+    #[test]
+    fn partial_eq_inner_cow() {
+        use std::borrow::Cow;
+
+        let ok_str = "foobar";
+        let ok_cow = Cow::Borrowed(ok_str);
+        let my_str = MyStr::new(ok_str);
+        assert!(<MyStr as PartialEq<Cow<str>>>::eq(my_str, &ok_cow));
+        assert!(<&MyStr as PartialEq<Cow<str>>>::eq(&my_str, &ok_cow));
+        assert!(<Cow<str> as PartialEq<MyStr>>::eq(&ok_cow, my_str));
+        assert!(<Cow<str> as PartialEq<&MyStr>>::eq(&ok_cow, &my_str));
+    }
+
+    #[test]
+    fn partial_eq_self_cow() {
+        use std::borrow::Cow;
+
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let my_cow = Cow::Borrowed(my_str);
+        assert!(<MyStr as PartialEq<Cow<MyStr>>>::eq(my_str, &my_cow));
+        assert!(<&MyStr as PartialEq<Cow<MyStr>>>::eq(&my_str, &my_cow));
+        assert!(<Cow<MyStr> as PartialEq<MyStr>>::eq(&my_cow, my_str));
+        assert!(<Cow<MyStr> as PartialEq<&MyStr>>::eq(&my_cow, &my_str));
+    }
 }
 
 mod my_string {
@@ -217,5 +278,37 @@ mod my_string {
         let my_string = MyString::from_string(ok_string.clone());
         let inner = <MyString as Into<String>>::into(my_string);
         assert_eq!(ok_string, inner);
+    }
+
+    #[test]
+    fn partial_eq_inner() {
+        let ok_string = "foobar".to_owned();
+        let my_string = MyString::from_string(ok_string.clone());
+        assert!(<MyString as PartialEq<String>>::eq(&my_string, &ok_string));
+        assert!(<MyString as PartialEq<&String>>::eq(
+            &my_string,
+            &&ok_string
+        ));
+        assert!(<&MyString as PartialEq<String>>::eq(
+            &&my_string,
+            &ok_string
+        ));
+        assert!(<&MyString as PartialEq<&String>>::eq(
+            &&my_string,
+            &&ok_string
+        ));
+        assert!(<String as PartialEq<MyString>>::eq(&ok_string, &my_string));
+        assert!(<String as PartialEq<&MyString>>::eq(
+            &ok_string,
+            &&my_string
+        ));
+        assert!(<&String as PartialEq<MyString>>::eq(
+            &&ok_string,
+            &my_string
+        ));
+        assert!(<&String as PartialEq<&MyString>>::eq(
+            &&ok_string,
+            &&my_string
+        ));
     }
 }

@@ -262,9 +262,22 @@ impl<'a> TypeProperties<'a> {
         let as_inner_mut_conv = |var: quote::Tokens| {
             quote! { unsafe { <#ty_outer as #basic_trait>::as_inner_mut(#var) } }
         };
+        // `self: &Outer` as `&Inner`.
         let self_as_inner = as_inner_conv(quote!(self));
+        // `self: &mut Outer` as `&mut Inner`.
         let self_as_inner_mut = as_inner_mut_conv(quote!(self));
+        // `self: &&Outer` as `&Inner`.
+        let self_ref_as_inner = as_inner_conv(quote!(*self));
+        // `self: SmartPointerOf<Outer>` as `&Inner`.
+        let self_smartptr_as_inner = as_inner_conv(quote!(&*self));
+        // `other: &Outer` as `&Inner`.
         let other_as_inner = as_inner_conv(quote!(other));
+        // `other: &&Outer` as `&Inner`.
+        let other_ref_as_inner = as_inner_conv(quote!(*other));
+        // `other: SmartPointerOf<Outer>` as `&Inner`.
+        let other_smartptr_as_inner = as_inner_conv(quote!(&*other));
+        let partial_eq_inner = quote! { <#ty_inner as ::std::cmp::PartialEq<#ty_inner>>::eq };
+
         let mut tokens = quote!{};
 
         for &derive in &self.derives {
@@ -439,6 +452,144 @@ impl<'a> TypeProperties<'a> {
                         fn into(self) -> &'a #ty_inner {
                             <#ty_outer as #basic_trait>::as_inner(self)
                         }
+                    }
+                },
+                (Derive::PartialEqInner, _) => {
+                    // `PartialEq<Inner> for Outer`.
+                    let outer_and_inner = quote! {
+                        impl ::std::cmp::PartialEq<#ty_inner> for #ty_outer {
+                            fn eq(&self, other: &#ty_inner) -> bool {
+                                #partial_eq_inner(#self_as_inner, other)
+                            }
+                        }
+                        impl<'a> ::std::cmp::PartialEq<#ty_inner> for &'a #ty_outer {
+                            fn eq(&self, other: &#ty_inner) -> bool {
+                                #partial_eq_inner(#self_ref_as_inner, other)
+                            }
+                        }
+                        impl<'a> ::std::cmp::PartialEq<&'a #ty_inner> for #ty_outer {
+                            fn eq(&self, other: &&'a #ty_inner) -> bool {
+                                #partial_eq_inner(#self_as_inner, *other)
+                            }
+                        }
+                    };
+                    // `PartialEq<Outer> for Inner`.
+                    let inner_and_outer = quote! {
+                        impl ::std::cmp::PartialEq<#ty_outer> for #ty_inner {
+                            fn eq(&self, other: &#ty_outer) -> bool {
+                                #partial_eq_inner(self, #other_as_inner)
+                            }
+                        }
+                        impl<'a> ::std::cmp::PartialEq<&'a #ty_outer> for #ty_inner {
+                            fn eq(&self, other: &&'a #ty_outer) -> bool {
+                                #partial_eq_inner(self, #other_ref_as_inner)
+                            }
+                        }
+                        impl<'a> ::std::cmp::PartialEq<#ty_outer> for &'a #ty_inner {
+                            fn eq(&self, other: &#ty_outer) -> bool {
+                                #partial_eq_inner(*self, #other_as_inner)
+                            }
+                        }
+                    };
+                    quote! {
+                        #outer_and_inner
+                        #inner_and_outer
+                    }
+                },
+                (Derive::PartialEqInnerCow, Sizedness::Unsized) => {
+                    // `PartialEq<Cow<Inner>> for Outer`.
+                    let outer_and_inner_cow = quote! {
+                        impl<'a> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_inner>> for #ty_outer {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_inner>) -> bool {
+                                #partial_eq_inner(#self_as_inner, &*other)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_inner>> for &'b #ty_outer {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_inner>) -> bool {
+                                #partial_eq_inner(#self_ref_as_inner, &*other)
+                            }
+                        }
+                    };
+                    // `PartialEq<Outer> for Cow<Inner>`.
+                    let inner_cow_and_outer = quote! {
+                        impl<'a> ::std::cmp::PartialEq<#ty_outer> for ::std::borrow::Cow<'a, #ty_inner> {
+                            fn eq(&self, other: &#ty_outer) -> bool {
+                                #partial_eq_inner(&*self, #other_as_inner)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<&'a #ty_outer> for ::std::borrow::Cow<'b, #ty_inner> {
+                            fn eq(&self, other: &&'a #ty_outer) -> bool {
+                                #partial_eq_inner(&*self, #other_ref_as_inner)
+                            }
+                        }
+                    };
+                    quote! {
+                        #outer_and_inner_cow
+                        #inner_cow_and_outer
+                    }
+                },
+                (Derive::PartialEqSelfCow, Sizedness::Unsized) => {
+                    // `PartialEq<Outer> for Cow<Outer>`.
+                    let outer_cow_and_outer = quote! {
+                        impl<'a> ::std::cmp::PartialEq<#ty_outer> for ::std::borrow::Cow<'a, #ty_outer> {
+                            fn eq(&self, other: &#ty_outer) -> bool {
+                                #partial_eq_inner(#self_smartptr_as_inner, #other_as_inner)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<&'a #ty_outer> for ::std::borrow::Cow<'b, #ty_outer> {
+                            fn eq(&self, other: &&'a #ty_outer) -> bool {
+                                #partial_eq_inner(#self_smartptr_as_inner, #other_ref_as_inner)
+                            }
+                        }
+                    };
+                    // `PartialEq<Cow<Outer>> for Outer`.
+                    let outer_and_outer_cow = quote! {
+                        impl<'a> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_outer>> for #ty_outer {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_outer>) -> bool {
+                                #partial_eq_inner(#self_as_inner, #other_smartptr_as_inner)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_outer>> for &'b #ty_outer {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_outer>) -> bool {
+                                #partial_eq_inner(#self_ref_as_inner, #other_smartptr_as_inner)
+                            }
+                        }
+                    };
+                    quote! {
+                        #outer_cow_and_outer
+                        #outer_and_outer_cow
+                    }
+                },
+                (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized) => {
+                    // `PartialEq<Cow<Outer>> for Inner`.
+                    let inner_and_outer_cow = quote! {
+                        impl<'a> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_outer>> for #ty_inner {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_outer>) -> bool {
+                                #partial_eq_inner(self, #other_smartptr_as_inner)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<::std::borrow::Cow<'a, #ty_outer>> for &'b #ty_inner {
+                            fn eq(&self, other: &::std::borrow::Cow<'a, #ty_outer>) -> bool {
+                                #partial_eq_inner(*self, #other_smartptr_as_inner)
+                            }
+                        }
+                    };
+                    // `PartialEq<Inner> for Cow<Outer>`.
+                    let outer_cow_and_inner = quote! {
+                        impl<'a> ::std::cmp::PartialEq<#ty_inner> for ::std::borrow::Cow<'a, #ty_outer> {
+                            fn eq(&self, other: &#ty_inner) -> bool {
+                                #partial_eq_inner(#self_smartptr_as_inner, other)
+                            }
+                        }
+                        impl<'a, 'b> ::std::cmp::PartialEq<&'a #ty_inner> for ::std::borrow::Cow<'b, #ty_outer> {
+                            fn eq(&self, other: &&'a #ty_inner) -> bool {
+                                #partial_eq_inner(#self_smartptr_as_inner, *other)
+                            }
+                        }
+                    };
+                    quote! {
+                        #inner_and_outer_cow
+                        #outer_cow_and_inner
                     }
                 },
                 (derive, sizedness) => {
