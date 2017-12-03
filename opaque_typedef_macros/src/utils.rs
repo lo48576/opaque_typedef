@@ -392,13 +392,6 @@ impl<'a> TypeProperties<'a> {
                         }
                     }
                 },
-                (Derive::Display, _) => quote! {
-                    impl ::std::fmt::Display for #ty_outer {
-                        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                            <#ty_inner as ::std::fmt::Display>::fmt(#self_as_inner, f)
-                        }
-                    }
-                },
                 (Derive::FromInner, Sizedness::Sized) => quote! {
                     impl ::std::convert::From<#ty_inner> for #ty_outer {
                         fn from(inner: #ty_inner) -> Self {
@@ -590,6 +583,26 @@ impl<'a> TypeProperties<'a> {
                     quote! {
                         #inner_and_outer_cow
                         #outer_cow_and_inner
+                    }
+                },
+                // `std::fmt::*` stuff.
+                (Derive::Binary, _) | (Derive::Display, _) => {
+                    let tr = {
+                        let name = match derive {
+                            Derive::Binary => "Binary",
+                            Derive::Display => "Display",
+                            _ => unreachable!(),
+                        };
+                        let mut tok = quote!{ ::std::fmt:: };
+                        tok.append(name);
+                        tok
+                    };
+                    quote! {
+                        impl #tr for #ty_outer {
+                            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                <#ty_inner as #tr>::fmt(#self_as_inner, f)
+                            }
+                        }
                     }
                 },
                 (derive, sizedness) => {

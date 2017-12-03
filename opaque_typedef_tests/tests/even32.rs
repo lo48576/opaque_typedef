@@ -26,6 +26,13 @@ mod fmt {
     use super::*;
 
     #[test]
+    fn binary() {
+        let v = Even32::from_i32(42);
+        assert_eq!(format!("{:b}", v), "101010");
+        assert_eq!(format!("{:#b}", v), "0b101010");
+    }
+
+    #[test]
     fn display() {
         let v = Even32::from_i32(42);
         assert_eq!(format!("{}", v), "42");
