@@ -180,7 +180,7 @@ impl<'a> TypeProperties<'a> {
                 quote! {
                     impl ::opaque_typedef::OpaqueTypedef for #ty_outer {
                         type Inner = #ty_inner;
-                        type Error = ::opaque_typedef::Never;
+                        type Error = ::opaque_typedef::Infallible;
 
                         unsafe fn from_inner_unchecked(inner: Self::Inner) -> Self {
                             Self { #field_inner: inner }
@@ -205,7 +205,7 @@ impl<'a> TypeProperties<'a> {
                 quote! {
                     impl ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer {
                         type Inner = #ty_inner;
-                        type Error = ::opaque_typedef::Never;
+                        type Error = ::opaque_typedef::Infallible;
 
                         unsafe fn from_inner_unchecked(inner: &Self::Inner) -> &Self {
                             ::std::mem::transmute(inner)

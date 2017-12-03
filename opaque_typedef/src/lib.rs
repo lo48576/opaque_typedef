@@ -4,7 +4,7 @@
 
 /// An error type that indicates the error should never happen.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Never {}
+pub enum Infallible {}
 
 
 /// Common functions for opaque typedef-ed sized types.
