@@ -449,44 +449,26 @@ impl<'a> TypeProperties<'a> {
                 | (Derive::PartialEqSelfCow, Sizedness::Unsized)
                 | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized) => {
                     use self::impl_cmp::InnerOrOuter::{Inner, Outer};
-                    use self::impl_cmp::TypeWrap::{Ref, RefRef, SmartPtrRef};
+                    use self::impl_cmp::TypeWrap::{CowRef, Ref, RefRef};
                     let cmp_target = impl_cmp::CmpTarget::PartialEq;
                     let generator = impl_cmp::ImplParams {
+                        ty_outer: &quote!(#ty_outer),
+                        ty_inner: &quote!(#ty_inner),
                         outer_as_inner: &as_inner_conv,
                         inner_partial_eq_fn: &partial_eq_inner,
                         inner_partial_ord_fn: &partial_ord_inner,
                     };
-                    let ty_outer = &quote!(#ty_outer);
-                    let ty_inner = &quote!(#ty_inner);
                     match derive {
                         Derive::PartialEqInner => {
                             // `Inner` and `Outer`.
-                            let inner_and_outer = generator.impl_symmetric(
-                                cmp_target,
-                                ty_inner,
-                                (Ref, Inner),
-                                ty_outer,
-                                (Ref, Outer),
-                                None,
-                            );
+                            let inner_and_outer =
+                                generator.impl_symmetric(cmp_target, (Ref, Inner), (Ref, Outer));
                             // `Inner` and `&Outer`.
-                            let inner_and_outer_ref = generator.impl_symmetric(
-                                cmp_target,
-                                ty_inner,
-                                (Ref, Inner),
-                                &quote! { &'a #ty_outer },
-                                (RefRef, Outer),
-                                &quote! { <'a> },
-                            );
+                            let inner_and_outer_ref =
+                                generator.impl_symmetric(cmp_target, (Ref, Inner), (RefRef, Outer));
                             // `&Inner` and `Outer`.
-                            let inner_ref_and_outer = generator.impl_symmetric(
-                                cmp_target,
-                                &quote! { &'a #ty_inner },
-                                (RefRef, Inner),
-                                ty_outer,
-                                (Ref, Outer),
-                                &quote! { <'a> },
-                            );
+                            let inner_ref_and_outer =
+                                generator.impl_symmetric(cmp_target, (RefRef, Inner), (Ref, Outer));
                             quote! {
                                 #inner_and_outer
                                 #inner_and_outer_ref
@@ -495,22 +477,13 @@ impl<'a> TypeProperties<'a> {
                         },
                         Derive::PartialEqInnerCow => {
                             // `Cow<Inner>` and `Outer`.
-                            let inner_cow_and_outer = generator.impl_symmetric(
-                                cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_inner> },
-                                (SmartPtrRef, Inner),
-                                ty_outer,
-                                (Ref, Outer),
-                                &quote! { <'a> },
-                            );
+                            let inner_cow_and_outer =
+                                generator.impl_symmetric(cmp_target, (CowRef, Inner), (Ref, Outer));
                             // `Cow<Inner>` and `&'b Outer`.
                             let inner_cow_and_outer_ref = generator.impl_symmetric(
                                 cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_inner> },
-                                (SmartPtrRef, Inner),
-                                &quote! { &'b #ty_outer },
+                                (CowRef, Inner),
                                 (RefRef, Outer),
-                                &quote! { <'a, 'b> },
                             );
                             quote! {
                                 #inner_cow_and_outer
@@ -519,22 +492,13 @@ impl<'a> TypeProperties<'a> {
                         },
                         Derive::PartialEqSelfCow => {
                             // `Cow<Outer>` and `Outer`.
-                            let outer_cow_and_outer = generator.impl_symmetric(
-                                cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_outer> },
-                                (SmartPtrRef, Outer),
-                                ty_outer,
-                                (Ref, Outer),
-                                &quote! { <'a> },
-                            );
+                            let outer_cow_and_outer =
+                                generator.impl_symmetric(cmp_target, (CowRef, Outer), (Ref, Outer));
                             // `Cow<Outer>` and `&Outer`.
                             let outer_cow_and_outer_ref = generator.impl_symmetric(
                                 cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_outer> },
-                                (SmartPtrRef, Outer),
-                                &quote! { &'b #ty_outer },
+                                (CowRef, Outer),
                                 (RefRef, Outer),
-                                &quote! { <'a, 'b> },
                             );
                             quote! {
                                 #outer_cow_and_outer
@@ -543,22 +507,13 @@ impl<'a> TypeProperties<'a> {
                         },
                         Derive::PartialEqSelfCowAndInner => {
                             // `Cow<Outer>` and `Inner`.
-                            let outer_cow_and_inner = generator.impl_symmetric(
-                                cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_outer> },
-                                (SmartPtrRef, Outer),
-                                ty_inner,
-                                (Ref, Inner),
-                                &quote! { <'a> },
-                            );
+                            let outer_cow_and_inner =
+                                generator.impl_symmetric(cmp_target, (CowRef, Outer), (Ref, Inner));
                             // `Cow<Outer>` and `&Inner`.
                             let outer_cow_and_inner_ref = generator.impl_symmetric(
                                 cmp_target,
-                                &quote! { ::std::borrow::Cow<'a, #ty_outer> },
-                                (SmartPtrRef, Outer),
-                                &quote! { &'b #ty_inner },
+                                (CowRef, Outer),
                                 (RefRef, Inner),
-                                &quote! { <'a, 'b> },
                             );
                             quote! {
                                 #outer_cow_and_inner

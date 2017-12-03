@@ -11,7 +11,6 @@ lazy_static! {
     static ref PARTIAL_ORD_FN: quote::Tokens = quote!{ partial_cmp };
     static ref PARTIAL_EQ_RET: quote::Tokens = quote!{ bool };
     static ref PARTIAL_ORD_RET: quote::Tokens = quote!{ ::std::option::Option<::std::cmp::Ordering> };
-    static ref EMPTY_TOKENS: quote::Tokens = quote! {};
     static ref TOKEN_SELF: quote::Tokens = quote!(self);
     static ref TOKEN_OTHER: quote::Tokens = quote!(other);
 }
@@ -20,6 +19,8 @@ lazy_static! {
 /// Parameters used to implement `std::cmp::*` traits.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImplParams<'a, F> {
+    pub ty_outer: &'a quote::Tokens,
+    pub ty_inner: &'a quote::Tokens,
     pub outer_as_inner: F,
     pub inner_partial_eq_fn: &'a quote::Tokens,
     pub inner_partial_ord_fn: &'a quote::Tokens,
@@ -44,39 +45,46 @@ where
         }
     }
 
-    pub fn impl_symmetric<'b, L: Into<Option<&'b quote::Tokens>>>(
+    pub fn base_type(&self, in_or_out: InnerOrOuter) -> &'a quote::Tokens {
+        match in_or_out {
+            InnerOrOuter::Inner => self.ty_inner,
+            InnerOrOuter::Outer => self.ty_outer,
+        }
+    }
+
+    pub fn impl_symmetric(
         &self,
         cmp_target: CmpTarget,
-        ty_lhs: &quote::Tokens,
         lhs_meta: (TypeWrap, InnerOrOuter),
-        ty_rhs: &quote::Tokens,
         rhs_meta: (TypeWrap, InnerOrOuter),
-        lifetimes: L,
     ) -> quote::Tokens {
-        let lifetimes = lifetimes.into().unwrap_or(&*EMPTY_TOKENS);
         let inner_cmp_fn = match cmp_target {
             CmpTarget::PartialEq => self.inner_partial_eq_fn,
             CmpTarget::PartialOrd => self.inner_partial_ord_fn,
         };
+        let ty_lhs_base = self.base_type(lhs_meta.1);
+        let ty_rhs_base = self.base_type(rhs_meta.1);
+        let ty_lhs_wrapped_unref = lhs_meta.0.ty_wrapped_unref(ty_lhs_base, Some(&quote!('a)));
+        let ty_rhs_wrapped_unref = rhs_meta.0.ty_wrapped_unref(ty_rhs_base, Some(&quote!('b)));
         let lhs_to_inner = |expr| self.to_inner_ref(expr, lhs_meta);
         let rhs_to_inner = |expr| self.to_inner_ref(expr, rhs_meta);
         let impl0 = impl_single(
             cmp_target,
             inner_cmp_fn,
-            ty_lhs,
-            ty_rhs,
+            &ty_lhs_wrapped_unref,
+            &ty_rhs_wrapped_unref,
             &lhs_to_inner,
             &rhs_to_inner,
-            lifetimes,
+            &quote! { <'a, 'b> },
         );
         let impl1 = impl_single(
             cmp_target,
             inner_cmp_fn,
-            ty_rhs,
-            ty_lhs,
+            &ty_rhs_wrapped_unref,
+            &ty_lhs_wrapped_unref,
             &rhs_to_inner,
             &lhs_to_inner,
-            lifetimes,
+            &quote! { <'a, 'b> },
         );
         quote! {
             #impl0
@@ -93,8 +101,8 @@ pub enum TypeWrap {
     Ref,
     /// `&&Target`.
     RefRef,
-    /// `&SmartPtr<Target>` (such as `&Cow<Target>`).
-    SmartPtrRef,
+    /// `&Cow<Target>`.
+    CowRef,
 }
 
 impl TypeWrap {
@@ -102,7 +110,26 @@ impl TypeWrap {
         match *self {
             TypeWrap::Ref => Cow::Borrowed(expr),
             TypeWrap::RefRef => Cow::Owned(quote!(*#expr)),
-            TypeWrap::SmartPtrRef => Cow::Owned(quote!(&**#expr)),
+            TypeWrap::CowRef => Cow::Owned(quote!(&**#expr)),
+        }
+    }
+
+    // `lifetime` should contain leading `'`.
+    pub fn ty_wrapped_unref<'a>(
+        &self,
+        ty_base: &'a quote::Tokens,
+        lifetime: Option<&quote::Tokens>,
+    ) -> Cow<'a, quote::Tokens> {
+        match *self {
+            TypeWrap::Ref => Cow::Borrowed(ty_base),
+            TypeWrap::RefRef => {
+                let lt = lifetime.expect("Lifetitme is required for `TypeWrap::RefRef`");
+                Cow::Owned(quote! { &#lt #ty_base })
+            },
+            TypeWrap::CowRef => {
+                let lt = lifetime.expect("Lifetitme is required for `TypeWrap::CowRef`");
+                Cow::Owned(quote! { ::std::borrow::Cow<#lt, #ty_base> })
+            },
         }
     }
 }
