@@ -25,10 +25,16 @@ pub enum Derive {
     IntoBox,
     IntoInner,
     IntoRc,
+    LowerExp,
+    LowerHex,
+    Octal,
     PartialEqInner,
     PartialEqInnerCow,
     PartialEqSelfCow,
     PartialEqSelfCowAndInner,
+    Pointer,
+    UpperExp,
+    UpperHex,
 }
 
 impl Derive {
@@ -70,10 +76,16 @@ impl Derive {
                         "IntoArc" => &[Derive::IntoArc],
                         "IntoInner" => &[Derive::IntoInner],
                         "IntoRc" => &[Derive::IntoRc],
+                        "LowerExp" => &[Derive::LowerExp],
+                        "LowerHex" => &[Derive::LowerHex],
+                        "Octal" => &[Derive::Octal],
                         "PartialEqInner" => &[Derive::PartialEqInner],
                         "PartialEqInnerCow" => &[Derive::PartialEqInnerCow],
                         "PartialEqSelfCow" => &[Derive::PartialEqSelfCow],
                         "PartialEqSelfCowAndInner" => &[Derive::PartialEqSelfCowAndInner],
+                        "Pointer" => &[Derive::Pointer],
+                        "UpperExp" => &[Derive::UpperExp],
+                        "UpperHex" => &[Derive::UpperHex],
                         target => panic!(
                             "`#[opaque_typedef({}({}))] is specified but the target `{}` is unknown",
                             names::DERIVE,

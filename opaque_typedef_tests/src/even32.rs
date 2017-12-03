@@ -3,7 +3,8 @@
 
 /// Even `i32`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEqInner))]
+#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEqInner, LowerHex, Octal,
+                        UpperHex))]
 pub struct Even32(i32);
 
 impl Even32 {

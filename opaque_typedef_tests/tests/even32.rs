@@ -37,4 +37,25 @@ mod fmt {
         let v = Even32::from_i32(42);
         assert_eq!(format!("{}", v), "42");
     }
+
+    #[test]
+    fn lower_hex() {
+        let v = Even32::from_i32(42);
+        assert_eq!(format!("{:x}", v), "2a");
+        assert_eq!(format!("{:#x}", v), "0x2a");
+    }
+
+    #[test]
+    fn octal() {
+        let v = Even32::from_i32(42);
+        assert_eq!(format!("{:o}", v), "52");
+        assert_eq!(format!("{:#o}", v), "0o52");
+    }
+
+    #[test]
+    fn upper_hex() {
+        let v = Even32::from_i32(42);
+        assert_eq!(format!("{:X}", v), "2A");
+        assert_eq!(format!("{:#X}", v), "0x2A");
+    }
 }

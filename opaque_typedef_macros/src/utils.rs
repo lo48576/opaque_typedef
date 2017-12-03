@@ -586,11 +586,24 @@ impl<'a> TypeProperties<'a> {
                     }
                 },
                 // `std::fmt::*` stuff.
-                (Derive::Binary, _) | (Derive::Display, _) => {
+                (Derive::Binary, _)
+                | (Derive::Display, _)
+                | (Derive::LowerExp, _)
+                | (Derive::LowerHex, _)
+                | (Derive::Octal, _)
+                | (Derive::Pointer, _)
+                | (Derive::UpperExp, _)
+                | (Derive::UpperHex, _) => {
                     let tr = {
                         let name = match derive {
                             Derive::Binary => "Binary",
                             Derive::Display => "Display",
+                            Derive::LowerExp => "LowerExp",
+                            Derive::LowerHex => "LowerHex",
+                            Derive::Octal => "Octal",
+                            Derive::Pointer => "Pointer",
+                            Derive::UpperExp => "UpperExp",
+                            Derive::UpperHex => "UpperHex",
                             _ => unreachable!(),
                         };
                         let mut tok = quote!{ ::std::fmt:: };
