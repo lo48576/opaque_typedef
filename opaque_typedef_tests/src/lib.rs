@@ -5,4 +5,5 @@ extern crate opaque_typedef;
 #[macro_use]
 extern crate opaque_typedef_macros;
 
+pub mod even32;
 pub mod my_str;
