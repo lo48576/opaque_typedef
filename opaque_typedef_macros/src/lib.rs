@@ -1,6 +1,8 @@
 //! Custom derives for easy opaque typedef.
 #![recursion_limit = "128"]
 
+#[macro_use]
+extern crate lazy_static;
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;
