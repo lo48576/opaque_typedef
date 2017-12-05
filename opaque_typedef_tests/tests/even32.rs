@@ -22,6 +22,109 @@ mod basic {
     }
 }
 
+mod cmp {
+    use super::*;
+
+    #[test]
+    fn partial_eq_inner() {
+        let i = 42i32;
+        let v = Even32::from_i32(42);
+        assert!(<Even32 as PartialEq<i32>>::eq(&v, &i));
+        assert!(<Even32 as PartialEq<&i32>>::eq(&v, &&i));
+        assert!(<&Even32 as PartialEq<i32>>::eq(&&v, &i));
+        assert!(<i32 as PartialEq<Even32>>::eq(&i, &v));
+        assert!(<i32 as PartialEq<&Even32>>::eq(&i, &&v));
+        assert!(<&i32 as PartialEq<Even32>>::eq(&&i, &v));
+        let different = 2i32;
+        assert!(!<Even32 as PartialEq<i32>>::eq(&v, &different));
+        assert!(!<Even32 as PartialEq<&i32>>::eq(&v, &&different));
+        assert!(!<&Even32 as PartialEq<i32>>::eq(&&v, &different));
+        assert!(!<i32 as PartialEq<Even32>>::eq(&different, &v));
+        assert!(!<i32 as PartialEq<&Even32>>::eq(&different, &&v));
+        assert!(!<&i32 as PartialEq<Even32>>::eq(&&different, &v));
+    }
+
+    #[test]
+    fn partial_ord_inner() {
+        let i = 42i32;
+        let v = Even32::from_i32(42);
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Even32 as PartialOrd<i32>>::partial_cmp(&v, &i)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Even32 as PartialOrd<&i32>>::partial_cmp(&v, &&i)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&Even32 as PartialOrd<i32>>::partial_cmp(&&v, &i)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <i32 as PartialOrd<Even32>>::partial_cmp(&i, &v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <i32 as PartialOrd<&Even32>>::partial_cmp(&i, &&v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&i32 as PartialOrd<Even32>>::partial_cmp(&&i, &v)
+        );
+        let less = 2i32;
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <Even32 as PartialOrd<i32>>::partial_cmp(&v, &less)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <Even32 as PartialOrd<&i32>>::partial_cmp(&v, &&less)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <&Even32 as PartialOrd<i32>>::partial_cmp(&&v, &less)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <i32 as PartialOrd<Even32>>::partial_cmp(&less, &v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <i32 as PartialOrd<&Even32>>::partial_cmp(&less, &&v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <&i32 as PartialOrd<Even32>>::partial_cmp(&&less, &v)
+        );
+        let greater = 128i32;
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <Even32 as PartialOrd<i32>>::partial_cmp(&v, &greater)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <Even32 as PartialOrd<&i32>>::partial_cmp(&v, &&greater)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Less),
+            <&Even32 as PartialOrd<i32>>::partial_cmp(&&v, &greater)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <i32 as PartialOrd<Even32>>::partial_cmp(&greater, &v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <i32 as PartialOrd<&Even32>>::partial_cmp(&greater, &&v)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Greater),
+            <&i32 as PartialOrd<Even32>>::partial_cmp(&&greater, &v)
+        );
+    }
+}
+
 mod fmt {
     use super::*;
 
