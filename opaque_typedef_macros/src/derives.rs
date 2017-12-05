@@ -8,36 +8,67 @@ use names;
 /// Auto-derive target trait.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr)]
 pub enum Derive {
+    /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
+    /// `AsMut<DerefTarget> for Outer`.
     AsMutDeref,
+    /// `AsMut<Inner> for Outer`.
     AsMutInner,
+    /// `AsMut<Outer> for Outer`.
     AsMutSelf,
+    /// `AsRef<DerefTarget> for Outer`.
     AsRefDeref,
+    /// `AsRef<Inner> for Outer`.
     AsRefInner,
+    /// `AsRef<Self> for Outer`.
     AsRefSelf,
+    /// `std::fmt::Binary for Outer`.
     Binary,
+    /// `Default for &Outer`.
     DefaultRef,
+    /// `std::ops::Deref for Outer`.
     Deref,
+    /// `std::ops::DerefMut for Outer`.
     DerefMut,
+    /// `std::fmt::Display for Outer`.
     Display,
+    /// `From<Inner> for Outer`.
     FromInner,
+    /// `From<Outer> for Arc<Outer>`.
     IntoArc,
+    /// `From<Outer> for Box<Outer>`.
     IntoBox,
+    /// `From<Outer> for Inner`.
     IntoInner,
+    /// `From<Outer> for Rc<Outer>`.
     IntoRc,
+    /// `std::fmt::LowerExp for Outer`.
     LowerExp,
+    /// `std::fmt::LowerHex for Outer`.
     LowerHex,
+    /// `std::fmt::Octal for Outer`.
     Octal,
+    /// `PartialEq<Inner> for Outer` and similar ones.
     PartialEqInner,
+    /// `PartialEq<Cow<Inner>> for Outer` and similar ones.
     PartialEqInnerCow,
+    /// `PartialEq<Cow<Outer>> for Outer` and similar ones.
     PartialEqSelfCow,
+    /// `PartialEq<Cow<Outer>> for Inner` and similar ones.
     PartialEqSelfCowAndInner,
+    /// `PartialOrd<Inner> for Outer` and similar ones.
     PartialOrdInner,
+    /// `PartialOrd<Cow<Inner>> for Outer` and similar ones.
     PartialOrdInnerCow,
+    /// `PartialOrd<Cow<Outer>> for Outer` and similar ones.
     PartialOrdSelfCow,
+    /// `PartialOrd<Cow<Outer>> for Inner` and similar ones.
     PartialOrdSelfCowAndInner,
+    /// `std::fmt::Pointer for Outer`.
     Pointer,
+    /// `std::fmt::UpperExp for Outer`.
     UpperExp,
+    /// `std::fmt::UpperHex for Outer`.
     UpperHex,
 }
 
