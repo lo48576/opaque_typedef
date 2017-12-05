@@ -5,7 +5,9 @@ use quote;
 
 
 lazy_static! {
+    /// `self` token.
     static ref TOKEN_SELF: quote::Tokens = quote!(self);
+    /// `other` token.
     static ref TOKEN_OTHER: quote::Tokens = quote!(other);
 }
 
@@ -13,11 +15,17 @@ lazy_static! {
 /// Parameters used to implement `std::cmp::*` traits.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImplParams<'a, F> {
+    /// Outer type.
     pub ty_outer: &'a quote::Tokens,
+    /// Inner type.
     pub ty_inner: &'a quote::Tokens,
+    /// Converter function from the expression of outer type into expression of inner type.
     pub outer_as_inner: F,
+    /// `PartialEq<Inner> for Inner` function.
     pub inner_partial_eq_fn: &'a quote::Tokens,
+    /// `PartialOrd<Inner> for Inner` function.
     pub inner_partial_ord_fn: &'a quote::Tokens,
+    /// Unused lifetimes in `ty_outer` and `ty_inner`.
     pub free_lifetimes: &'a [&'a str],
 }
 
@@ -25,6 +33,7 @@ impl<'a, F> ImplParams<'a, F>
 where
     F: Fn(&quote::Tokens) -> quote::Tokens,
 {
+    /// Returns the type of reference to the inner type.
     pub fn to_inner_ref(
         &self,
         expr: &quote::Tokens,
@@ -40,6 +49,7 @@ where
         }
     }
 
+    /// Returns base type.
     pub fn base_type(&self, in_or_out: InnerOrOuter) -> &'a quote::Tokens {
         match in_or_out {
             InnerOrOuter::Inner => self.ty_inner,
@@ -47,6 +57,7 @@ where
         }
     }
 
+    /// Implements comparation operator for `LHS op RHS` and `RHS op LHS`.
     pub fn impl_symmetric(
         &self,
         cmp_target: CmpTarget,
@@ -112,6 +123,17 @@ pub enum TypeWrap {
 }
 
 impl TypeWrap {
+    /// Converts the given expression of the wrapped type into reference type, and returns the
+    /// converted expression.
+    ///
+    /// ```text
+    /// # #[macro_use] extern quote;
+    /// # fn main() {
+    /// assert_eq!(TypeWrap::Ref.to_ref(quote!(v)), quote!(v));
+    /// assert_eq!(TypeWrap::RefRef.to_ref(quote!(v)), quote!(*v));
+    /// assert_eq!(TypeWrap::CowRef.to_ref(quote!(v)), quote!(&**v));
+    /// # }
+    /// ```
     pub fn to_ref<'a>(&self, expr: &'a quote::Tokens) -> Cow<'a, quote::Tokens> {
         match *self {
             TypeWrap::Ref => Cow::Borrowed(expr),
@@ -120,7 +142,29 @@ impl TypeWrap {
         }
     }
 
-    // `lifetime` should contain leading `'`.
+    /// Converts the given base type into wrapped type without outermost reference.
+    ///
+    /// ```text
+    /// # #[macro_use] extern quote;
+    /// # fn main() {
+    /// assert_eq!(
+    ///     TypeWrap::Ref.ty_wrapped_unref(quote!(T), &["lt"]),
+    ///     quote!(T)
+    /// );
+    /// assert_eq!(
+    ///     TypeWrap::RefRef.ty_wrapped_unref(quote!(T), &["lt"]),
+    ///     quote!(&'lt T)
+    /// );
+    /// assert_eq!(
+    ///     TypeWrap::CowRef.ty_wrapped_unref(quote!(T), &["lt"]),
+    ///     quote!(Cow<'lt, T>)
+    /// );
+    /// # }
+    /// ```
+    ///
+    /// Note that each elements of `free_lifetimes` should contain leading `'`.
+    ///
+    /// Panics if sufficient lifetimes are given.
     pub fn ty_wrapped_unref<'a, I, T>(
         &self,
         ty_base: &'a quote::Tokens,
@@ -173,6 +217,7 @@ pub enum CmpTarget {
 }
 
 impl CmpTarget {
+    /// Returns the target trait.
     fn cmp_trait(&self) -> &'static quote::Tokens {
         lazy_static! {
             static ref PARTIAL_EQ_TRAIT: quote::Tokens = quote!{ ::std::cmp::PartialEq };
@@ -184,6 +229,7 @@ impl CmpTarget {
         }
     }
 
+    /// Returns the default function to implement.
     fn cmp_fn(&self) -> &'static quote::Tokens {
         lazy_static! {
             static ref PARTIAL_EQ_FN: quote::Tokens = quote!{ eq };
@@ -195,6 +241,7 @@ impl CmpTarget {
         }
     }
 
+    /// Returns the return type of the default function to implement.
     fn ty_cmp_fn_ret(&self) -> &'static quote::Tokens {
         lazy_static! {
             static ref PARTIAL_EQ_RET: quote::Tokens = quote!{ bool };
@@ -208,6 +255,7 @@ impl CmpTarget {
 }
 
 
+/// Implements the target trait.
 pub fn impl_single<'l, 'r, Fl, Fr>(
     target: CmpTarget,
     inner_cmp_fn: &quote::Tokens,
@@ -239,6 +287,17 @@ where
 }
 
 
+/// Converts the list of lifetime names into the comma-separated lifetimes.
+///
+/// ```text
+/// assert_eq!(lifetime_names_to_toks(&[] as &[&str]).as_ref(), None);
+/// assert_eq!(
+///     lifetime_names_to_toks(&["foo", "bar", "baz"])
+///         .as_ref()
+///         .map(AsRef::as_ref),
+///     Some("'foo , 'bar , 'baz")
+/// );
+/// ```
 fn lifetime_names_to_toks<S, I>(names: I) -> Option<quote::Tokens>
 where
     S: AsRef<str>,
@@ -254,6 +313,11 @@ where
 }
 
 
+/// Converts the given lifetime name into the tokens.
+///
+/// ```text
+/// assert_eq!(lifetime_name_to_toks("foo").as_ref(), "'foo");
+/// ```
 fn lifetime_name_to_toks<S: AsRef<str>>(name: S) -> quote::Tokens {
     let name = name.as_ref();
     let mut toks = quote!{};
@@ -262,4 +326,48 @@ fn lifetime_name_to_toks<S: AsRef<str>>(name: S) -> quote::Tokens {
     tok_string.push_str(name);
     toks.append(tok_string);
     toks
+}
+
+#[cfg(tests)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_typewrap_to_ref() {
+        assert_eq!(TypeWrap::Ref.to_ref(quote!(v)), quote!(v));
+        assert_eq!(TypeWrap::RefRef.to_ref(quote!(v)), quote!(*v));
+        assert_eq!(TypeWrap::CowRef.to_ref(quote!(v)), quote!(&**v));
+    }
+
+    #[test]
+    fn test_typewrap_ty_wrapped_unref() {
+        assert_eq!(
+            TypeWrap::Ref.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(T)
+        );
+        assert_eq!(
+            TypeWrap::RefRef.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(&'lt T)
+        );
+        assert_eq!(
+            TypeWrap::CowRef.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(Cow<'lt, T>)
+        );
+    }
+
+    #[test]
+    fn test_lifetime_names_to_toks() {
+        assert_eq!(lifetime_names_to_toks(&[] as &[&str]).as_ref(), None);
+        assert_eq!(
+            lifetime_names_to_toks(&["foo", "bar", "baz"])
+                .as_ref()
+                .map(AsRef::as_ref),
+            Some("'foo , 'bar , 'baz")
+        );
+    }
+
+    #[test]
+    fn test_lifetime_name_to_toks() {
+        assert_eq!(lifetime_name_to_toks("foo").as_ref(), "'foo");
+    }
 }

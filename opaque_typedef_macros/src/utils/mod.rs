@@ -39,8 +39,11 @@ impl Sizedness {
 /// Deref-related specification.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct DerefSpec {
+    /// A target type of `Deref`.
     target: quote::Tokens,
+    /// Converter function for deref: `&Type -> &Target`.
     conv_deref: quote::Tokens,
+    /// Converter function for mutable deref: `&mut Type -> &mut Target`.
     conv_deref_mut: Option<quote::Tokens>,
 }
 
@@ -173,6 +176,7 @@ impl<'a> TypeProperties<'a> {
         tokens
     }
 
+    /// Implements basic helper traits in `opaque_typedef` crate.
     pub fn impl_basic_helper_trait(&self) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let ty_inner = self.ty_inner;

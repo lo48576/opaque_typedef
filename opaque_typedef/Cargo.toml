@@ -4,5 +4,10 @@ version = "0.0.1"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
 license = "MIT/Apache-2.0"
 readme = "../README.md"
+description = "Supports defining opaque typedefs"
+repository = "https://github.com/lo48576/opaque_typedef"
 
 [dependencies]
+
+[badges]
+travis-ci = { repository = "lo48576/opaque_typedef" }
