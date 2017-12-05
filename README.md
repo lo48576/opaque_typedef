@@ -45,7 +45,7 @@ Think `struct Outer(Inner);`:
 
 `Cargo.toml`:
 
-```
+```toml
 [dependencies]
 opaque_typedef = "^0.0.1"
 opaque_typedef_macros = "^0.0.1"
@@ -53,7 +53,7 @@ opaque_typedef_macros = "^0.0.1"
 
 `lib.rs` or `main.rs`:
 
-```
+```rust
 extern crate opaque_typedef;
 #[macro_use]
 extern crate opaque_typedef_macros;
@@ -63,7 +63,7 @@ extern crate opaque_typedef_macros;
 
 Sized type:
 
-```
+```rust
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 pub struct MyString(String);
@@ -71,7 +71,7 @@ pub struct MyString(String);
 
 Unsized type:
 
-```
+```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 pub struct MyStr(str);
@@ -86,7 +86,7 @@ If you want opaque\_typedef to derive traits who might return mutable reference 
 or traits who might mutate inner value (such as `AddAssign`), you should specify `#[opaque_typedef(allow_mut_ref)]`.
 
 
-```
+```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[opaque_typedef(allow_mut_ref)]
@@ -101,7 +101,7 @@ You can specify traits with `#[opaque_typedef(derive(Trait1, Trait2, ...))]`.
 
 For example:
 
-```
+```rust
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
                         Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
