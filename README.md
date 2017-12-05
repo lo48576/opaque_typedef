@@ -54,9 +54,9 @@ opaque_typedef_macros = "^0.0.1"
 `lib.rs` or `main.rs`:
 
 ```
-extern crate opaque_typedef
+extern crate opaque_typedef;
 #[macro_use]
-extern crate opaque_typedef_macros
+extern crate opaque_typedef_macros;
 ```
 
 ### 2. Derive `OpaqueTypedef` for sized types, `OpaqueTypedefUnsized` for unsized types
