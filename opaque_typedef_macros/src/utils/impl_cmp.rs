@@ -24,6 +24,7 @@ pub struct ImplParams<'a, F> {
     pub outer_as_inner: F,
     pub inner_partial_eq_fn: &'a quote::Tokens,
     pub inner_partial_ord_fn: &'a quote::Tokens,
+    pub free_lifetimes: &'a [&'a str],
 }
 
 impl<'a, F> ImplParams<'a, F>
@@ -64,10 +65,21 @@ where
         };
         let ty_lhs_base = self.base_type(lhs_meta.1);
         let ty_rhs_base = self.base_type(rhs_meta.1);
-        let ty_lhs_wrapped_unref = lhs_meta.0.ty_wrapped_unref(ty_lhs_base, Some(&quote!('a)));
-        let ty_rhs_wrapped_unref = rhs_meta.0.ty_wrapped_unref(ty_rhs_base, Some(&quote!('b)));
-        let lhs_to_inner = |expr| self.to_inner_ref(expr, lhs_meta);
-        let rhs_to_inner = |expr| self.to_inner_ref(expr, rhs_meta);
+        let mut iter_lifetimes = self.free_lifetimes.into_iter();
+        let (ty_lhs_wrapped_unref, ty_rhs_wrapped_unref) = {
+            let mut iter_lifetime_toks = iter_lifetimes.by_ref().map(lifetime_name_to_toks);
+            let ty_lhs_wrapped_unref = lhs_meta
+                .0
+                .ty_wrapped_unref(ty_lhs_base, iter_lifetime_toks.by_ref());
+            let ty_rhs_wrapped_unref = rhs_meta
+                .0
+                .ty_wrapped_unref(ty_rhs_base, iter_lifetime_toks.by_ref());
+            (ty_lhs_wrapped_unref, ty_rhs_wrapped_unref)
+        };
+        let num_used_lifetimes = self.free_lifetimes.len() - iter_lifetimes.as_slice().len();
+        let lifetimes = &self.free_lifetimes[..num_used_lifetimes];
+        let lhs_to_inner = |expr| self.to_inner_ref(expr, (lhs_meta.0, lhs_meta.1));
+        let rhs_to_inner = |expr| self.to_inner_ref(expr, (rhs_meta.0, rhs_meta.1));
         let impl0 = impl_single(
             cmp_target,
             inner_cmp_fn,
@@ -75,7 +87,7 @@ where
             &ty_rhs_wrapped_unref,
             &lhs_to_inner,
             &rhs_to_inner,
-            &quote! { <'a, 'b> },
+            lifetimes,
         );
         let impl1 = impl_single(
             cmp_target,
@@ -84,7 +96,7 @@ where
             &ty_lhs_wrapped_unref,
             &rhs_to_inner,
             &lhs_to_inner,
-            &quote! { <'a, 'b> },
+            lifetimes,
         );
         quote! {
             #impl0
@@ -115,19 +127,31 @@ impl TypeWrap {
     }
 
     // `lifetime` should contain leading `'`.
-    pub fn ty_wrapped_unref<'a>(
+    pub fn ty_wrapped_unref<'a, I, T>(
         &self,
         ty_base: &'a quote::Tokens,
-        lifetime: Option<&quote::Tokens>,
-    ) -> Cow<'a, quote::Tokens> {
+        free_lifetimes: I,
+    ) -> Cow<'a, quote::Tokens>
+    where
+        I: IntoIterator<Item = T>,
+        T: ::std::borrow::Borrow<quote::Tokens>,
+    {
         match *self {
             TypeWrap::Ref => Cow::Borrowed(ty_base),
             TypeWrap::RefRef => {
-                let lt = lifetime.expect("Lifetitme is required for `TypeWrap::RefRef`");
+                let lt = free_lifetimes
+                    .into_iter()
+                    .next()
+                    .expect("Need more lifetimes for `TypeWrap::RefRef`");
+                let lt = lt.borrow();
                 Cow::Owned(quote! { &#lt #ty_base })
             },
             TypeWrap::CowRef => {
-                let lt = lifetime.expect("Lifetitme is required for `TypeWrap::CowRef`");
+                let lt = free_lifetimes
+                    .into_iter()
+                    .next()
+                    .expect("Need more lifetimes for `TypeWrap::CowRef`");
+                let lt = lt.borrow();
                 Cow::Owned(quote! { ::std::borrow::Cow<#lt, #ty_base> })
             },
         }
@@ -185,7 +209,7 @@ pub fn impl_single<'l, 'r, Fl, Fr>(
     ty_rhs: &quote::Tokens,
     lhs_to_inner: Fl,
     rhs_to_inner: Fr,
-    lifetimes: &quote::Tokens,
+    lifetimes: &[&str],
 ) -> quote::Tokens
 where
     Fl: Fn(&'l quote::Tokens) -> quote::Tokens,
@@ -196,6 +220,9 @@ where
     let ty_cmp_fn_ret = target.ty_cmp_fn_ret();
     let expr_self = lhs_to_inner(&*TOKEN_SELF);
     let expr_other = rhs_to_inner(&*TOKEN_OTHER);
+    let lifetimes = lifetime_names_to_toks(lifetimes)
+        .map(|lts| quote! { <#lts> })
+        .unwrap_or_default();
     quote! {
         impl #lifetimes #cmp_trait<#ty_rhs> for #ty_lhs {
             fn #cmp_fn(&self, other: &#ty_rhs) -> #ty_cmp_fn_ret {
@@ -203,4 +230,30 @@ where
             }
         }
     }
+}
+
+
+fn lifetime_names_to_toks<S, I>(names: I) -> Option<quote::Tokens>
+where
+    S: AsRef<str>,
+    I: IntoIterator<Item = S>,
+{
+    let iter = names
+        .into_iter()
+        .map(|name| lifetime_name_to_toks(name.as_ref()));
+    let mut toks = quote!{};
+    toks.append_separated(iter, ",");
+    // TODO: Use `Option::filter` (see <https://github.com/rust-lang/rust/issues/45860>).
+    Some(toks).into_iter().find(|v| !v.as_ref().is_empty())
+}
+
+
+fn lifetime_name_to_toks<S: AsRef<str>>(name: S) -> quote::Tokens {
+    let name = name.as_ref();
+    let mut toks = quote!{};
+    let mut tok_string = String::with_capacity(name.len() + 1);
+    tok_string.push_str("'");
+    tok_string.push_str(name);
+    toks.append(tok_string);
+    toks
 }

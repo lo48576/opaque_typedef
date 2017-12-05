@@ -451,12 +451,14 @@ impl<'a> TypeProperties<'a> {
                     use self::impl_cmp::InnerOrOuter::{Inner, Outer};
                     use self::impl_cmp::TypeWrap::{CowRef, Ref, RefRef};
                     let cmp_target = impl_cmp::CmpTarget::PartialEq;
+                    let free_lifetimes = &["a", "b"];
                     let generator = impl_cmp::ImplParams {
                         ty_outer: &quote!(#ty_outer),
                         ty_inner: &quote!(#ty_inner),
                         outer_as_inner: &as_inner_conv,
                         inner_partial_eq_fn: &partial_eq_inner,
                         inner_partial_ord_fn: &partial_ord_inner,
+                        free_lifetimes,
                     };
                     match derive {
                         Derive::PartialEqInner => {
