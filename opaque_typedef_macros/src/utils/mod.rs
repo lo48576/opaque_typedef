@@ -448,10 +448,24 @@ impl<'a> TypeProperties<'a> {
                 (Derive::PartialEqInner, _)
                 | (Derive::PartialEqInnerCow, Sizedness::Unsized)
                 | (Derive::PartialEqSelfCow, Sizedness::Unsized)
-                | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized) => {
+                | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized)
+                | (Derive::PartialOrdInner, _)
+                | (Derive::PartialOrdInnerCow, Sizedness::Unsized)
+                | (Derive::PartialOrdSelfCow, Sizedness::Unsized)
+                | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized) => {
                     use self::impl_cmp::InnerOrOuter::{Inner, Outer};
                     use self::impl_cmp::TypeWrap::{CowRef, Ref, RefRef};
-                    let cmp_target = impl_cmp::CmpTarget::PartialEq;
+                    let cmp_target = match derive {
+                        Derive::PartialEqInner
+                        | Derive::PartialEqInnerCow
+                        | Derive::PartialEqSelfCow
+                        | Derive::PartialEqSelfCowAndInner => impl_cmp::CmpTarget::PartialEq,
+                        Derive::PartialOrdInner
+                        | Derive::PartialOrdInnerCow
+                        | Derive::PartialOrdSelfCow
+                        | Derive::PartialOrdSelfCowAndInner => impl_cmp::CmpTarget::PartialOrd,
+                        _ => unreachable!(),
+                    };
                     let free_lifetimes = &["a", "b"];
                     let generator = impl_cmp::ImplParams {
                         ty_outer: &quote!(#ty_outer),
@@ -462,7 +476,7 @@ impl<'a> TypeProperties<'a> {
                         free_lifetimes,
                     };
                     match derive {
-                        Derive::PartialEqInner => {
+                        Derive::PartialEqInner | Derive::PartialOrdInner => {
                             // `Inner` and `Outer`.
                             let inner_and_outer =
                                 generator.impl_symmetric(cmp_target, (Ref, Inner), (Ref, Outer));
@@ -478,7 +492,7 @@ impl<'a> TypeProperties<'a> {
                                 #inner_ref_and_outer
                             }
                         },
-                        Derive::PartialEqInnerCow => {
+                        Derive::PartialEqInnerCow | Derive::PartialOrdInnerCow => {
                             // `Cow<Inner>` and `Outer`.
                             let inner_cow_and_outer =
                                 generator.impl_symmetric(cmp_target, (CowRef, Inner), (Ref, Outer));
@@ -493,7 +507,7 @@ impl<'a> TypeProperties<'a> {
                                 #inner_cow_and_outer_ref
                             }
                         },
-                        Derive::PartialEqSelfCow => {
+                        Derive::PartialEqSelfCow | Derive::PartialOrdSelfCow => {
                             // `Cow<Outer>` and `Outer`.
                             let outer_cow_and_outer =
                                 generator.impl_symmetric(cmp_target, (CowRef, Outer), (Ref, Outer));
@@ -508,7 +522,7 @@ impl<'a> TypeProperties<'a> {
                                 #outer_cow_and_outer_ref
                             }
                         },
-                        Derive::PartialEqSelfCowAndInner => {
+                        Derive::PartialEqSelfCowAndInner | Derive::PartialOrdSelfCowAndInner => {
                             // `Cow<Outer>` and `Inner`.
                             let outer_cow_and_inner =
                                 generator.impl_symmetric(cmp_target, (CowRef, Outer), (Ref, Inner));

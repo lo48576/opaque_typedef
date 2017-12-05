@@ -196,6 +196,94 @@ mod my_str {
         assert!(<Cow<MyStr> as PartialEq<MyStr>>::eq(&my_cow, my_str));
         assert!(<Cow<MyStr> as PartialEq<&MyStr>>::eq(&my_cow, &my_str));
     }
+
+    #[test]
+    fn partial_ord_inner() {
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <MyStr as PartialOrd<str>>::partial_cmp(my_str, ok_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <MyStr as PartialOrd<&str>>::partial_cmp(my_str, &ok_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&MyStr as PartialOrd<str>>::partial_cmp(&my_str, ok_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&MyStr as PartialOrd<&str>>::partial_cmp(&my_str, &ok_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <str as PartialOrd<MyStr>>::partial_cmp(ok_str, my_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <str as PartialOrd<&MyStr>>::partial_cmp(ok_str, &my_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&str as PartialOrd<MyStr>>::partial_cmp(&ok_str, my_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&str as PartialOrd<&MyStr>>::partial_cmp(&ok_str, &my_str)
+        );
+    }
+
+    #[test]
+    fn partial_ord_inner_cow() {
+        use std::borrow::Cow;
+
+        let ok_str = "foobar";
+        let ok_cow = Cow::Borrowed(ok_str);
+        let my_str = MyStr::new(ok_str);
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <MyStr as PartialOrd<Cow<str>>>::partial_cmp(my_str, &ok_cow)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&MyStr as PartialOrd<Cow<str>>>::partial_cmp(&my_str, &ok_cow)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Cow<str> as PartialOrd<MyStr>>::partial_cmp(&ok_cow, my_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Cow<str> as PartialOrd<&MyStr>>::partial_cmp(&ok_cow, &my_str)
+        );
+    }
+
+    #[test]
+    fn partial_ord_self_cow() {
+        use std::borrow::Cow;
+
+        let ok_str = "foobar";
+        let my_str = MyStr::new(ok_str);
+        let my_cow = Cow::Borrowed(my_str);
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <MyStr as PartialOrd<Cow<MyStr>>>::partial_cmp(my_str, &my_cow)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <&MyStr as PartialOrd<Cow<MyStr>>>::partial_cmp(&my_str, &my_cow)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Cow<MyStr> as PartialOrd<MyStr>>::partial_cmp(&my_cow, my_str)
+        );
+        assert_eq!(
+            Some(::std::cmp::Ordering::Equal),
+            <Cow<MyStr> as PartialOrd<&MyStr>>::partial_cmp(&my_cow, &my_str)
+        );
+    }
 }
 
 mod my_string {
