@@ -10,8 +10,8 @@
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
                         Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
-                        IntoInner, PartialEqInner, PartialEqInnerCow, PartialEqSelfCow,
-                        PartialOrdInner, PartialOrdInnerCow, PartialOrdSelfCow))]
+                        IntoInner, PartialEq(Inner, InnerCow, SelfCow),
+                        PartialOrd(Inner, InnerCow, SelfCow)))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
     #[opaque_typedef(inner)] inner: str,

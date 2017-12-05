@@ -105,9 +105,50 @@ impl Derive {
                 },
                 // `derive(ident(subitem1, subitem2, ...))` style.
                 NestedMetaItem::MetaItem(MetaItem::List(ref ident, ref subitems)) => {
-                    let _ = ident;
-                    let _ = subitems;
-                    unimplemented!()
+                    let subtargets = subitems.iter().filter_map(|nested| {
+                        if let NestedMetaItem::MetaItem(MetaItem::Word(ref ident)) = *nested {
+                            Some(ident.as_ref())
+                        } else {
+                            None
+                        }
+                    });
+                    let major_target = ident.as_ref();
+                    match major_target {
+                        "PartialEq" => {
+                            derives.extend(subtargets.map(|target| match target {
+                                "Inner" => Derive::PartialEqInner,
+                                "InnerCow" => Derive::PartialEqInnerCow,
+                                "SelfCow" => Derive::PartialEqSelfCow,
+                                "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
+                                _ => panic!(
+                                    "Unsupported subtarget: #[opaque_typedef({}({}({})))]",
+                                    names::DERIVE,
+                                    major_target,
+                                    target
+                                ),
+                            }));
+                        },
+                        "PartialOrd" => {
+                            derives.extend(subtargets.map(|target| match target {
+                                "Inner" => Derive::PartialOrdInner,
+                                "InnerCow" => Derive::PartialOrdInnerCow,
+                                "SelfCow" => Derive::PartialOrdSelfCow,
+                                "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
+                                _ => panic!(
+                                    "Unsupported subtarget: #[opaque_typedef({}({}({})))]",
+                                    names::DERIVE,
+                                    major_target,
+                                    target
+                                ),
+                            }));
+                        },
+                        _ => panic!(
+                            "`#[opaque_typedef({}({}))]` is specified but the target `{}` is unknown",
+                            names::DERIVE,
+                            major_target,
+                            major_target
+                        ),
+                    }
                 },
                 _ => continue,
             }
