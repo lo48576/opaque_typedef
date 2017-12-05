@@ -61,9 +61,10 @@ impl DerefSpec {
             .filter_map(|nested| {
                 match *nested {
                     // `deref(name = "value")` style.
-                    NestedMetaItem::MetaItem(
-                        MetaItem::NameValue(ref ident, syn::Lit::Str(ref value, _style)),
-                    ) => Some((ident.as_ref(), value.as_str())),
+                    NestedMetaItem::MetaItem(MetaItem::NameValue(
+                        ref ident,
+                        syn::Lit::Str(ref value, _style),
+                    )) => Some((ident.as_ref(), value.as_str())),
                     _ => None,
                 }
             })
