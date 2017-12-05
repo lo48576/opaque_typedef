@@ -263,3 +263,47 @@ fn lifetime_name_to_toks<S: AsRef<str>>(name: S) -> quote::Tokens {
     toks.append(tok_string);
     toks
 }
+
+#[cfg(tests)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_typewrap_to_ref() {
+        assert_eq!(TypeWrap::Ref.to_ref(quote!(v)), quote!(v));
+        assert_eq!(TypeWrap::RefRef.to_ref(quote!(v)), quote!(*v));
+        assert_eq!(TypeWrap::CowRef.to_ref(quote!(v)), quote!(&**v));
+    }
+
+    #[test]
+    fn test_typewrap_ty_wrapped_unref() {
+        assert_eq!(
+            TypeWrap::Ref.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(T)
+        );
+        assert_eq!(
+            TypeWrap::RefRef.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(&'lt T)
+        );
+        assert_eq!(
+            TypeWrap::CowRef.ty_wrapped_unref(quote!(T), &["lt"]),
+            quote!(Cow<'lt, T>)
+        );
+    }
+
+    #[test]
+    fn test_lifetime_names_to_toks() {
+        assert_eq!(lifetime_names_to_toks(&[] as &[&str]).as_ref(), None);
+        assert_eq!(
+            lifetime_names_to_toks(&["foo", "bar", "baz"])
+                .as_ref()
+                .map(AsRef::as_ref),
+            Some("'foo , 'bar , 'baz")
+        );
+    }
+
+    #[test]
+    fn test_lifetime_name_to_toks() {
+        assert_eq!(lifetime_name_to_toks("foo").as_ref(), "'foo");
+    }
+}
