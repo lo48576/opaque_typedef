@@ -5,12 +5,6 @@ use quote;
 
 
 lazy_static! {
-    static ref PARTIAL_EQ_TRAIT: quote::Tokens = quote!{ ::std::cmp::PartialEq };
-    static ref PARTIAL_ORD_TRAIT: quote::Tokens = quote!{ ::std::cmp::PartialOrd };
-    static ref PARTIAL_EQ_FN: quote::Tokens = quote!{ eq };
-    static ref PARTIAL_ORD_FN: quote::Tokens = quote!{ partial_cmp };
-    static ref PARTIAL_EQ_RET: quote::Tokens = quote!{ bool };
-    static ref PARTIAL_ORD_RET: quote::Tokens = quote!{ ::std::option::Option<::std::cmp::Ordering> };
     static ref TOKEN_SELF: quote::Tokens = quote!(self);
     static ref TOKEN_OTHER: quote::Tokens = quote!(other);
 }
@@ -180,6 +174,10 @@ pub enum CmpTarget {
 
 impl CmpTarget {
     fn cmp_trait(&self) -> &'static quote::Tokens {
+        lazy_static! {
+            static ref PARTIAL_EQ_TRAIT: quote::Tokens = quote!{ ::std::cmp::PartialEq };
+            static ref PARTIAL_ORD_TRAIT: quote::Tokens = quote!{ ::std::cmp::PartialOrd };
+        }
         match *self {
             CmpTarget::PartialEq => &*PARTIAL_EQ_TRAIT,
             CmpTarget::PartialOrd => &*PARTIAL_ORD_TRAIT,
@@ -187,6 +185,10 @@ impl CmpTarget {
     }
 
     fn cmp_fn(&self) -> &'static quote::Tokens {
+        lazy_static! {
+            static ref PARTIAL_EQ_FN: quote::Tokens = quote!{ eq };
+            static ref PARTIAL_ORD_FN: quote::Tokens = quote!{ partial_cmp };
+        }
         match *self {
             CmpTarget::PartialEq => &*PARTIAL_EQ_FN,
             CmpTarget::PartialOrd => &*PARTIAL_ORD_FN,
@@ -194,6 +196,10 @@ impl CmpTarget {
     }
 
     fn ty_cmp_fn_ret(&self) -> &'static quote::Tokens {
+        lazy_static! {
+            static ref PARTIAL_EQ_RET: quote::Tokens = quote!{ bool };
+            static ref PARTIAL_ORD_RET: quote::Tokens = quote!{ ::std::option::Option<::std::cmp::Ordering> };
+        }
         match *self {
             CmpTarget::PartialEq => &*PARTIAL_EQ_RET,
             CmpTarget::PartialOrd => &*PARTIAL_ORD_RET,
