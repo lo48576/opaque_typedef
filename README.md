@@ -28,7 +28,7 @@ and you may want to implement some traits and don't want to implement some other
 
 opaque\_typedef crate helps you "derive" specific traits (i.e. reuse the traits implemented for internal types) for your type.
 
-To see example, see files under the `opaque_typedef_tests/src/` directory.
+To see example, see files under the [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_typedef/tree/develop/opaque_typedef_tests/src) directory.
 
 ## Terms
 Think `struct Outer(Inner);`:
@@ -40,6 +40,8 @@ Think `struct Outer(Inner);`:
   * **Sized type** means `String`, `i32`, `&u8`, or something.
 
 ## How to use
+
+Examples are in [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_typedef/tree/develop/opaque_typedef_tests/src).
 
 ### 1. Specify "extern crate"
 
