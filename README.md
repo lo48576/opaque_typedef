@@ -6,7 +6,7 @@ opaque_typedef:
 [![Documentation](https://docs.rs/opaque_typedef/badge.svg)](https://docs.rs/opaque_typedef)  
 opaque_typedef_macros:
 [![Latest version](https://img.shields.io/crates/v/opaque_typedef_macros.svg)](https://crates.io/crates/opaque_typedef_macros)
-[![Documentation](https://docs.rs/opaque_typedef_macros/badge.svg)](https://docs.rs/opaque_typedef_macros)
+<!--[![Documentation](https://docs.rs/opaque_typedef_macros/badge.svg)](https://docs.rs/opaque_typedef_macros)-->
 
 This is a proc-macro crate for [the Rust programming language](https://www.rust-lang.org/).
 
