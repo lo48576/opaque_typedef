@@ -272,7 +272,8 @@ impl<'a> TypeProperties<'a> {
         // `other: &Outer` as `&Inner`.
         let other_as_inner = as_inner_conv(&quote!(other));
         let partial_eq_inner = quote! { <#ty_inner as ::std::cmp::PartialEq<#ty_inner>>::eq };
-        let partial_ord_inner = quote! { <#ty_inner as ::std::cmp::PartialOrd<#ty_inner>>::cmp };
+        let partial_ord_inner =
+            quote! { <#ty_inner as ::std::cmp::PartialOrd<#ty_inner>>::partial_cmp };
 
         let mut tokens = quote!{};
 
