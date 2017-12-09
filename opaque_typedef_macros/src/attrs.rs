@@ -38,3 +38,28 @@ pub fn has_word_prop(metaitems: &[&MetaItem], prop_name: &str) -> bool {
         }
     })
 }
+
+
+/// Returns whether the outer type will have the same internal representation as the inner type.
+pub fn check_same_internal_repr<'a>(attrs: &'a [Attribute]) -> bool {
+    use syn::NestedMetaItem;
+
+    attrs
+        .iter()
+        .filter_map(|attr| {
+            if let MetaItem::List(ref ident, ref nested) = attr.value {
+                if ident == "repr" {
+                    return Some(nested);
+                }
+            }
+            None
+        })
+        .flat_map(|nested| nested)
+        .filter_map(|nested| {
+            if let NestedMetaItem::MetaItem(MetaItem::Word(ref ident)) = *nested {
+                return Some(ident);
+            }
+            None
+        })
+        .any(|ident| ident == "C" || ident == "transparent")
+}

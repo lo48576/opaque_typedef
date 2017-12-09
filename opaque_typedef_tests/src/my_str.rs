@@ -8,6 +8,8 @@
 //      it causes error "E0117".
 //      for detail, run `rustc --explain E0117`.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+// About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
+#[repr(C)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
                         Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
                         IntoInner, PartialEq(Inner, InnerCow, SelfCow),
