@@ -76,11 +76,16 @@ Unsized type:
 ```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+#[repr(C)]
 pub struct MyStr(str);
 ```
 
+Note that `#[repr(C)]` (or `#[repr(transparent)]`) is necessary for unsized types.
+
 Then you can use `OpaqueTypedef` trait or `OpaqueTypedefUnsized` trait.
 It will be useful to implement methods for your types!
+
+About the necessity of `#[repr(*)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
 
 ### 3. Specify if the mutable reference can be used for deriving traits (optional)
 
@@ -91,6 +96,7 @@ or traits who might mutate inner value (such as `AddAssign`), you should specify
 ```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+#[repr(C)]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr(str);
 ```
@@ -105,6 +111,7 @@ For example:
 
 ```rust
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+#[repr(C)]
 #[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
                         Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
                         IntoInner, PartialEq(Inner, InnerCow, SelfCow),

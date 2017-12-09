@@ -152,6 +152,18 @@ impl<'a> TypeProperties<'a> {
     /// Creates a new `TypeProperties` from the given AST.
     pub fn from_ast(ast: &'a syn::DeriveInput, inner_sizedness: Sizedness) -> Self {
         let ty_outer = &ast.ident;
+        if inner_sizedness.is_unsized() && !attrs::check_same_internal_repr(&ast.attrs) {
+            panic!(
+                concat!(
+                    "To avoid undefined behavior, outer type `{}` should",
+                    " be marked as `#[repr(C)]` or `#[repr(transparent)]`.\n",
+                    "For detail, see <https://github.com/lo48576/opaque_typedef/issues/1>.\n",
+                    "About `#[repr(transparent)]`, see RFC 1758",
+                    " <https://github.com/rust-lang/rfcs/blob/master/text/1758-repr-transparent.md>."
+                ),
+                ty_outer.as_ref()
+            );
+        }
         let attrs = attrs::get_metaitems(&ast.attrs, names::ATTR_NAME);
         let (field_inner, ty_inner) = fields::get_inner_name_and_ty(ast);
         let derives = Derive::from_metaitems(&attrs);
