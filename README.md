@@ -128,6 +128,38 @@ Note that some traits can be shortened:
 To see lists of "derive"-able items, read the rest of the document or see
 [the source (`Derive` enum in `opaque_typedef_macros/src/derives.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives.rs).
 
+### 4.1. Specify deref target (optional)
+
+If you specify `Deref`, `DerefMut`, `AsRefDeref` or something related to `Deref`, you can also specify "deref target" by `#[opaque_typedef(deref(...))]`.
+
+```rust
+/// My owned string.
+#[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
+                        Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
+#[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
+                       deref_mut = "MyString::as_mut_str"))]
+#[opaque_typedef(allow_mut_ref)]
+pub struct MyString {
+    inner: String,
+}
+```
+
+Opaque\_typedef uses the inner type as the default deref target type, but you can use a different type as the example above.
+
+  * `target`:
+      + Deref target type.
+  * `deref`:
+      + Conversion function from a reference to the **inner** type into a **reference** to the outer type.
+      + The function should implement `Fn(&Inner) -> &DerefTarget`.
+  * `deref_mut`:
+      + Conversion function from a mutable reference to the **inner** type into a mutable **reference** to the outer type.
+      + The function should implement `Fn(&mut Inner) -> &mut DerefTarget`.
+
+In the example, `AsMutInner` implements `AsMut<String> for MyString`, and `AsMutDeref` implements `AsMut<str> for MyString`.
+
+If you don't specify `#[opaque_typedef(allow_mut_ref)]`, `deref_mut` would not be used and you can omit it.
+
 ## Features
 
 ### Defining basic constructions and casts
