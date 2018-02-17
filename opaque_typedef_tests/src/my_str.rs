@@ -16,7 +16,8 @@
                         PartialOrd(Inner, InnerCow, SelfCow)))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
-    #[opaque_typedef(inner)] inner: str,
+    #[opaque_typedef(inner)]
+    inner: str,
 }
 
 impl MyStr {
