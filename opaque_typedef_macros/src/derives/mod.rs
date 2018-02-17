@@ -5,6 +5,9 @@ use quote::ToTokens;
 use syn;
 
 use attrs::{get_meta_content_by_path, is_attr_for};
+use type_props::TypeProps;
+
+mod fmt;
 
 
 /// Auto-derive target trait.
@@ -156,8 +159,19 @@ impl Derive {
     }
 
     /// Generates impls for the auto-derive target.
-    pub fn impl_auto_derive(&self) -> quote::Tokens {
-        unimplemented!()
+    pub fn impl_auto_derive(&self, props: &TypeProps) -> quote::Tokens {
+        match (*self, props.inner_sizedness) {
+            // `std::fmt::*` traits.
+            (Derive::Binary, _)
+            | (Derive::Display, _)
+            | (Derive::LowerExp, _)
+            | (Derive::LowerHex, _)
+            | (Derive::Octal, _)
+            | (Derive::Pointer, _)
+            | (Derive::UpperExp, _)
+            | (Derive::UpperHex, _) => fmt::gen_impl(*self, props),
+            _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
+        }
     }
 }
 

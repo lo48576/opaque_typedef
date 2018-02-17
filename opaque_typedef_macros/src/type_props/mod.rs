@@ -82,7 +82,7 @@ impl<'a> TypeProps<'a> {
         let basic_impl = self.impl_basic_helper_trait();
         let derive_impls = self.derives
             .iter()
-            .map(|derive| derive.impl_auto_derive())
+            .map(|derive| derive.impl_auto_derive(self))
             .collect::<Vec<_>>();
         quote! {
             #basic_impl
@@ -146,6 +146,18 @@ impl<'a> TypeProps<'a> {
                         }
                     }
                 }
+            },
+        }
+    }
+
+    pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+        let ty_outer = self.ty_outer;
+        match self.inner_sizedness {
+            Sizedness::Sized => {
+                quote!(<#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(#expr))
+            },
+            Sizedness::Unsized => {
+                quote!(<#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(#expr))
             },
         }
     }
