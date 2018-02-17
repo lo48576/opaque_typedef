@@ -3,7 +3,82 @@
 use syn;
 use syn::DeriveInput;
 
+use attrs::{has_word_meta, is_attr_for};
 use type_props::{Field, Sizedness, TypeProps};
+use utils::expect_singleton_iter;
+
+
+/// Returns `#[repr(..)]` metadata.
+fn get_repr_meta(attrs: &[syn::Attribute]) -> Option<syn::Meta> {
+    let iter = attrs
+        .into_iter()
+        .filter(|attr| is_attr_for(attr, "repr"))
+        .filter_map(|attr| attr.interpret_meta());
+    expect_singleton_iter(iter)
+        .at_most_one()
+        .expect("Multiple `#[repr(..)]` are not supported")
+}
+
+
+/// Returns a field marked (explicitly or implicitly) as "inner".
+fn get_inner_field(data: &syn::Data) -> Field {
+    // Currently, only struct is supported.
+    let fields = match *data {
+        syn::Data::Struct(ref data) => &data.fields,
+        syn::Data::Enum(..) => panic!("Enum types are not supported"),
+        syn::Data::Union(..) => panic!("Currently, union types are not supported"),
+    };
+    // Get fields with `syn::Fields` type.
+    let fields = match *fields {
+        syn::Fields::Named(ref fields) => &fields.named,
+        syn::Fields::Unnamed(ref fields) => &fields.unnamed,
+        syn::Fields::Unit => panic!("Types with no fields are not supported"),
+    };
+    // If there is only one field, it is the inner field.
+    if fields.len() == 1 {
+        let field = &fields[0];
+        if field.ident.is_some() {
+            return Field::Named(field);
+        } else {
+            return Field::Unnamed(field, 0);
+        }
+    }
+    if fields.len() > 1 {
+        panic!("Currently, outer type with multiple fields is not supported");
+    } else if fields.len() == 0 {
+        panic!("Types with no fields are not supported");
+    }
+    unreachable!("Currently, outer types with multiple fields are not supported");
+}
+
+
+fn check_repr_outer(
+    ty_outer: &syn::Ident,
+    sizedness: Sizedness,
+    repr_meta_outer: Option<&syn::Meta>,
+) {
+    if sizedness != Sizedness::Unsized {
+        // The restriction is necessary only for unsized types.
+        return;
+    }
+    if let Some(repr_meta) = repr_meta_outer {
+        let has_repr_c = has_word_meta(repr_meta, &["repr", "C"]);
+        let has_repr_transparent = has_word_meta(repr_meta, &["repr", "transparent"]);
+        if has_repr_c || has_repr_transparent {
+            return;
+        }
+    }
+    // Neither `repr(C)` nor `repr(transparent)` was specified for an unsized type.
+    panic!(
+        "To avoid undefined behavior, outer type `{}` should be marked \
+         as `#[repr(C)]` or `#[repr(transparent)]`.\n\
+         For detail, see <https://github.com/lo48576/opaque_typedef/issues/1>.\n\
+         About `#[repr(transparent)]`, see RFC 1758 \
+         <https://github.com/rust-lang/rfcs/blob/master/text/1758-repr-transparent.md>.\
+         ",
+        ty_outer.as_ref()
+    );
+}
 
 
 /// A builder of `TypeProps`.
@@ -11,6 +86,8 @@ use type_props::{Field, Sizedness, TypeProps};
 pub struct TypePropsBuilder<'a> {
     /// Outer type.
     ty_outer: Option<&'a syn::Ident>,
+    /// `#[repr(..)]` spec of the outer type.
+    repr_attr_outer: Option<syn::Meta>,
     /// Inner field.
     field_inner: Option<Field<'a>>,
     /// Sizedness of the inner type.
@@ -25,9 +102,10 @@ impl<'a> TypePropsBuilder<'a> {
 
     /// Loads properties from the given input and sizedness.
     pub fn load(&mut self, input: &'a DeriveInput, sizedness: Sizedness) {
-        let _ = input;
-        let _ = sizedness;
-        unimplemented!();
+        self.ty_outer = Some(&input.ident);
+        self.repr_attr_outer = get_repr_meta(&input.attrs);
+        self.field_inner = Some(get_inner_field(&input.data));
+        self.inner_sizedness = Some(sizedness);
     }
 
     /// Builds a `TypeProps`.
@@ -37,6 +115,7 @@ impl<'a> TypePropsBuilder<'a> {
         let ty_outer = self.ty_outer.expect(MSG_SHOULD_LOAD);
         let field_inner = self.field_inner.expect(MSG_SHOULD_LOAD);
         let inner_sizedness = self.inner_sizedness.expect(MSG_SHOULD_LOAD);
+        check_repr_outer(ty_outer, inner_sizedness, self.repr_attr_outer.as_ref());
 
         TypeProps {
             ty_outer,

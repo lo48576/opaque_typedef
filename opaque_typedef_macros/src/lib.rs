@@ -1,4 +1,5 @@
 //! Custom derives for easy opaque typedef.
+#![recursion_limit = "128"]
 
 extern crate proc_macro;
 #[macro_use]
@@ -10,11 +11,13 @@ use syn::DeriveInput;
 
 use type_props::{Sizedness, TypeProps};
 
+mod attrs;
 mod type_props;
+mod utils;
 
 
 /// The entrypoint for a `#[derive(OpaqueTypedef)]`-ed type.
-#[proc_macro_derive(OpaqueTypedef)]
+#[proc_macro_derive(OpaqueTypedef, attributes(opaque_typedef))]
 pub fn opaque_typedef(input: TokenStream) -> TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
     let gen = gen_opaque_typedef_impls(input, Sizedness::Sized);
@@ -23,7 +26,7 @@ pub fn opaque_typedef(input: TokenStream) -> TokenStream {
 
 
 /// The entrypoint for a `#[derive(OpaqueTypedefUnsized)]`-ed type.
-#[proc_macro_derive(OpaqueTypedefUnsized)]
+#[proc_macro_derive(OpaqueTypedefUnsized, attributes(opaque_typedef))]
 pub fn opaque_typedef_unsized(input: TokenStream) -> TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
     let gen = gen_opaque_typedef_impls(input, Sizedness::Unsized);

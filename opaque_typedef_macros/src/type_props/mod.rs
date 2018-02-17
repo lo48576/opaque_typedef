@@ -1,6 +1,7 @@
 //! Type properties.
 
 use quote;
+use quote::ToTokens;
 use syn;
 use syn::DeriveInput;
 
@@ -28,6 +29,30 @@ pub enum Field<'a> {
     Unnamed(&'a syn::Field, usize),
 }
 
+impl<'a> Field<'a> {
+    /// Returns the type of the field.
+    pub fn ty(&self) -> &'a syn::Type {
+        match *self {
+            Field::Named(field) => &field.ty,
+            Field::Unnamed(field, _) => &field.ty,
+        }
+    }
+
+    /// Returns the name of the field.
+    pub fn name(&self) -> quote::Tokens {
+        match *self {
+            Field::Named(field) => field
+                .ident
+                .as_ref()
+                .expect("Should never happen")
+                .into_tokens(),
+            Field::Unnamed(_, index) => syn::parse_str::<syn::LitInt>(&format!("{}", index))
+                .expect("Should never happen")
+                .into_tokens(),
+        }
+    }
+}
+
 
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
@@ -50,6 +75,66 @@ impl<'a> TypeProps<'a> {
 
     /// Generates implementations for the target type.
     pub fn gen_impls(&self) -> quote::Tokens {
-        unimplemented!()
+        self.impl_basic_helper_trait()
+    }
+
+    /// Generates impl for `OpaqueTypedef*` trait.
+    pub fn impl_basic_helper_trait(&self) -> quote::Tokens {
+        let ty_outer = self.ty_outer;
+        let ty_inner = self.field_inner.ty();
+        let name_inner = self.field_inner.name();
+        match self.inner_sizedness {
+            Sizedness::Sized => {
+                quote! {
+                    impl ::opaque_typedef::OpaqueTypedef for #ty_outer {
+                        type Inner = #ty_inner;
+                        type Error = ::opaque_typedef::Infallible;
+
+                        unsafe fn from_inner_unchecked(inner: Self::Inner) -> Self {
+                            Self { #name_inner: inner }
+                        }
+                        fn from_inner(inner: Self::Inner) -> Result<Self, Self::Error> {
+                            Ok(Self { #name_inner: inner })
+                        }
+                        fn into_inner(self) -> Self::Inner {
+                            self.#name_inner
+                        }
+                        fn as_inner(&self) -> &Self::Inner {
+                            &self.#name_inner
+                        }
+                        unsafe fn as_inner_mut(&mut self) -> &mut Self::Inner {
+                            &mut self.#name_inner
+                        }
+                    }
+                }
+            },
+            Sizedness::Unsized => {
+                quote! {
+                    impl ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer {
+                        type Inner = #ty_inner;
+                        type Error = ::opaque_typedef::Infallible;
+
+                        unsafe fn from_inner_unchecked(inner: &Self::Inner) -> &Self {
+                            ::std::mem::transmute(inner)
+                        }
+                        unsafe fn from_inner_unchecked_mut(inner: &mut Self::Inner) -> &mut Self {
+                            ::std::mem::transmute(inner)
+                        }
+                        fn from_inner(inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(inner) })
+                        }
+                        fn from_inner_mut(inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(inner) })
+                        }
+                        fn as_inner(&self) -> &Self::Inner {
+                            &self.#name_inner
+                        }
+                        unsafe fn as_inner_mut(&mut self) -> &mut Self::Inner {
+                            &mut self.#name_inner
+                        }
+                    }
+                }
+            },
+        }
     }
 }
