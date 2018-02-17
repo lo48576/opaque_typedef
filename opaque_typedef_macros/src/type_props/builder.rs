@@ -4,6 +4,7 @@ use syn;
 use syn::DeriveInput;
 
 use attrs::{has_word_meta, is_attr_for};
+use derives::Derive;
 use type_props::{Field, Sizedness, TypeProps};
 use utils::expect_singleton_iter;
 
@@ -92,6 +93,8 @@ pub struct TypePropsBuilder<'a> {
     field_inner: Option<Field<'a>>,
     /// Sizedness of the inner type.
     inner_sizedness: Option<Sizedness>,
+    /// Derive target traits.
+    derives: Option<Vec<Derive>>,
 }
 
 impl<'a> TypePropsBuilder<'a> {
@@ -106,6 +109,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.repr_attr_outer = get_repr_meta(&input.attrs);
         self.field_inner = Some(get_inner_field(&input.data));
         self.inner_sizedness = Some(sizedness);
+        self.derives = Some(Derive::from_attrs(&input.attrs));
     }
 
     /// Builds a `TypeProps`.
@@ -116,11 +120,13 @@ impl<'a> TypePropsBuilder<'a> {
         let field_inner = self.field_inner.expect(MSG_SHOULD_LOAD);
         let inner_sizedness = self.inner_sizedness.expect(MSG_SHOULD_LOAD);
         check_repr_outer(ty_outer, inner_sizedness, self.repr_attr_outer.as_ref());
+        let derives = self.derives.expect(MSG_SHOULD_LOAD);
 
         TypeProps {
             ty_outer,
             field_inner,
             inner_sizedness,
+            derives,
         }
     }
 }

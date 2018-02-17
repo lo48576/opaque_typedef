@@ -12,6 +12,8 @@ proc-macro = true
 
 [dependencies]
 quote = "^0.4.2"
+strum = "^0.8"
+strum_macros = "^0.8"
 syn = "^0.12.13"
 
 [badges]

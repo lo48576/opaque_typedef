@@ -33,3 +33,43 @@ pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
         syn::Meta::NameValue(..) => false,
     }
 }
+
+
+pub fn get_meta_content_by_path(meta: syn::Meta, path: &[&str]) -> Vec<syn::NestedMeta> {
+    let mut res = Vec::new();
+    append_meta_content_by_path(meta, path, &mut res);
+    res
+}
+
+
+fn append_meta_content_by_path<'a>(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn::NestedMeta>) {
+    if path.len() == 0 {
+        return;
+    }
+    assert!(path.len() > 0);
+    match meta {
+        syn::Meta::List(metalist) => {
+            if metalist.ident.as_ref() == path[0] {
+                append_meta_items_by_path(metalist.nested, &path[1..], vec);
+            }
+        },
+        syn::Meta::Word(..) | syn::Meta::NameValue(..) => return,
+    }
+}
+
+
+fn append_meta_items_by_path<'a, I>(nested_items: I, path: &[&str], vec: &mut Vec<syn::NestedMeta>)
+where
+    I: IntoIterator<Item = syn::NestedMeta>,
+{
+    if path.len() == 0 {
+        vec.extend(nested_items);
+        return;
+    }
+    assert!(path.len() > 0);
+    for nested_meta in nested_items.into_iter() {
+        if let syn::NestedMeta::Meta(meta) = nested_meta {
+            append_meta_content_by_path(meta, path, vec);
+        }
+    }
+}

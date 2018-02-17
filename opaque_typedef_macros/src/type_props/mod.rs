@@ -5,6 +5,8 @@ use quote::ToTokens;
 use syn;
 use syn::DeriveInput;
 
+use derives::Derive;
+
 use self::builder::TypePropsBuilder;
 
 mod builder;
@@ -63,6 +65,8 @@ pub struct TypeProps<'a> {
     pub field_inner: Field<'a>,
     /// Sizedness of the inner type.
     pub inner_sizedness: Sizedness,
+    /// Derive target traits.
+    pub derives: Vec<Derive>,
 }
 
 impl<'a> TypeProps<'a> {
@@ -76,6 +80,7 @@ impl<'a> TypeProps<'a> {
     /// Generates implementations for the target type.
     pub fn gen_impls(&self) -> quote::Tokens {
         self.impl_basic_helper_trait()
+        // TODO: Implement traits specified by `self.derives`.
     }
 
     /// Generates impl for `OpaqueTypedef*` trait.
