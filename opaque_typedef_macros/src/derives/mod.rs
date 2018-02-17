@@ -1,5 +1,6 @@
 //! Derive targets.
 
+use quote;
 use quote::ToTokens;
 use syn;
 
@@ -152,6 +153,11 @@ impl Derive {
             },
             _ => abort_on_unknown_derive_target(format_args!("{}(..)", parent)),
         }
+    }
+
+    /// Generates impls for the auto-derive target.
+    pub fn impl_auto_derive(&self) -> quote::Tokens {
+        unimplemented!()
     }
 }
 

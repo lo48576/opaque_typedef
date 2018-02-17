@@ -79,8 +79,15 @@ impl<'a> TypeProps<'a> {
 
     /// Generates implementations for the target type.
     pub fn gen_impls(&self) -> quote::Tokens {
-        self.impl_basic_helper_trait()
-        // TODO: Implement traits specified by `self.derives`.
+        let basic_impl = self.impl_basic_helper_trait();
+        let derive_impls = self.derives
+            .iter()
+            .map(|derive| derive.impl_auto_derive())
+            .collect::<Vec<_>>();
+        quote! {
+            #basic_impl
+            #(#derive_impls)*
+        }
     }
 
     /// Generates impl for `OpaqueTypedef*` trait.
