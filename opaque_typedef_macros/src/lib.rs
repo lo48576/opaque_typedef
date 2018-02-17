@@ -8,15 +8,9 @@ extern crate syn;
 use proc_macro::TokenStream;
 use syn::DeriveInput;
 
+use type_props::{Sizedness, TypeProps};
 
-/// Sizedness of a type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum Sizedness {
-    /// Sized.
-    Sized,
-    /// Unsized.
-    Unsized,
-}
+mod type_props;
 
 
 /// The entrypoint for a `#[derive(OpaqueTypedef)]`-ed type.
@@ -39,7 +33,6 @@ pub fn opaque_typedef_unsized(input: TokenStream) -> TokenStream {
 
 /// Generates additional impls for a `#[derive(OpaqueTypedef*)]`-ed type.
 fn gen_opaque_typedef_impls(input: DeriveInput, sizedness: Sizedness) -> quote::Tokens {
-    let _ = input;
-    let _ = sizedness;
-    unimplemented!()
+    let props = TypeProps::load(&input, sizedness);
+    props.gen_impls()
 }
