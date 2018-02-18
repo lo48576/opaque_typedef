@@ -3,12 +3,13 @@
 use syn;
 
 
-/// Checks whether the attribute has path with the given toplevel segment.
-pub fn is_attr_for(attr: &syn::Attribute, toplevel: &str) -> bool {
+/// Checks whether the attribute has the given path.
+pub fn is_attr_with_path(attr: &syn::Attribute, path: &[&str]) -> bool {
     attr.path
         .segments
-        .first()
-        .map(|seg| seg.value().ident.as_ref()) == Some(toplevel)
+        .iter()
+        .map(|seg| seg.ident.as_ref())
+        .eq(path.into_iter().map(|&s| s))
 }
 
 

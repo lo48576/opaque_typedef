@@ -3,7 +3,7 @@
 use syn;
 use syn::DeriveInput;
 
-use attrs::{has_word_meta, is_attr_for};
+use attrs::{has_word_meta, is_attr_with_path};
 use derives::Derive;
 use type_props::{Field, Sizedness, TypeProps};
 use utils::expect_singleton_iter;
@@ -13,7 +13,7 @@ use utils::expect_singleton_iter;
 fn get_repr_meta(attrs: &[syn::Attribute]) -> Option<syn::Meta> {
     let iter = attrs
         .into_iter()
-        .filter(|attr| is_attr_for(attr, "repr"))
+        .filter(|attr| is_attr_with_path(attr, &["repr"]))
         .filter_map(|attr| attr.interpret_meta());
     expect_singleton_iter(iter)
         .at_most_one()

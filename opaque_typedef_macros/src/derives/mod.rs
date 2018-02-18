@@ -4,7 +4,7 @@ use quote;
 use quote::ToTokens;
 use syn;
 
-use attrs::{get_meta_content_by_path, is_attr_for};
+use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::TypeProps;
 
 mod fmt;
@@ -180,7 +180,7 @@ impl Derive {
 fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
     attrs
         .into_iter()
-        .filter(|attr| is_attr_for(attr, "opaque_typedef"))
+        .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
         .filter_map(|attr| attr.interpret_meta())
         .flat_map(|meta| get_meta_content_by_path(meta, &["opaque_typedef", "derive"]))
         .filter_map(|nested_meta| match nested_meta {
