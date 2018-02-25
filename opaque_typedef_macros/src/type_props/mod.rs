@@ -167,15 +167,17 @@ impl<'a> TypeProps<'a> {
         }
     }
 
+    /// Returns helper trait path.
+    pub fn helper_trait(&self) -> quote::Tokens {
+        match self.inner_sizedness {
+            Sizedness::Sized => quote!(::opaque_typedef::OpaqueTypedef),
+            Sizedness::Unsized => quote!(::opaque_typedef::OpaqueTypedefUnsized),
+        }
+    }
+
     pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
         let ty_outer = self.ty_outer;
-        match self.inner_sizedness {
-            Sizedness::Sized => {
-                quote!(<#ty_outer as ::opaque_typedef::OpaqueTypedef>::as_inner(#expr))
-            },
-            Sizedness::Unsized => {
-                quote!(<#ty_outer as ::opaque_typedef::OpaqueTypedefUnsized>::as_inner(#expr))
-            },
-        }
+        let helper_trait = self.helper_trait();
+        quote!(<#ty_outer as #helper_trait>::as_inner(#expr))
     }
 }
