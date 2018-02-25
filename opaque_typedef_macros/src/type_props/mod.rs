@@ -180,4 +180,39 @@ impl<'a> TypeProps<'a> {
         let helper_trait = self.helper_trait();
         quote!(<#ty_outer as #helper_trait>::as_inner(#expr))
     }
+
+    pub fn tokens_outer_expr_as_inner_mut<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+        // FIXME: Ensure `#[opaque_typedef(allow_mut_ref)]` is specified.
+        let ty_outer = self.ty_outer;
+        let helper_trait = self.helper_trait();
+        quote! {
+            unsafe {
+                <#ty_outer as #helper_trait>::as_inner_mut(#expr)
+            }
+        }
+    }
+
+    pub fn tokens_fn_deref_and_ty_deref_target(&self) -> (quote::Tokens, quote::Tokens) {
+        match self.deref_spec {
+            Some(ref spec) => (
+                (&spec.fn_name_deref).into_tokens(),
+                (&spec.ty_deref_target).into_tokens(),
+            ),
+            None => (quote!(), (&self.field_inner.ty()).into_tokens()),
+        }
+    }
+
+    pub fn tokens_fn_deref_mut_and_ty_deref_target(&self) -> (quote::Tokens, quote::Tokens) {
+        match self.deref_spec {
+            Some(ref spec) => {
+                let ty_deref_target = (&spec.ty_deref_target).into_tokens();
+                let fn_name_deref_mut = match spec.fn_name_deref_mut {
+                    Some(ref name) => name.into_tokens(),
+                    None => quote!(),
+                };
+                (fn_name_deref_mut, ty_deref_target)
+            },
+            None => (quote!(), (&self.field_inner.ty()).into_tokens()),
+        }
+    }
 }

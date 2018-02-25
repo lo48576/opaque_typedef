@@ -73,6 +73,7 @@ mod my_str {
         let my_str = <&MyStr as Default>::default();
         ensure_eq_inner(ok_str, my_str);
     }
+    */
 
     #[test]
     fn deref() {
@@ -89,6 +90,7 @@ mod my_str {
         let _: &mut str = my_str;
     }
 
+    /*
     #[test]
     fn display() {
         let ok_str = "foobar";
@@ -335,6 +337,7 @@ mod my_string {
         let mut my_string = MyString::from_string(ok_string);
         let _: &mut String = AsMut::<String>::as_mut(&mut my_string);
     }
+    */
 
     #[test]
     fn deref() {
@@ -343,12 +346,14 @@ mod my_string {
         let _: &str = &my_string;
     }
 
+    /*
     #[test]
     fn display() {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string.clone());
         assert_eq!(format!("{}", ok_string), format!("{}", my_string));
     }
+    */
 
     #[test]
     fn deref_mut() {
@@ -357,6 +362,7 @@ mod my_string {
         let _: &mut str = &mut my_string;
     }
 
+    /*
     #[test]
     fn from_inner() {
         let ok_string = "foobar".to_owned();
