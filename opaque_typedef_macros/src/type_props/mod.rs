@@ -56,6 +56,21 @@ impl<'a> Field<'a> {
 }
 
 
+#[derive(Clone)]
+pub struct DerefSpec {
+    /// Deref target type.
+    pub ty_deref_target: syn::Type,
+    /// Converter function from inner type to target type.
+    ///
+    /// The function should have `&Inner -> &Target` type.
+    pub fn_name_deref: syn::Expr,
+    /// Converter function from inner type to target type.
+    ///
+    /// The function should have `&Inner -> &Target` type.
+    pub fn_name_deref_mut: Option<syn::Expr>,
+}
+
+
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
 pub struct TypeProps<'a> {
@@ -67,6 +82,8 @@ pub struct TypeProps<'a> {
     pub inner_sizedness: Sizedness,
     /// Derive target traits.
     pub derives: Vec<Derive>,
+    /// Deref spec.
+    pub deref_spec: Option<DerefSpec>,
 }
 
 impl<'a> TypeProps<'a> {

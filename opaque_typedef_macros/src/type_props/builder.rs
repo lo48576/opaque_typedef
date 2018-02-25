@@ -1,11 +1,12 @@
 //! Utilities to build `type_props::TypeProps`.
 
+use quote::ToTokens;
 use syn;
 use syn::DeriveInput;
 
-use attrs::{has_word_meta, is_attr_with_path};
+use attrs::{get_meta_content_by_path, has_word_meta, is_attr_with_path};
 use derives::Derive;
-use type_props::{Field, Sizedness, TypeProps};
+use type_props::{DerefSpec, Field, Sizedness, TypeProps};
 use utils::expect_singleton_iter;
 
 
@@ -82,6 +83,96 @@ fn check_repr_outer(
 }
 
 
+fn get_deref_spec(attrs: &[syn::Attribute]) -> Option<DerefSpec> {
+    let namevalues = attrs
+        .into_iter()
+        .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
+        .filter_map(|attr| attr.interpret_meta())
+        .flat_map(|meta| get_meta_content_by_path(meta, &["opaque_typedef", "deref"]))
+        .filter_map(|meta| match meta {
+            syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    fn get_attr_by_name<'a>(
+        namevalues: &'a [syn::MetaNameValue],
+        name: &str,
+    ) -> Option<&'a syn::LitStr> {
+        let iter = namevalues
+            .into_iter()
+            .filter(|nv| nv.ident.as_ref() == name)
+            .map(|nv| &nv.lit);
+        let lit = expect_singleton_iter(iter)
+            .at_most_one()
+            .unwrap_or_else(|| {
+                panic!(
+                    "`#[opaque_typedef(deref({} = ..))]` can be specified at \
+                     most once for each type",
+                    name
+                )
+            })?;
+        match *lit {
+            syn::Lit::Str(ref s) => Some(s),
+            ref lit => panic!(
+                "String value is expected for `#[opaque_typedef(deref({} = ..))]`, \
+                 but got `{}` (invalid type)",
+                name,
+                lit.into_tokens()
+            ),
+        }
+    }
+
+    let target = get_attr_by_name(&namevalues, "target");
+    let deref = get_attr_by_name(&namevalues, "deref");
+    let deref_mut = get_attr_by_name(&namevalues, "deref_mut");
+    match (target, deref) {
+        (Some(target), Some(deref)) => {
+            let ty_deref_target = target.parse::<syn::Type>().unwrap_or_else(|e| {
+                panic!(
+                    "`#[opaque_typedef(deref(target = ..))]` is specified \
+                     but failed to parse `{}` as type: {}",
+                    target.value(),
+                    e
+                )
+            });
+            let fn_name_deref = deref.parse::<syn::Expr>().unwrap_or_else(|e| {
+                panic!(
+                    "`#[opaque_typedef(deref(deref = ..))]` is specified but \
+                     failed to parse `{}` as expression: {}",
+                    deref.value(),
+                    e
+                )
+            });
+            let fn_name_deref_mut = deref_mut.map(|deref_mut| {
+                deref_mut.parse::<syn::Expr>().unwrap_or_else(|e| {
+                    panic!(
+                        "`#[opaque_typedef(deref(deref_mut = ..))]` is \
+                         specified but failed to parse `{}` as expression: {}",
+                        deref_mut.value(),
+                        e
+                    )
+                })
+            });
+            Some(DerefSpec {
+                ty_deref_target,
+                fn_name_deref,
+                fn_name_deref_mut,
+            })
+        },
+        (Some(_), None) => panic!(
+            "`#[opaque_typedef(deref(target = ..))]` is specified \
+             but `#[opaque_typedef(deref(deref = ..))]` is not found"
+        ),
+        (None, Some(_)) => panic!(
+            "`#[opaque_typedef(deref(deref = ..))]` is specified \
+             but `#[opaque_typedef(deref(target = ..))]` is not found"
+        ),
+        (None, None) => None,
+    }
+}
+
+
 /// A builder of `TypeProps`.
 #[derive(Default, Clone)]
 pub struct TypePropsBuilder<'a> {
@@ -95,6 +186,8 @@ pub struct TypePropsBuilder<'a> {
     inner_sizedness: Option<Sizedness>,
     /// Derive target traits.
     derives: Option<Vec<Derive>>,
+    /// Deref spec.
+    deref_spec: Option<DerefSpec>,
 }
 
 impl<'a> TypePropsBuilder<'a> {
@@ -110,6 +203,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.field_inner = Some(get_inner_field(&input.data));
         self.inner_sizedness = Some(sizedness);
         self.derives = Some(Derive::from_attrs(&input.attrs));
+        self.deref_spec = get_deref_spec(&input.attrs);
     }
 
     /// Builds a `TypeProps`.
@@ -127,6 +221,7 @@ impl<'a> TypePropsBuilder<'a> {
             field_inner,
             inner_sizedness,
             derives,
+            deref_spec: self.deref_spec,
         }
     }
 }
