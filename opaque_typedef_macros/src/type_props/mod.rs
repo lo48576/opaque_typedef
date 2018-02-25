@@ -119,11 +119,11 @@ impl<'a> TypeProps<'a> {
                         type Inner = #ty_inner;
                         type Error = ::opaque_typedef::Infallible;
 
-                        unsafe fn from_inner_unchecked(inner: Self::Inner) -> Self {
-                            Self { #name_inner: inner }
+                        unsafe fn from_inner_unchecked(__inner: Self::Inner) -> Self {
+                            Self { #name_inner: __inner }
                         }
-                        fn from_inner(inner: Self::Inner) -> Result<Self, Self::Error> {
-                            Ok(Self { #name_inner: inner })
+                        fn from_inner(__inner: Self::Inner) -> Result<Self, Self::Error> {
+                            Ok(Self { #name_inner: __inner })
                         }
                         fn into_inner(self) -> Self::Inner {
                             self.#name_inner
@@ -143,17 +143,17 @@ impl<'a> TypeProps<'a> {
                         type Inner = #ty_inner;
                         type Error = ::opaque_typedef::Infallible;
 
-                        unsafe fn from_inner_unchecked(inner: &Self::Inner) -> &Self {
-                            ::std::mem::transmute(inner)
+                        unsafe fn from_inner_unchecked(__inner: &Self::Inner) -> &Self {
+                            ::std::mem::transmute(__inner)
                         }
-                        unsafe fn from_inner_unchecked_mut(inner: &mut Self::Inner) -> &mut Self {
-                            ::std::mem::transmute(inner)
+                        unsafe fn from_inner_unchecked_mut(__inner: &mut Self::Inner) -> &mut Self {
+                            ::std::mem::transmute(__inner)
                         }
-                        fn from_inner(inner: &Self::Inner) -> Result<&Self, Self::Error> {
-                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(inner) })
+                        fn from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) })
                         }
-                        fn from_inner_mut(inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
-                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(inner) })
+                        fn from_inner_mut(__inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                            Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) })
                         }
                         fn as_inner(&self) -> &Self::Inner {
                             &self.#name_inner
