@@ -164,6 +164,15 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
 }
 
 
+fn get_mut_ref_allowed(attrs: &[syn::Attribute]) -> bool {
+    attrs
+        .into_iter()
+        .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
+        .filter_map(|attr| attr.interpret_meta())
+        .any(|meta| has_word_meta(&meta, &["opaque_typedef", "allow_mut_ref"]))
+}
+
+
 /// A builder of `TypeProps`.
 #[derive(Default, Clone)]
 pub struct TypePropsBuilder<'a> {
@@ -179,6 +188,8 @@ pub struct TypePropsBuilder<'a> {
     derives: Option<Vec<Derive>>,
     /// Deref spec.
     deref_spec: Option<DerefSpec>,
+    /// Whether the mutable reference to the inner field is allowed.
+    is_mut_ref_allowed: Option<bool>,
 }
 
 impl<'a> TypePropsBuilder<'a> {
@@ -195,6 +206,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.inner_sizedness = Some(sizedness);
         self.derives = Some(Derive::from_attrs(&input.attrs));
         self.deref_spec = Some(get_deref_spec(&input.attrs));
+        self.is_mut_ref_allowed = Some(get_mut_ref_allowed(&input.attrs));
     }
 
     /// Builds a `TypeProps`.
@@ -207,6 +219,7 @@ impl<'a> TypePropsBuilder<'a> {
         check_repr_outer(ty_outer, inner_sizedness, self.repr_attr_outer.as_ref());
         let derives = self.derives.expect(MSG_SHOULD_LOAD);
         let deref_spec = self.deref_spec.expect(MSG_SHOULD_LOAD);
+        let is_mut_ref_allowed = self.is_mut_ref_allowed.expect(MSG_SHOULD_LOAD);
 
         TypeProps {
             ty_outer,
@@ -214,6 +227,7 @@ impl<'a> TypePropsBuilder<'a> {
             inner_sizedness,
             derives,
             deref_spec,
+            is_mut_ref_allowed,
         }
     }
 }

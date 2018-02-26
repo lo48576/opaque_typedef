@@ -84,6 +84,8 @@ pub struct TypeProps<'a> {
     pub derives: Vec<Derive>,
     /// Deref spec.
     pub deref_spec: DerefSpec,
+    /// Whether the mutable reference to the inner field is allowed.
+    pub is_mut_ref_allowed: bool,
 }
 
 impl<'a> TypeProps<'a> {
@@ -182,7 +184,12 @@ impl<'a> TypeProps<'a> {
     }
 
     pub fn tokens_outer_expr_as_inner_mut<T: ToTokens>(&self, expr: T) -> quote::Tokens {
-        // FIXME: Ensure `#[opaque_typedef(allow_mut_ref)]` is specified.
+        // The caller is responsible to ensure `allow_mut_ref` is specified.
+        assert!(
+            self.is_mut_ref_allowed,
+            "opaque_typedef internal error: Caller should ensure `allow_mut_ref` is specified"
+        );
+
         let ty_outer = self.ty_outer;
         let helper_trait = self.helper_trait();
         quote! {
