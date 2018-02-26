@@ -68,14 +68,12 @@ mod my_str {
         let _: &MyStr = AsRef::<MyStr>::as_ref(my_str);
     }
 
-    /*
     #[test]
     fn default_ref() {
         let ok_str = <&str as Default>::default();
         let my_str = <&MyStr as Default>::default();
         ensure_eq_inner(ok_str, my_str);
     }
-    */
 
     #[test]
     fn deref() {

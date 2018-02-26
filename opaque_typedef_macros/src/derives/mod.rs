@@ -194,6 +194,25 @@ impl Derive {
                 }
             },
             (Derive::IntoInner, _) => convert::gen_impl_into_inner(props),
+            // `std::default::Default` trait.
+            (Derive::DefaultRef, Sizedness::Sized) => panic!(
+                "`#[opaque_typedef(derive({}))]` is not supported for sized types",
+                self.as_ref()
+            ),
+            (Derive::DefaultRef, Sizedness::Unsized) => {
+                let ty_outer = props.ty_outer.into_tokens();
+                let ty_inner = props.field_inner.ty().into_tokens();
+                let helper_trait = props.helper_trait();
+                quote! {
+                    impl<'a> ::std::default::Default for &'a #ty_outer {
+                        fn default() -> Self {
+                            let inner = <&'a #ty_inner as ::std::default::Default>::default();
+                            let outer_res = <#ty_outer as #helper_trait>::from_inner(inner);
+                            outer_res.unwrap()
+                        }
+                    }
+                }
+            },
             _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
         }
     }
