@@ -92,7 +92,6 @@ mod my_str {
         let _: &mut str = my_str;
     }
 
-    /*
     #[test]
     fn display() {
         let ok_str = "foobar";
@@ -100,6 +99,7 @@ mod my_str {
         assert_eq!(format!("{}", ok_str), format!("{}", my_str));
     }
 
+    /*
     #[test]
     fn from_inner() {
         let ok_str = "foobar";
@@ -346,14 +346,12 @@ mod my_string {
         let _: &str = &my_string;
     }
 
-    /*
     #[test]
     fn display() {
         let ok_string = "foobar".to_owned();
         let my_string = MyString::from_string(ok_string.clone());
         assert_eq!(format!("{}", ok_string), format!("{}", my_string));
     }
-    */
 
     #[test]
     fn deref_mut() {
