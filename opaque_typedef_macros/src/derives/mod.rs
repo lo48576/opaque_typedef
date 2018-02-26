@@ -5,9 +5,10 @@ use quote::ToTokens;
 use syn;
 
 use attrs::{get_meta_content_by_path, is_attr_with_path};
-use type_props::TypeProps;
+use type_props::{Sizedness, TypeProps};
 
 mod as_ref;
+mod convert;
 mod deref;
 mod fmt;
 
@@ -181,6 +182,18 @@ impl Derive {
             | (Derive::AsRefDeref, _)
             | (Derive::AsRefInner, _)
             | (Derive::AsRefSelf, _) => as_ref::gen_impl(*self, props),
+            // `std::convert::{From, Into}` traits.
+            (Derive::FromInner, _) => convert::gen_impl_from_inner(props),
+            (Derive::IntoArc, _) | (Derive::IntoBox, _) | (Derive::IntoRc, _) => {
+                match props.inner_sizedness {
+                    Sizedness::Sized => panic!(
+                        "`#[opaque_typedef(derive({}))]` is not supported for sized types",
+                        self.as_ref()
+                    ),
+                    Sizedness::Unsized => convert::gen_impl_into_smartptr(*self, props),
+                }
+            },
+            (Derive::IntoInner, _) => convert::gen_impl_into_inner(props),
             _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
         }
     }

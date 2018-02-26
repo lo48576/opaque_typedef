@@ -99,7 +99,6 @@ mod my_str {
         assert_eq!(format!("{}", ok_str), format!("{}", my_str));
     }
 
-    /*
     #[test]
     fn from_inner() {
         let ok_str = "foobar";
@@ -141,6 +140,7 @@ mod my_str {
         assert_eq!(ok_str, inner);
     }
 
+    /*
     #[test]
     fn partial_eq_inner() {
         let ok_str = "foobar";
@@ -360,7 +360,6 @@ mod my_string {
         let _: &mut str = &mut my_string;
     }
 
-    /*
     #[test]
     fn from_inner() {
         let ok_string = "foobar".to_owned();
@@ -375,6 +374,7 @@ mod my_string {
         assert_eq!(ok_string, inner);
     }
 
+    /*
     #[test]
     fn partial_eq_inner() {
         let ok_string = "foobar".to_owned();
