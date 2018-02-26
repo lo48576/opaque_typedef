@@ -83,7 +83,7 @@ fn check_repr_outer(
 }
 
 
-fn get_deref_spec(attrs: &[syn::Attribute]) -> Option<DerefSpec> {
+fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
     let namevalues = attrs
         .into_iter()
         .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
@@ -126,49 +126,40 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> Option<DerefSpec> {
     let target = get_attr_by_name(&namevalues, "target");
     let deref = get_attr_by_name(&namevalues, "deref");
     let deref_mut = get_attr_by_name(&namevalues, "deref_mut");
-    match (target, deref) {
-        (Some(target), Some(deref)) => {
-            let ty_deref_target = target.parse::<syn::Type>().unwrap_or_else(|e| {
-                panic!(
-                    "`#[opaque_typedef(deref(target = ..))]` is specified \
-                     but failed to parse `{}` as type: {}",
-                    target.value(),
-                    e
-                )
-            });
-            let fn_name_deref = deref.parse::<syn::Expr>().unwrap_or_else(|e| {
-                panic!(
-                    "`#[opaque_typedef(deref(deref = ..))]` is specified but \
-                     failed to parse `{}` as expression: {}",
-                    deref.value(),
-                    e
-                )
-            });
-            let fn_name_deref_mut = deref_mut.map(|deref_mut| {
-                deref_mut.parse::<syn::Expr>().unwrap_or_else(|e| {
-                    panic!(
-                        "`#[opaque_typedef(deref(deref_mut = ..))]` is \
-                         specified but failed to parse `{}` as expression: {}",
-                        deref_mut.value(),
-                        e
-                    )
-                })
-            });
-            Some(DerefSpec {
-                ty_deref_target,
-                fn_name_deref,
-                fn_name_deref_mut,
-            })
-        },
-        (Some(_), None) => panic!(
-            "`#[opaque_typedef(deref(target = ..))]` is specified \
-             but `#[opaque_typedef(deref(deref = ..))]` is not found"
-        ),
-        (None, Some(_)) => panic!(
-            "`#[opaque_typedef(deref(deref = ..))]` is specified \
-             but `#[opaque_typedef(deref(target = ..))]` is not found"
-        ),
-        (None, None) => None,
+    let ty_deref_target = target.map(|target| {
+        target.parse::<syn::Type>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(deref(target = ..))]` is specified \
+                 but failed to parse `{}` as type: {}",
+                target.value(),
+                e
+            )
+        })
+    });
+    let fn_name_deref = deref.map(|deref| {
+        deref.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(deref(deref = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                deref.value(),
+                e
+            )
+        })
+    });
+    let fn_name_deref_mut = deref_mut.map(|deref_mut| {
+        deref_mut.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(deref(deref_mut = ..))]` is \
+                 specified but failed to parse `{}` as expression: {}",
+                deref_mut.value(),
+                e
+            )
+        })
+    });
+    DerefSpec {
+        ty_deref_target,
+        fn_name_deref,
+        fn_name_deref_mut,
     }
 }
 
@@ -203,7 +194,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.field_inner = Some(get_inner_field(&input.data));
         self.inner_sizedness = Some(sizedness);
         self.derives = Some(Derive::from_attrs(&input.attrs));
-        self.deref_spec = get_deref_spec(&input.attrs);
+        self.deref_spec = Some(get_deref_spec(&input.attrs));
     }
 
     /// Builds a `TypeProps`.
@@ -215,13 +206,14 @@ impl<'a> TypePropsBuilder<'a> {
         let inner_sizedness = self.inner_sizedness.expect(MSG_SHOULD_LOAD);
         check_repr_outer(ty_outer, inner_sizedness, self.repr_attr_outer.as_ref());
         let derives = self.derives.expect(MSG_SHOULD_LOAD);
+        let deref_spec = self.deref_spec.expect(MSG_SHOULD_LOAD);
 
         TypeProps {
             ty_outer,
             field_inner,
             inner_sizedness,
             derives,
-            deref_spec: self.deref_spec,
+            deref_spec,
         }
     }
 }

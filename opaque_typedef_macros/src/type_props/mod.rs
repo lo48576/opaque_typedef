@@ -56,14 +56,14 @@ impl<'a> Field<'a> {
 }
 
 
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct DerefSpec {
     /// Deref target type.
-    pub ty_deref_target: syn::Type,
+    pub ty_deref_target: Option<syn::Type>,
     /// Converter function from inner type to target type.
     ///
     /// The function should have `&Inner -> &Target` type.
-    pub fn_name_deref: syn::Expr,
+    pub fn_name_deref: Option<syn::Expr>,
     /// Converter function from inner type to target type.
     ///
     /// The function should have `&Inner -> &Target` type.
@@ -83,7 +83,7 @@ pub struct TypeProps<'a> {
     /// Derive target traits.
     pub derives: Vec<Derive>,
     /// Deref spec.
-    pub deref_spec: Option<DerefSpec>,
+    pub deref_spec: DerefSpec,
 }
 
 impl<'a> TypeProps<'a> {
@@ -192,27 +192,24 @@ impl<'a> TypeProps<'a> {
         }
     }
 
-    pub fn tokens_fn_deref_and_ty_deref_target(&self) -> (quote::Tokens, quote::Tokens) {
-        match self.deref_spec {
-            Some(ref spec) => (
-                (&spec.fn_name_deref).into_tokens(),
-                (&spec.ty_deref_target).into_tokens(),
-            ),
-            None => (quote!(), (&self.field_inner.ty()).into_tokens()),
+    pub fn tokens_ty_deref_target(&self) -> quote::Tokens {
+        match self.deref_spec.ty_deref_target {
+            Some(ref ty) => ty.into_tokens(),
+            None => (&self.field_inner.ty()).into_tokens(),
         }
     }
 
-    pub fn tokens_fn_deref_mut_and_ty_deref_target(&self) -> (quote::Tokens, quote::Tokens) {
-        match self.deref_spec {
-            Some(ref spec) => {
-                let ty_deref_target = (&spec.ty_deref_target).into_tokens();
-                let fn_name_deref_mut = match spec.fn_name_deref_mut {
-                    Some(ref name) => name.into_tokens(),
-                    None => quote!(),
-                };
-                (fn_name_deref_mut, ty_deref_target)
-            },
-            None => (quote!(), (&self.field_inner.ty()).into_tokens()),
-        }
+    pub fn tokens_fn_deref(&self) -> quote::Tokens {
+        self.deref_spec
+            .fn_name_deref
+            .as_ref()
+            .map_or_else(|| quote!(), |name| name.into_tokens())
+    }
+
+    pub fn tokens_fn_deref_mut(&self) -> quote::Tokens {
+        self.deref_spec
+            .fn_name_deref_mut
+            .as_ref()
+            .map_or_else(|| quote!(), |name| name.into_tokens())
     }
 }

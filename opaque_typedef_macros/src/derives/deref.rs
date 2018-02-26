@@ -10,7 +10,7 @@ use super::Derive;
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
     let ty_outer = props.ty_outer;
-    let (_, ty_deref_target) = props.tokens_fn_deref_and_ty_deref_target();
+    let ty_deref_target = props.tokens_ty_deref_target();
 
     match target {
         Derive::Deref => {
@@ -44,7 +44,8 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
 
 pub fn gen_deref_expr(props: &TypeProps) -> quote::Tokens {
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
-    let (fn_name_deref, ty_deref_target) = props.tokens_fn_deref_and_ty_deref_target();
+    let ty_deref_target = props.tokens_ty_deref_target();
+    let fn_name_deref = props.tokens_fn_deref();
     quote! {
         (#fn_name_deref(#self_as_inner) as &#ty_deref_target)
     }
@@ -53,7 +54,8 @@ pub fn gen_deref_expr(props: &TypeProps) -> quote::Tokens {
 
 pub fn gen_deref_mut_expr(props: &TypeProps) -> quote::Tokens {
     let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
-    let (fn_name_deref_mut, ty_deref_target) = props.tokens_fn_deref_mut_and_ty_deref_target();
+    let ty_deref_target = props.tokens_ty_deref_target();
+    let fn_name_deref_mut = props.tokens_fn_deref_mut();
     quote! {
         (#fn_name_deref_mut(#self_as_inner_mut) as &mut #ty_deref_target)
     }
