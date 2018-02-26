@@ -7,6 +7,7 @@ use syn;
 use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::TypeProps;
 
+mod as_ref;
 mod deref;
 mod fmt;
 
@@ -173,6 +174,13 @@ impl Derive {
             | (Derive::UpperHex, _) => fmt::gen_impl(*self, props),
             // `std::ops::Deref*` traits.
             (Derive::Deref, _) | (Derive::DerefMut, _) => deref::gen_impl(*self, props),
+            // `std::conevert::As*` traits.
+            (Derive::AsMutDeref, _)
+            | (Derive::AsMutInner, _)
+            | (Derive::AsMutSelf, _)
+            | (Derive::AsRefDeref, _)
+            | (Derive::AsRefInner, _)
+            | (Derive::AsRefSelf, _) => as_ref::gen_impl(*self, props),
             _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
         }
     }

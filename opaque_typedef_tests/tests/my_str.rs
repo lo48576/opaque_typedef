@@ -36,6 +36,7 @@ mod my_str {
             my_str_upper
         ));
     }
+    */
 
     #[test]
     fn as_mut() {
@@ -67,6 +68,7 @@ mod my_str {
         let _: &MyStr = AsRef::<MyStr>::as_ref(my_str);
     }
 
+    /*
     #[test]
     fn default_ref() {
         let ok_str = <&str as Default>::default();
@@ -309,7 +311,6 @@ mod my_string {
         assert_eq!(ok_string, sys_into_inner(my_string));
     }
 
-    /*
     #[test]
     fn as_ref_deref() {
         let ok_string = "foobar".to_owned();
@@ -337,7 +338,6 @@ mod my_string {
         let mut my_string = MyString::from_string(ok_string);
         let _: &mut String = AsMut::<String>::as_mut(&mut my_string);
     }
-    */
 
     #[test]
     fn deref() {
