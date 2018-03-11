@@ -150,7 +150,6 @@ mod my_str {
         assert!(<&str as PartialEq<&MyStr>>::eq(&ok_str, &my_str));
     }
 
-    /*
     // `str` is the inner type of `MyStr`.
     // `OsStr` is the inner type of `Path`.
     // So the assertions like the below should be successful for `str` and `MyStr`.
@@ -169,7 +168,6 @@ mod my_str {
         assert!(<&OsStr as PartialEq<Path>>::eq(&ok_str, my_str));
         assert!(<&OsStr as PartialEq<&Path>>::eq(&ok_str, &my_str));
     }
-    */
 
     #[test]
     fn partial_eq_inner_cow() {

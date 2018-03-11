@@ -137,8 +137,8 @@ If you specify `Deref`, `DerefMut`, `AsRefDeref` or something related to `Deref`
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
                         Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
-#[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
-                       deref_mut = "MyString::as_mut_str"))]
+#[opaque_typedef(deref(target = "str", deref = "String::as_str",
+                       deref_mut = "String::as_mut_str"))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyString {
     inner: String,
