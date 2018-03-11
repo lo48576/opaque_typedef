@@ -10,9 +10,9 @@
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 // About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
 #[repr(C)]
-#[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
-                        Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
-                        IntoInner, PartialEq(Inner, InnerCow, SelfCow),
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref,
+                        DerefMut, Display, FromInner, Into(Arc, Box, Rc, Inner),
+                        PartialEq(Inner, InnerCow, SelfCow),
                         PartialOrd(Inner, InnerCow, SelfCow)))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
@@ -40,8 +40,8 @@ impl MyStr {
 
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
-                        Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
+#[opaque_typedef(derive(AsMut(Deref, Inner), AsRef(Deref, Inner), Deref, DerefMut, Display,
+                        FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
 #[opaque_typedef(deref(target = "str", deref = "String::as_str",
                        deref_mut = "String::as_mut_str"))]
 #[opaque_typedef(allow_mut_ref)]

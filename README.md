@@ -122,6 +122,13 @@ pub struct MyStr(str);
 
 Note that some traits can be shortened:
 
+  * `AsMutDeref` can be written as `AsMut(Deref)`
+      + There is an exception:
+        `AsMutSelf` can be written as `AsMut(Self_)`, but not as `AsMut(Self)`.
+        This is because rustc expected identifiers inside the parens but `Self` is a keyword...
+  * `AsRefDeref` can be written as `AsRef(Deref)`, same way as `AsMut*`
+      + Shortened notation of `AsRefSelf` is `AsRef(Self_)`, same as that of `AsMutSelf`.
+  * `IntoRc` can be written as `Into(Rc)`
   * `PartialEqInner` can be written as `PartialEq(Inner)`
   * `PartialOrdInner, PartialOrdSelfCow` can be written as `PartialOrd(Inner, SelfCow)`
 

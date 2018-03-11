@@ -140,6 +140,33 @@ impl Derive {
     /// Returns derive targets specified by `parent(child1, child2, ...)` style.
     fn append_from_nested_names(parent: &str, children: &[&str], derives: &mut Vec<Self>) {
         match parent {
+            "AsMut" => {
+                derives.extend(children.into_iter().map(|&child| match child {
+                    "Deref" => Derive::AsMutDeref,
+                    "Inner" => Derive::AsMutInner,
+                    // `Self` cannot be an identifier but parsed as identifier...
+                    "Self_" => Derive::AsMutSelf,
+                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
+                }));
+            },
+            "AsRef" => {
+                derives.extend(children.into_iter().map(|&child| match child {
+                    "Deref" => Derive::AsRefDeref,
+                    "Inner" => Derive::AsRefInner,
+                    // `Self` cannot be an identifier but parsed as identifier...
+                    "Self_" => Derive::AsRefSelf,
+                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
+                }));
+            },
+            "Into" => {
+                derives.extend(children.into_iter().map(|&child| match child {
+                    "Arc" => Derive::IntoArc,
+                    "Box" => Derive::IntoBox,
+                    "Inner" => Derive::IntoInner,
+                    "Rc" => Derive::IntoRc,
+                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
+                }));
+            },
             "PartialEq" => {
                 derives.extend(children.into_iter().map(|&child| match child {
                     "Inner" => Derive::PartialEqInner,
