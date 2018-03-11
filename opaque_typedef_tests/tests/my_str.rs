@@ -138,7 +138,6 @@ mod my_str {
         assert_eq!(ok_str, inner);
     }
 
-    /*
     #[test]
     fn partial_eq_inner() {
         let ok_str = "foobar";
@@ -153,7 +152,6 @@ mod my_str {
         assert!(<&str as PartialEq<&MyStr>>::eq(&ok_str, &my_str));
     }
 
-    /*
     // `str` is the inner type of `MyStr`.
     // `OsStr` is the inner type of `Path`.
     // So the assertions like the below should be successful for `str` and `MyStr`.
@@ -172,7 +170,6 @@ mod my_str {
         assert!(<&OsStr as PartialEq<Path>>::eq(&ok_str, my_str));
         assert!(<&OsStr as PartialEq<&Path>>::eq(&ok_str, &my_str));
     }
-    */
 
     #[test]
     fn partial_eq_inner_cow() {
@@ -287,7 +284,6 @@ mod my_str {
             <Cow<MyStr> as PartialOrd<&MyStr>>::partial_cmp(&my_cow, &my_str)
         );
     }
-    */
 }
 
 mod my_string {
@@ -372,7 +368,6 @@ mod my_string {
         assert_eq!(ok_string, inner);
     }
 
-    /*
     #[test]
     fn partial_eq_inner() {
         let ok_string = "foobar".to_owned();
@@ -404,5 +399,4 @@ mod my_string {
             &&my_string
         ));
     }
-    */
 }

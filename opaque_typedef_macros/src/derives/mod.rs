@@ -8,6 +8,7 @@ use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
 
 mod as_ref;
+mod cmp;
 mod convert;
 mod deref;
 mod fmt;
@@ -213,6 +214,26 @@ impl Derive {
                     }
                 }
             },
+            // `std::cmp::Partial{Eq,Ord}` traits.
+            (Derive::PartialEqInner, _)
+            | (Derive::PartialEqInnerCow, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCow, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized)
+            | (Derive::PartialOrdInner, _)
+            | (Derive::PartialOrdInnerCow, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCow, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized) => {
+                cmp::gen_impl_partial_cmp(*self, props)
+            },
+            (Derive::PartialEqInnerCow, Sizedness::Sized)
+            | (Derive::PartialEqSelfCow, Sizedness::Sized)
+            | (Derive::PartialEqSelfCowAndInner, Sizedness::Sized)
+            | (Derive::PartialOrdInnerCow, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCow, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Sized) => panic!(
+                "`#[opaque_typedef(derive({}))]` is not supported for sized types",
+                self.as_ref()
+            ),
             _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
         }
     }

@@ -22,7 +22,6 @@ mod basic {
     }
 }
 
-/*
 mod cmp {
     use super::*;
 
@@ -125,7 +124,6 @@ mod cmp {
         );
     }
 }
-*/
 
 mod fmt {
     use super::*;
