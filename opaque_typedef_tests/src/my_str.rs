@@ -23,12 +23,12 @@ pub struct MyStr {
 impl MyStr {
     /// Creates a new `&MyStr` from the given string slice.
     pub fn new(v: &str) -> &Self {
-        ::opaque_typedef::OpaqueTypedefUnsized::from_inner(v).unwrap()
+        ::opaque_typedef::OpaqueTypedefUnsized::from_inner(v)
     }
 
     /// Creates a new `&mut MyStr` from the given mutable string slice.
     pub fn new_mut(v: &mut str) -> &mut Self {
-        ::opaque_typedef::OpaqueTypedefUnsized::from_inner_mut(v).unwrap()
+        ::opaque_typedef::OpaqueTypedefUnsized::from_inner_mut(v)
     }
 
     /// Returns a reference to the inner string slice.
@@ -52,7 +52,7 @@ pub struct MyString {
 impl MyString {
     /// Creates a new `MyString` from the given string.
     pub fn from_string(v: String) -> Self {
-        ::opaque_typedef::OpaqueTypedef::from_inner(v).unwrap()
+        ::opaque_typedef::OpaqueTypedef::from_inner(v)
     }
 
     /// Returns a reference to the inner string slice.

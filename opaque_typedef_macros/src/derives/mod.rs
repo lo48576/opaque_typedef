@@ -235,8 +235,7 @@ impl Derive {
                     impl<'a> ::std::default::Default for &'a #ty_outer {
                         fn default() -> Self {
                             let inner = <&'a #ty_inner as ::std::default::Default>::default();
-                            let outer_res = <#ty_outer as #helper_trait>::from_inner(inner);
-                            outer_res.unwrap()
+                            <#ty_outer as #helper_trait>::from_inner(inner)
                         }
                     }
                 }

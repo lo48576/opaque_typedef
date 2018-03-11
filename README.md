@@ -167,6 +167,75 @@ In the example, `AsMutInner` implements `AsMut<String> for MyString`, and `AsMut
 
 If you don't specify `#[opaque_typedef(allow_mut_ref)]`, `deref_mut` would not be used and you can omit it.
 
+### 5. Specify custom validator (optional)
+
+You can specify custom validator.
+The value of inner type is validated on conversion into outer type.
+By custom validator, you can restrict the inner value.
+
+To use custom validator, specify these attributes:
+
+  * `validator`
+      + Validator function.
+        This should have types such as `Inner -> Result<Inner, Error>`.
+  * `error_type`
+      + Validation error type.
+        Validator specified by `validator` should use this type as error.
+  * `error_msg` (optional)
+      + Error message on panic when validation failed.
+        This value is used when panickable conversion failed, for example,
+        when invalid value is passed to `Outer::from_inner` (not `Outer::try_from_inner`).
+      + Internally, `unwrap()` will be used to panic when `error_msg` is absent,
+        and `expect(error_msg)` will be used when `error_msg` is specified.
+
+The example below is taken from [`opaque_typedef_tests/src/even32.rs`](opaque_typedef_tests/src/even32.rs)
+and [`opaque_typedef_tests/tests/even32.rs`](opaque_typedef_tests/tests/even32.rs).
+
+```rust
+/// Even `i32`.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEqInner, PartialOrdInner,
+                        LowerHex, Octal, UpperHex))]
+#[opaque_typedef(validation(validator = "validate_even32", error_type = "OddError",
+                            error_msg = "Failed to create `Even32`"))]
+pub struct Even32(i32);
+
+impl Even32 {
+    /// Returns the inner `i32` even value.
+    pub fn to_i32(&self) -> i32 {
+        self.0
+    }
+}
+
+/// A type of an error indicating the integer is an odd number, not even.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct OddError;
+
+fn validate_even32(v: i32) -> Result<i32, OddError> {
+    if v % 2 == 0 {
+        Ok(v)
+    } else {
+        Err(OddError)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn ok() {
+        let v = Even32::from(42);
+        assert_eq!(v.to_i32(), 42);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_odd() {
+        // Panics with message "Failed to create `Even32`: OddError".
+        let _ = Even32::from(3);
+    }
+}
+```
+
 ## Features
 
 ### Defining basic constructions and casts
@@ -225,7 +294,6 @@ Note that some (such as `DefaultRef`) are available only for sized types.
 ## TODO
 
   * Custom comparison functions
-  * Validation on conversion from inner type into outer type
   * More traits
       + Especially `std::ops::*` binary operators
       + Nightly-only traits (`TryFrom`, `TryInto`, ...)

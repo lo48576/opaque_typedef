@@ -11,14 +11,14 @@ mod basic {
 
     #[test]
     fn ok() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(v.to_i32(), 42);
     }
 
     #[test]
     #[should_panic]
     fn from_odd() {
-        let _ = Even32::from_i32(3);
+        let _ = Even32::from(3);
     }
 }
 
@@ -28,7 +28,7 @@ mod cmp {
     #[test]
     fn partial_eq_inner() {
         let i = 42i32;
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert!(<Even32 as PartialEq<i32>>::eq(&v, &i));
         assert!(<Even32 as PartialEq<&i32>>::eq(&v, &&i));
         assert!(<&Even32 as PartialEq<i32>>::eq(&&v, &i));
@@ -47,7 +47,7 @@ mod cmp {
     #[test]
     fn partial_ord_inner() {
         let i = 42i32;
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(
             Some(::std::cmp::Ordering::Equal),
             <Even32 as PartialOrd<i32>>::partial_cmp(&v, &i)
@@ -130,34 +130,34 @@ mod fmt {
 
     #[test]
     fn binary() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(format!("{:b}", v), "101010");
         assert_eq!(format!("{:#b}", v), "0b101010");
     }
 
     #[test]
     fn display() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(format!("{}", v), "42");
     }
 
     #[test]
     fn lower_hex() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(format!("{:x}", v), "2a");
         assert_eq!(format!("{:#x}", v), "0x2a");
     }
 
     #[test]
     fn octal() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(format!("{:o}", v), "52");
         assert_eq!(format!("{:#o}", v), "0o52");
     }
 
     #[test]
     fn upper_hex() {
-        let v = Even32::from_i32(42);
+        let v = Even32::from(42);
         assert_eq!(format!("{:X}", v), "2A");
         assert_eq!(format!("{:#X}", v), "0x2A");
     }

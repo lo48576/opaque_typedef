@@ -14,7 +14,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> quote::Tokens {
     let ty_outer = props.ty_outer.into_tokens();
     let ty_inner = props.field_inner.ty().into_tokens();
     let expr = quote! {
-        <#ty_outer as #helper_trait>::from_inner(__inner).unwrap()
+        <#ty_outer as #helper_trait>::from_inner(__inner)
     };
     match props.inner_sizedness {
         Sizedness::Sized => {

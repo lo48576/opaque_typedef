@@ -6,7 +6,7 @@ use syn::DeriveInput;
 
 use attrs::{get_meta_content_by_path, has_word_meta, is_attr_with_path};
 use derives::Derive;
-use type_props::{DerefSpec, Field, Sizedness, TypeProps};
+use type_props::{DerefSpec, Field, Sizedness, TypeProps, ValidationSpec};
 use utils::expect_singleton_iter;
 
 
@@ -173,6 +173,88 @@ fn get_mut_ref_allowed(attrs: &[syn::Attribute]) -> bool {
 }
 
 
+fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
+    let namevalues = attrs
+        .into_iter()
+        .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
+        .filter_map(|attr| attr.interpret_meta())
+        .flat_map(|meta| get_meta_content_by_path(meta, &["opaque_typedef", "validation"]))
+        .filter_map(|meta| match meta {
+            syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    fn get_attr_by_name<'a>(
+        namevalues: &'a [syn::MetaNameValue],
+        name: &str,
+    ) -> Option<&'a syn::LitStr> {
+        let iter = namevalues
+            .into_iter()
+            .filter(|nv| nv.ident.as_ref() == name)
+            .map(|nv| &nv.lit);
+        let lit = expect_singleton_iter(iter)
+            .at_most_one()
+            .unwrap_or_else(|| {
+                panic!(
+                    "`#[opaque_typedef(validation({} = ..))]` can be specified \
+                     at most once for each type",
+                    name
+                )
+            })?;
+        match *lit {
+            syn::Lit::Str(ref s) => Some(s),
+            ref lit => panic!(
+                "String value is expected for `#[opaque_typedef(validation({} = ..))]`, \
+                 but got `{}` (invalid type)",
+                name,
+                lit.into_tokens()
+            ),
+        }
+    }
+
+    let fn_validator = get_attr_by_name(&namevalues, "validator").map(|litstr| {
+        litstr.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(validation(validator = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+    let ty_error = get_attr_by_name(&namevalues, "error_type").map(|litstr| {
+        litstr.parse::<syn::Type>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(validation(error_type = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+    let error_msg = get_attr_by_name(&namevalues, "error_msg").map(|litstr| litstr.value());
+
+    match (fn_validator.is_some(), ty_error.is_some()) {
+        (true, false) => panic!(
+            "`#[opaque_typedef(validation(validator = ..))]` is specified but \
+             `#[opaque_typedef(validation(error_type = ..))]` is not found"
+        ),
+        (false, true) => panic!(
+            "`#[opaque_typedef(validation(error_type = ..))]` is specified but \
+             `#[opaque_typedef(validation(validator = ..))]` is not found"
+        ),
+        _ => {},
+    }
+
+    ValidationSpec {
+        fn_validator,
+        ty_error,
+        error_msg,
+    }
+}
+
+
 /// A builder of `TypeProps`.
 #[derive(Default, Clone)]
 pub struct TypePropsBuilder<'a> {
@@ -190,6 +272,8 @@ pub struct TypePropsBuilder<'a> {
     deref_spec: Option<DerefSpec>,
     /// Whether the mutable reference to the inner field is allowed.
     is_mut_ref_allowed: Option<bool>,
+    /// Validation spec.
+    validation_spec: Option<ValidationSpec>,
 }
 
 impl<'a> TypePropsBuilder<'a> {
@@ -207,6 +291,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.derives = Some(Derive::from_attrs(&input.attrs));
         self.deref_spec = Some(get_deref_spec(&input.attrs));
         self.is_mut_ref_allowed = Some(get_mut_ref_allowed(&input.attrs));
+        self.validation_spec = Some(get_validation_spec(&input.attrs));
     }
 
     /// Builds a `TypeProps`.
@@ -220,6 +305,7 @@ impl<'a> TypePropsBuilder<'a> {
         let derives = self.derives.expect(MSG_SHOULD_LOAD);
         let deref_spec = self.deref_spec.expect(MSG_SHOULD_LOAD);
         let is_mut_ref_allowed = self.is_mut_ref_allowed.expect(MSG_SHOULD_LOAD);
+        let validation_spec = self.validation_spec.expect(MSG_SHOULD_LOAD);
 
         TypeProps {
             ty_outer,
@@ -228,6 +314,7 @@ impl<'a> TypePropsBuilder<'a> {
             derives,
             deref_spec,
             is_mut_ref_allowed,
+            validation_spec,
         }
     }
 }

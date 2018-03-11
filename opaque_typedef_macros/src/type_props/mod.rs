@@ -71,6 +71,44 @@ pub struct DerefSpec {
 }
 
 
+#[derive(Default, Clone)]
+pub struct ValidationSpec {
+    /// Validator.
+    pub fn_validator: Option<syn::Expr>,
+    /// Validation error type.
+    pub ty_error: Option<syn::Type>,
+    /// Validation error message.
+    pub error_msg: Option<String>,
+}
+
+impl ValidationSpec {
+    pub fn tokens_try_validated<T: quote::ToTokens>(&self, inner: T) -> quote::Tokens {
+        match self.fn_validator {
+            Some(ref validator) => quote!(#validator(#inner)?),
+            None => inner.into_tokens(),
+        }
+    }
+
+    pub fn tokens_validated<T: quote::ToTokens>(&self, inner: T) -> quote::Tokens {
+        let validation_result = match self.fn_validator {
+            Some(ref validator) => quote!(#validator(#inner)),
+            None => return inner.into_tokens(),
+        };
+        match self.error_msg {
+            Some(ref msg) => quote!(#validation_result.expect(#msg)),
+            None => quote!(#validation_result.unwrap()),
+        }
+    }
+
+    pub fn tokens_ty_error(&self) -> quote::Tokens {
+        match self.ty_error {
+            Some(ref ty) => ty.into_tokens(),
+            None => quote!(::opaque_typedef::Infallible),
+        }
+    }
+}
+
+
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
 pub struct TypeProps<'a> {
@@ -86,6 +124,8 @@ pub struct TypeProps<'a> {
     pub deref_spec: DerefSpec,
     /// Whether the mutable reference to the inner field is allowed.
     pub is_mut_ref_allowed: bool,
+    /// Validation spec.
+    pub validation_spec: ValidationSpec,
 }
 
 impl<'a> TypeProps<'a> {
@@ -114,18 +154,24 @@ impl<'a> TypeProps<'a> {
         let ty_outer = self.ty_outer;
         let ty_inner = self.field_inner.ty();
         let name_inner = self.field_inner.name();
+        let ty_error = self.validation_spec.tokens_ty_error();
+        let inner_try_validated = self.validation_spec.tokens_try_validated(quote!(__inner));
+        let inner_validated = self.validation_spec.tokens_validated(quote!(__inner));
         match self.inner_sizedness {
             Sizedness::Sized => {
                 quote! {
                     impl ::opaque_typedef::OpaqueTypedef for #ty_outer {
                         type Inner = #ty_inner;
-                        type Error = ::opaque_typedef::Infallible;
+                        type Error = #ty_error;
 
                         unsafe fn from_inner_unchecked(__inner: Self::Inner) -> Self {
                             Self { #name_inner: __inner }
                         }
-                        fn from_inner(__inner: Self::Inner) -> Result<Self, Self::Error> {
-                            Ok(Self { #name_inner: __inner })
+                        fn try_from_inner(__inner: Self::Inner) -> Result<Self, Self::Error> {
+                            Ok(Self { #name_inner: #inner_try_validated })
+                        }
+                        fn from_inner(__inner: Self::Inner) -> Self {
+                            Self { #name_inner: #inner_validated }
                         }
                         fn into_inner(self) -> Self::Inner {
                             self.#name_inner
@@ -143,7 +189,7 @@ impl<'a> TypeProps<'a> {
                 quote! {
                     impl ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer {
                         type Inner = #ty_inner;
-                        type Error = ::opaque_typedef::Infallible;
+                        type Error = #ty_error;
 
                         unsafe fn from_inner_unchecked(__inner: &Self::Inner) -> &Self {
                             ::std::mem::transmute(__inner)
@@ -151,11 +197,21 @@ impl<'a> TypeProps<'a> {
                         unsafe fn from_inner_unchecked_mut(__inner: &mut Self::Inner) -> &mut Self {
                             ::std::mem::transmute(__inner)
                         }
-                        fn from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                        fn try_from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                            let _ = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) })
                         }
-                        fn from_inner_mut(__inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                        fn from_inner(__inner: &Self::Inner) -> &Self {
+                            let _ = #inner_validated;
+                            unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) }
+                        }
+                        fn try_from_inner_mut(__inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                            let _ = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) })
+                        }
+                        fn from_inner_mut(__inner: &mut Self::Inner) -> &mut Self {
+                            let _ = #inner_validated;
+                            unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) }
                         }
                         fn as_inner(&self) -> &Self::Inner {
                             &self.#name_inner
