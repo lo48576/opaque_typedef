@@ -24,7 +24,6 @@ mod my_str {
         ensure_eq_inner(ok_str, my_str);
     }
 
-    /*
     #[test]
     fn ascii_ext() {
         let ok_str = "foobar";
@@ -36,7 +35,6 @@ mod my_str {
             my_str_upper
         ));
     }
-    */
 
     #[test]
     fn as_mut() {

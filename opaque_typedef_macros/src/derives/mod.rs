@@ -234,7 +234,48 @@ impl Derive {
                 "`#[opaque_typedef(derive({}))]` is not supported for sized types",
                 self.as_ref()
             ),
-            _ => unimplemented!("auto-derive for `{}`", self.as_ref()),
+            // `std::ascii::AsciiExt` trait.
+            (Derive::AsciiExt, _) => {
+                let ty_outer = &props.ty_outer;
+                let ty_inner = props.field_inner.ty();
+                let ty_inner_as_asciiext = quote!(<#ty_inner as ::std::ascii::AsciiExt>);
+                let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
+                let other_as_inner = props.tokens_outer_expr_as_inner(quote!(other));
+                if !props.is_mut_ref_allowed {
+                    panic!(
+                        "`#[opaque_typedef(derive({}))]` requires \
+                         `#[opaque_typedef(allow_mut_ref)]`, but not specified",
+                        self.as_ref()
+                    );
+                }
+                let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
+                quote! {
+                    impl ::std::ascii::AsciiExt for #ty_outer {
+                        type Owned = #ty_inner_as_asciiext::Owned;
+                        fn is_ascii(&self) -> bool {
+                            #ty_inner_as_asciiext::is_ascii(#self_as_inner)
+                        }
+                        fn to_ascii_uppercase(&self) -> Self::Owned {
+                            #ty_inner_as_asciiext::to_ascii_uppercase(#self_as_inner)
+                        }
+                        fn to_ascii_lowercase(&self) -> Self::Owned {
+                            #ty_inner_as_asciiext::to_ascii_lowercase(#self_as_inner)
+                        }
+                        fn eq_ignore_ascii_case(&self, other: &Self) -> bool {
+                            #ty_inner_as_asciiext::eq_ignore_ascii_case(
+                                #self_as_inner,
+                                #other_as_inner
+                            )
+                        }
+                        fn make_ascii_uppercase(&mut self) {
+                            #ty_inner_as_asciiext::make_ascii_uppercase(#self_as_inner_mut)
+                        }
+                        fn make_ascii_lowercase(&mut self) {
+                            #ty_inner_as_asciiext::make_ascii_lowercase(#self_as_inner_mut)
+                        }
+                    }
+                }
+            },
         }
     }
 }
