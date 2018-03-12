@@ -223,11 +223,11 @@ where
             ref trait_spec,
             ref ty_inner,
             ref ty_lhs,
-            ref lhs_self_as_inner,
-            ref lhs_other_as_inner,
+            lhs_self_as_inner,
+            lhs_other_as_inner,
             ref ty_rhs,
-            ref rhs_self_as_inner,
-            ref rhs_other_as_inner,
+            rhs_self_as_inner,
+            rhs_other_as_inner,
         } = *self;
         let target_trait = trait_spec.target_trait();
         let method_name = trait_spec.method_name();
