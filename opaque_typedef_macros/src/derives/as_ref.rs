@@ -12,10 +12,13 @@ use super::deref::{gen_deref_expr, gen_deref_mut_expr};
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
     let ty_outer = props.ty_outer;
+    let impl_generics = &props.impl_generics;
+    let type_generics = &props.type_generics;
+    let where_clause = &props.where_clause;
     let ty_conv_target = match target {
         Derive::AsMutDeref | Derive::AsRefDeref => props.tokens_ty_deref_target(),
         Derive::AsMutInner | Derive::AsRefInner => props.field_inner.ty().into_tokens(),
-        Derive::AsMutSelf | Derive::AsRefSelf => ty_outer.into_tokens(),
+        Derive::AsMutSelf | Derive::AsRefSelf => quote!(#ty_outer #type_generics),
         _ => unreachable!("Should never happen"),
     };
     let expr = match target {
@@ -31,7 +34,10 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
     match target {
         Derive::AsMutDeref | Derive::AsMutInner | Derive::AsMutSelf => {
             quote! {
-                impl ::std::convert::AsMut<#ty_conv_target> for #ty_outer {
+                impl #impl_generics
+                    ::std::convert::AsMut<#ty_conv_target> for #ty_outer #type_generics
+                #where_clause
+                {
                     fn as_mut(&mut self) -> &mut #ty_conv_target {
                         #expr
                     }
@@ -40,7 +46,10 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
         },
         Derive::AsRefDeref | Derive::AsRefInner | Derive::AsRefSelf => {
             quote! {
-                impl ::std::convert::AsRef<#ty_conv_target> for #ty_outer {
+                impl #impl_generics
+                    ::std::convert::AsRef<#ty_conv_target> for #ty_outer #type_generics
+                #where_clause
+                {
                     fn as_ref(&self) -> &#ty_conv_target {
                         #expr
                     }

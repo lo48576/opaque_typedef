@@ -6,6 +6,7 @@ use syn;
 
 use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
+use utils::extend_generics;
 
 mod as_ref;
 mod cmp;
@@ -229,13 +230,20 @@ impl Derive {
             ),
             (Derive::DefaultRef, Sizedness::Unsized) => {
                 let ty_outer = props.ty_outer.into_tokens();
+                let type_generics = &props.type_generics;
+                let (generics, new_lifetimes) = extend_generics(props.generics, 1);
+                let (impl_generics, _, where_clause) = generics.split_for_impl();
+                let new_lt = new_lifetimes[0];
                 let ty_inner = props.field_inner.ty().into_tokens();
                 let helper_trait = props.helper_trait();
                 quote! {
-                    impl<'a> ::std::default::Default for &'a #ty_outer {
+                    impl #impl_generics
+                        ::std::default::Default for &#new_lt #ty_outer #type_generics
+                    #where_clause
+                    {
                         fn default() -> Self {
-                            let inner = <&'a #ty_inner as ::std::default::Default>::default();
-                            <#ty_outer as #helper_trait>::from_inner(inner)
+                            let inner = <&#new_lt #ty_inner as ::std::default::Default>::default();
+                            <#ty_outer #type_generics as #helper_trait>::from_inner(inner)
                         }
                     }
                 }
@@ -263,6 +271,9 @@ impl Derive {
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;
+                let impl_generics = &props.impl_generics;
+                let type_generics = &props.type_generics;
+                let where_clause = &props.where_clause;
                 let ty_inner = props.field_inner.ty();
                 let ty_inner_as_asciiext = quote!(<#ty_inner as ::std::ascii::AsciiExt>);
                 let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
@@ -276,7 +287,9 @@ impl Derive {
                 }
                 let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
                 quote! {
-                    impl ::std::ascii::AsciiExt for #ty_outer {
+                    impl #impl_generics ::std::ascii::AsciiExt for #ty_outer #type_generics
+                    #where_clause
+                    {
                         type Owned = #ty_inner_as_asciiext::Owned;
                         fn is_ascii(&self) -> bool {
                             #ty_inner_as_asciiext::is_ascii(#self_as_inner)

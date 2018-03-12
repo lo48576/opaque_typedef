@@ -1,5 +1,9 @@
 //! Utilities.
 
+use std::borrow::Cow;
+
+use syn;
+
 
 /// Result of `expect_singleton_iter()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -41,4 +45,26 @@ where
         Some(second) => SingletonIterResult::Multiple(first, second),
         None => SingletonIterResult::Single(first),
     }
+}
+
+
+pub fn extend_generics(
+    generics: &syn::Generics,
+    num_new_lifetimes: usize,
+) -> (Cow<syn::Generics>, Vec<syn::Lifetime>) {
+    if num_new_lifetimes == 0 {
+        return (Cow::Borrowed(generics), Vec::new());
+    }
+    let mut generics = generics.clone();
+    let mut new_lifetimes = Vec::with_capacity(num_new_lifetimes);
+    for i in (0..num_new_lifetimes).rev() {
+        let lt_str = format!("'__a{}", i);
+        let lt =
+            syn::parse_str::<syn::Lifetime>(&lt_str).expect("Failed to create lifetime tokens");
+        new_lifetimes.push(lt.clone());
+        generics
+            .params
+            .insert(0, syn::GenericParam::Lifetime(syn::LifetimeDef::new(lt)));
+    }
+    (Cow::Owned(generics), new_lifetimes)
 }

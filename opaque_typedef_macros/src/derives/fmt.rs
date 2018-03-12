@@ -21,10 +21,13 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
         _ => unreachable!("Should never happen"),
     };
     let ty_outer = props.ty_outer;
+    let impl_generics = &props.impl_generics;
+    let type_generics = &props.type_generics;
+    let where_clause = &props.where_clause;
     let ty_inner = props.field_inner.ty();
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
     quote! {
-        impl ::std::fmt::#trait_name for #ty_outer {
+        impl #impl_generics ::std::fmt::#trait_name for #ty_outer #type_generics #where_clause {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 <#ty_inner as ::std::fmt::#trait_name>::fmt(#self_as_inner, f)
             }

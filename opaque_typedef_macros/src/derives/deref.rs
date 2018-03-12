@@ -10,13 +10,16 @@ use super::Derive;
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
     let ty_outer = props.ty_outer;
+    let impl_generics = &props.impl_generics;
+    let type_generics = &props.type_generics;
+    let where_clause = &props.where_clause;
     let ty_deref_target = props.tokens_ty_deref_target();
 
     match target {
         Derive::Deref => {
             let expr = gen_deref_expr(props);
             quote! {
-                impl ::std::ops::Deref for #ty_outer {
+                impl #impl_generics ::std::ops::Deref for #ty_outer #type_generics #where_clause {
                     type Target = #ty_deref_target;
                     fn deref(&self) -> &Self::Target {
                         #expr
@@ -34,7 +37,9 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
             }
             let expr = gen_deref_mut_expr(props);
             quote! {
-                impl ::std::ops::DerefMut for #ty_outer {
+                impl #impl_generics ::std::ops::DerefMut for #ty_outer #type_generics
+                #where_clause
+                {
                     fn deref_mut(&mut self) -> &mut Self::Target {
                         #expr
                     }

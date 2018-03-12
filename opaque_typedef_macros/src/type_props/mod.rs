@@ -116,6 +116,14 @@ pub struct TypeProps<'a> {
     pub ty_outer: &'a syn::Ident,
     /// Inner field.
     pub field_inner: Field<'a>,
+    /// Generics.
+    pub generics: &'a syn::Generics,
+    /// Impl generics (cache).
+    pub impl_generics: syn::ImplGenerics<'a>,
+    /// Type generics (cache).
+    pub type_generics: syn::TypeGenerics<'a>,
+    /// Where clause (cache).
+    pub where_clause: Option<&'a syn::WhereClause>,
     /// Sizedness of the inner type.
     pub inner_sizedness: Sizedness,
     /// Derive target traits.
@@ -154,13 +162,18 @@ impl<'a> TypeProps<'a> {
         let ty_outer = self.ty_outer;
         let ty_inner = self.field_inner.ty();
         let name_inner = self.field_inner.name();
+        let impl_generics = &self.impl_generics;
+        let type_generics = &self.type_generics;
+        let where_clause = &self.where_clause;
         let ty_error = self.validation_spec.tokens_ty_error();
         let inner_try_validated = self.validation_spec.tokens_try_validated(quote!(__inner));
         let inner_validated = self.validation_spec.tokens_validated(quote!(__inner));
         match self.inner_sizedness {
             Sizedness::Sized => {
                 quote! {
-                    impl ::opaque_typedef::OpaqueTypedef for #ty_outer {
+                    impl #impl_generics ::opaque_typedef::OpaqueTypedef for #ty_outer #type_generics
+                    #where_clause
+                    {
                         type Inner = #ty_inner;
                         type Error = #ty_error;
 
@@ -187,7 +200,10 @@ impl<'a> TypeProps<'a> {
             },
             Sizedness::Unsized => {
                 quote! {
-                    impl ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer {
+                    impl #impl_generics
+                        ::opaque_typedef::OpaqueTypedefUnsized for #ty_outer #type_generics
+                    #where_clause
+                    {
                         type Inner = #ty_inner;
                         type Error = #ty_error;
 
@@ -198,19 +214,19 @@ impl<'a> TypeProps<'a> {
                             ::std::mem::transmute(__inner)
                         }
                         fn try_from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
-                            let _ = #inner_try_validated;
+                            let __inner = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) })
                         }
                         fn from_inner(__inner: &Self::Inner) -> &Self {
-                            let _ = #inner_validated;
+                            let __inner = #inner_validated;
                             unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) }
                         }
                         fn try_from_inner_mut(__inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
-                            let _ = #inner_try_validated;
+                            let __inner = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) })
                         }
                         fn from_inner_mut(__inner: &mut Self::Inner) -> &mut Self {
-                            let _ = #inner_validated;
+                            let __inner = #inner_validated;
                             unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) }
                         }
                         fn as_inner(&self) -> &Self::Inner {
@@ -235,8 +251,9 @@ impl<'a> TypeProps<'a> {
 
     pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
         let ty_outer = self.ty_outer;
+        let type_generics = &self.type_generics;
         let helper_trait = self.helper_trait();
-        quote!(<#ty_outer as #helper_trait>::as_inner(#expr))
+        quote!(<#ty_outer #type_generics as #helper_trait>::as_inner(#expr))
     }
 
     pub fn tokens_outer_expr_as_inner_mut<T: ToTokens>(&self, expr: T) -> quote::Tokens {
@@ -247,10 +264,11 @@ impl<'a> TypeProps<'a> {
         );
 
         let ty_outer = self.ty_outer;
+        let type_generics = &self.type_generics;
         let helper_trait = self.helper_trait();
         quote! {
             unsafe {
-                <#ty_outer as #helper_trait>::as_inner_mut(#expr)
+                <#ty_outer #type_generics as #helper_trait>::as_inner_mut(#expr)
             }
         }
     }
