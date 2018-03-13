@@ -36,7 +36,7 @@ mod slice {
     // `Into<SmartPtr<[T]>> for SliceAtLeast2Items<T>` is implemented.
     // In other words, you should use `my_slice.into()` instead of
     // `SmartPtr::from(my_slice)`.
-    mod into_smartptr {
+    mod convert {
         use super::*;
 
         #[test]
@@ -72,6 +72,12 @@ mod slice {
             let my_slice_rc: ::std::rc::Rc<SliceAtLeast2Items<i32>> = my_slice.into();
             let inner = <&SliceAtLeast2Items<i32> as Into<&[i32]>>::into(&*my_slice_rc);
             assert_eq!(ok_slice, inner);
+        }
+
+        #[test]
+        fn from_inner() {
+            let ok_slice: &[_] = &[0i32, 1];
+            let _: &SliceAtLeast2Items<i32> = <&SliceAtLeast2Items<i32>>::from(ok_slice);
         }
     }
 
@@ -145,5 +151,38 @@ mod slice {
         let s1 = &[b'A', b'B'];
         let v1 = SliceAtLeast2Items::new(s1);
         assert!(v0.eq_ignore_ascii_case(v1));
+    }
+
+    mod as_ref {
+        use super::*;
+
+        #[test]
+        fn as_mut() {
+            let s = &mut [0i32, 1];
+            let my_slice = SliceAtLeast2Items::new_mut(s);
+            let _: &mut [i32] = AsMut::<[i32]>::as_mut(my_slice);
+        }
+
+        #[test]
+        fn as_mut_self() {
+            let s = &mut [0i32, 1];
+            let my_slice = SliceAtLeast2Items::new_mut(s);
+            let _: &mut SliceAtLeast2Items<i32> =
+                AsMut::<SliceAtLeast2Items<i32>>::as_mut(my_slice);
+        }
+
+        #[test]
+        fn as_ref() {
+            let s = &[0i32, 1];
+            let my_slice = SliceAtLeast2Items::new(s);
+            let _: &[i32] = AsRef::<[i32]>::as_ref(my_slice);
+        }
+
+        #[test]
+        fn as_ref_self() {
+            let s = &[0i32, 1];
+            let my_slice = SliceAtLeast2Items::new(s);
+            let _: &SliceAtLeast2Items<i32> = AsRef::<SliceAtLeast2Items<i32>>::as_ref(my_slice);
+        }
     }
 }
