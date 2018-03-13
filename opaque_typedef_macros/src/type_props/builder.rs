@@ -264,6 +264,8 @@ pub struct TypePropsBuilder<'a> {
     repr_attr_outer: Option<syn::Meta>,
     /// Inner field.
     field_inner: Option<Field<'a>>,
+    /// Generics.
+    generics: Option<&'a syn::Generics>,
     /// Sizedness of the inner type.
     inner_sizedness: Option<Sizedness>,
     /// Derive target traits.
@@ -287,6 +289,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.ty_outer = Some(&input.ident);
         self.repr_attr_outer = get_repr_meta(&input.attrs);
         self.field_inner = Some(get_inner_field(&input.data));
+        self.generics = Some(&input.generics);
         self.inner_sizedness = Some(sizedness);
         self.derives = Some(Derive::from_attrs(&input.attrs));
         self.deref_spec = Some(get_deref_spec(&input.attrs));
@@ -300,6 +303,8 @@ impl<'a> TypePropsBuilder<'a> {
             "Should never happen: `TypePropsBuilder::load()` should be called at least once";
         let ty_outer = self.ty_outer.expect(MSG_SHOULD_LOAD);
         let field_inner = self.field_inner.expect(MSG_SHOULD_LOAD);
+        let generics = self.generics.expect(MSG_SHOULD_LOAD);
+        let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
         let inner_sizedness = self.inner_sizedness.expect(MSG_SHOULD_LOAD);
         check_repr_outer(ty_outer, inner_sizedness, self.repr_attr_outer.as_ref());
         let derives = self.derives.expect(MSG_SHOULD_LOAD);
@@ -310,6 +315,10 @@ impl<'a> TypePropsBuilder<'a> {
         TypeProps {
             ty_outer,
             field_inner,
+            generics,
+            impl_generics,
+            type_generics,
+            where_clause,
             inner_sizedness,
             derives,
             deref_spec,

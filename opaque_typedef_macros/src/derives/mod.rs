@@ -1,11 +1,14 @@
 //! Derive targets.
 
+use std::borrow::Cow;
+
 use quote;
 use quote::ToTokens;
 use syn;
 
 use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
+use utils::extend_generics;
 
 mod as_ref;
 mod cmp;
@@ -59,20 +62,36 @@ pub enum Derive {
     Octal,
     /// `PartialEq<Inner> for Outer` and similar ones.
     PartialEqInner,
+    /// `PartialEq<Outer> for Inner` and similar ones.
+    PartialEqInnerRev,
     /// `PartialEq<Cow<Inner>> for Outer` and similar ones.
     PartialEqInnerCow,
+    /// `PartialEq<Outer> for Cow<Inner>` and similar ones.
+    PartialEqInnerCowRev,
     /// `PartialEq<Cow<Outer>> for Outer` and similar ones.
     PartialEqSelfCow,
+    /// `PartialEq<Outer> for Cow<Outer>` and similar ones.
+    PartialEqSelfCowRev,
     /// `PartialEq<Cow<Outer>> for Inner` and similar ones.
     PartialEqSelfCowAndInner,
+    /// `PartialEq<Inner> for Cow<Outer>` and similar ones.
+    PartialEqSelfCowAndInnerRev,
     /// `PartialOrd<Inner> for Outer` and similar ones.
     PartialOrdInner,
+    /// `PartialOrd<Outer> for Inner` and similar ones.
+    PartialOrdInnerRev,
     /// `PartialOrd<Cow<Inner>> for Outer` and similar ones.
     PartialOrdInnerCow,
+    /// `PartialOrd<Outer> for Cow<Inner>` and similar ones.
+    PartialOrdInnerCowRev,
     /// `PartialOrd<Cow<Outer>> for Outer` and similar ones.
     PartialOrdSelfCow,
+    /// `PartialOrd<Outer> for Cow<Outer>` and similar ones.
+    PartialOrdSelfCowRev,
     /// `PartialOrd<Cow<Outer>> for Inner` and similar ones.
     PartialOrdSelfCowAndInner,
+    /// `PartialOrd<Inner> for Cow<Outer>` and similar ones.
+    PartialOrdSelfCowAndInnerRev,
     /// `std::fmt::Pointer for Outer`.
     Pointer,
     /// `std::fmt::UpperExp for Outer`.
@@ -170,18 +189,26 @@ impl Derive {
             "PartialEq" => {
                 derives.extend(children.into_iter().map(|&child| match child {
                     "Inner" => Derive::PartialEqInner,
+                    "InnerRev" => Derive::PartialEqInnerRev,
                     "InnerCow" => Derive::PartialEqInnerCow,
+                    "InnerCowRev" => Derive::PartialEqInnerCowRev,
                     "SelfCow" => Derive::PartialEqSelfCow,
+                    "SelfCowRev" => Derive::PartialEqSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
+                    "SelfCowAndInnerRev" => Derive::PartialEqSelfCowAndInnerRev,
                     _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
                 }));
             },
             "PartialOrd" => {
                 derives.extend(children.into_iter().map(|&child| match child {
                     "Inner" => Derive::PartialOrdInner,
+                    "InnerRev" => Derive::PartialOrdInnerRev,
                     "InnerCow" => Derive::PartialOrdInnerCow,
+                    "InnerCowRev" => Derive::PartialOrdInnerCowRev,
                     "SelfCow" => Derive::PartialOrdSelfCow,
+                    "SelfCowRev" => Derive::PartialOrdSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
+                    "SelfCowAndInnerRev" => Derive::PartialOrdSelfCowAndInnerRev,
                     _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
                 }));
             },
@@ -229,40 +256,74 @@ impl Derive {
             ),
             (Derive::DefaultRef, Sizedness::Unsized) => {
                 let ty_outer = props.ty_outer.into_tokens();
+                let type_generics = &props.type_generics;
+                let (generics, new_lifetimes) =
+                    extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+                let new_lt = new_lifetimes[0];
                 let ty_inner = props.field_inner.ty().into_tokens();
+                let extra_preds = if props.has_type_params() {
+                    let pred = syn::parse_str::<syn::WherePredicate>(&format!(
+                        "&{} {}: ::std::default::Default",
+                        (&new_lt).into_tokens(),
+                        ty_inner,
+                    )).expect("Failed to generate `WherePredicate`");
+                    vec![pred]
+                } else {
+                    Vec::new()
+                };
+                let (generics, _) = extend_generics(generics, 0, &extra_preds);
+                let (impl_generics, _, where_clause) = generics.split_for_impl();
                 let helper_trait = props.helper_trait();
                 quote! {
-                    impl<'a> ::std::default::Default for &'a #ty_outer {
+                    impl #impl_generics
+                        ::std::default::Default for &#new_lt #ty_outer #type_generics
+                    #where_clause
+                    {
                         fn default() -> Self {
-                            let inner = <&'a #ty_inner as ::std::default::Default>::default();
-                            <#ty_outer as #helper_trait>::from_inner(inner)
+                            let inner = <&#new_lt #ty_inner as ::std::default::Default>::default();
+                            <#ty_outer #type_generics as #helper_trait>::from_inner(inner)
                         }
                     }
                 }
             },
             // `std::cmp::Partial{Eq,Ord}` traits.
             (Derive::PartialEqInner, _)
+            | (Derive::PartialEqInnerRev, _)
             | (Derive::PartialEqInnerCow, Sizedness::Unsized)
+            | (Derive::PartialEqInnerCowRev, Sizedness::Unsized)
             | (Derive::PartialEqSelfCow, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCowRev, Sizedness::Unsized)
             | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCowAndInnerRev, Sizedness::Unsized)
             | (Derive::PartialOrdInner, _)
+            | (Derive::PartialOrdInnerRev, _)
             | (Derive::PartialOrdInnerCow, Sizedness::Unsized)
+            | (Derive::PartialOrdInnerCowRev, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCow, Sizedness::Unsized)
-            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized) => {
+            | (Derive::PartialOrdSelfCowRev, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Unsized) => {
                 cmp::gen_impl_partial_cmp(*self, props)
             },
             (Derive::PartialEqInnerCow, Sizedness::Sized)
+            | (Derive::PartialEqInnerCowRev, Sizedness::Sized)
             | (Derive::PartialEqSelfCow, Sizedness::Sized)
+            | (Derive::PartialEqSelfCowRev, Sizedness::Sized)
             | (Derive::PartialEqSelfCowAndInner, Sizedness::Sized)
+            | (Derive::PartialEqSelfCowAndInnerRev, Sizedness::Sized)
             | (Derive::PartialOrdInnerCow, Sizedness::Sized)
+            | (Derive::PartialOrdInnerCowRev, Sizedness::Sized)
             | (Derive::PartialOrdSelfCow, Sizedness::Sized)
-            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Sized) => panic!(
+            | (Derive::PartialOrdSelfCowRev, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Sized) => panic!(
                 "`#[opaque_typedef(derive({}))]` is not supported for sized types",
                 self.as_ref()
             ),
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;
+                let type_generics = &props.type_generics;
                 let ty_inner = props.field_inner.ty();
                 let ty_inner_as_asciiext = quote!(<#ty_inner as ::std::ascii::AsciiExt>);
                 let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
@@ -275,8 +336,22 @@ impl Derive {
                     );
                 }
                 let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
+                let extra_preds = if props.has_type_params() {
+                    let ty_inner = ty_inner.into_tokens();
+                    let pred = syn::parse_str::<syn::WherePredicate>(&format!(
+                        "{}: ::std::ascii::AsciiExt",
+                        ty_inner
+                    )).expect("Failed to generate `WherePredicate`");
+                    vec![pred]
+                } else {
+                    Vec::new()
+                };
+                let (generics, _) = extend_generics(Cow::Borrowed(props.generics), 0, &extra_preds);
+                let (impl_generics, _, where_clause) = generics.split_for_impl();
                 quote! {
-                    impl ::std::ascii::AsciiExt for #ty_outer {
+                    impl #impl_generics ::std::ascii::AsciiExt for #ty_outer #type_generics
+                    #where_clause
+                    {
                         type Owned = #ty_inner_as_asciiext::Owned;
                         fn is_ascii(&self) -> bool {
                             #ty_inner_as_asciiext::is_ascii(#self_as_inner)

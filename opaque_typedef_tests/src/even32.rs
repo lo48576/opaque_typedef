@@ -3,8 +3,8 @@
 
 /// Even `i32`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEqInner, PartialOrdInner,
-                        LowerHex, Octal, UpperHex))]
+#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEq(Inner, InnerRev),
+                        PartialOrd(Inner, InnerRev), LowerHex, Octal, UpperHex))]
 #[opaque_typedef(validation(validator = "validate_even32", error_type = "OddError",
                             error_msg = "Failed to create `Even32`"))]
 pub struct Even32(i32);
