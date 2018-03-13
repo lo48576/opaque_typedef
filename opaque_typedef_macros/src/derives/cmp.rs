@@ -1,9 +1,12 @@
 //! Impl generators for `std::cmp::Partial{Eq,Ord}` traits.
 
+use std::borrow::Cow;
+
 use quote;
 use syn;
 
 use type_props::TypeProps;
+use utils::extend_generics;
 
 use super::Derive;
 
@@ -27,13 +30,10 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
     let ty_inner = props.field_inner.ty();
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
     let other_as_inner = props.tokens_outer_expr_as_inner(quote!(other));
-    // FIXME: Use `utils::extend_generics` to use extra lifetime (instead of
-    // hard-coding "'__a").
     match target {
         Derive::PartialEqInner | Derive::PartialOrdInner => {
             let inner_and_outer = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes: &[],
+                generics: props.generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
@@ -42,8 +42,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 rhs_other_as_inner: &quote!(other),
             }.gen_impl();
             let inner_and_outer_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes: &[],
+                generics: props.generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: ty_inner,
@@ -51,45 +50,40 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
             }.gen_impl();
-            let extra_lifetimes = &[
-                syn::parse_str::<syn::Lifetime>("'__a").expect("Should never fail"),
-            ];
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+            let new_lt = &new_lts[0];
             let inner_and_outer_ref = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(&'__a #ty_outer #type_generics),
+                ty_lhs: quote!(&#new_lt #ty_outer #type_generics),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
                 ty_rhs: ty_inner,
                 rhs_other_as_inner: &quote!(other),
             }.gen_impl();
             let inner_and_outer_ref_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: ty_inner,
                 lhs_self_as_inner: &quote!(self),
-                ty_rhs: quote!(&'__a #ty_outer #type_generics),
+                ty_rhs: quote!(&#new_lt #ty_outer #type_generics),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
             }.gen_impl();
             let inner_ref_and_outer = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
-                ty_rhs: quote!(&'__a #ty_inner),
+                ty_rhs: quote!(&#new_lt #ty_inner),
                 rhs_other_as_inner: &quote!(*other),
             }.gen_impl();
             let inner_ref_and_outer_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(&'__a #ty_inner),
+                ty_lhs: quote!(&#new_lt #ty_inner),
                 lhs_self_as_inner: &quote!(*self),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
@@ -104,47 +98,45 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
             }
         },
         Derive::PartialEqInnerCow | Derive::PartialOrdInnerCow => {
-            let extra_lifetimes = &[
-                syn::parse_str::<syn::Lifetime>("'__a").expect("Should never fail"),
-            ];
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+            let new_lt = &new_lts[0];
             let inner_cow_and_outer = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_inner>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_inner>),
                 lhs_self_as_inner: &quote!(&*self),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
             }.gen_impl();
             let inner_cow_and_outer_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_inner>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_inner>),
                 rhs_other_as_inner: &quote!(&*other),
             }.gen_impl();
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
+            let new_lt0 = &new_lts[0];
+            let new_lt1 = &new_lts[1];
             let inner_cow_and_outer_ref = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_inner>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_inner>),
                 lhs_self_as_inner: &quote!(&*self),
-                ty_rhs: quote!(&'__a #ty_outer #type_generics),
+                ty_rhs: quote!(&#new_lt1 #ty_outer #type_generics),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
             }.gen_impl();
             let inner_cow_and_outer_ref_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(&'__a #ty_outer #type_generics),
+                ty_lhs: quote!(&#new_lt0 #ty_outer #type_generics),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_inner>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_inner>),
                 rhs_other_as_inner: &quote!(&*other),
             }.gen_impl();
             quote! {
@@ -155,47 +147,45 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
             }
         },
         Derive::PartialEqSelfCow | Derive::PartialOrdSelfCow => {
-            let extra_lifetimes = &[
-                syn::parse_str::<syn::Lifetime>("'__a").expect("Should never fail"),
-            ];
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+            let new_lt = &new_lts[0];
             let outer_cow_and_outer = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
             }.gen_impl();
             let outer_cow_and_outer_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
             }.gen_impl();
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
+            let new_lt0 = &new_lts[0];
+            let new_lt1 = &new_lts[1];
             let outer_cow_and_outer_ref = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
-                ty_rhs: quote!(&'__a #ty_outer #type_generics),
+                ty_rhs: quote!(&#new_lt1 #ty_outer #type_generics),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
             }.gen_impl();
             let outer_cow_and_outer_ref_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(&'__a #ty_outer #type_generics),
+                ty_lhs: quote!(&#new_lt0 #ty_outer #type_generics),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
             }.gen_impl();
             quote! {
@@ -206,47 +196,45 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
             }
         },
         Derive::PartialEqSelfCowAndInner | Derive::PartialOrdSelfCowAndInner => {
-            let extra_lifetimes = &[
-                syn::parse_str::<syn::Lifetime>("'__a").expect("Should never fail"),
-            ];
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+            let new_lt = &new_lts[0];
             let outer_cow_and_inner = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: ty_inner,
                 rhs_other_as_inner: &quote!(other),
             }.gen_impl();
             let outer_cow_and_inner_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
                 ty_lhs: ty_inner,
                 lhs_self_as_inner: &quote!(self),
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
             }.gen_impl();
+            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
+            let new_lt0 = &new_lts[0];
+            let new_lt1 = &new_lts[1];
             let outer_cow_and_inner_ref = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
-                ty_rhs: quote!(&'__a #ty_inner),
+                ty_rhs: quote!(&#new_lt1 #ty_inner),
                 rhs_other_as_inner: &quote!(*other),
             }.gen_impl();
             let outer_cow_and_inner_ref_rev = CmpImplSpec {
-                type_props: props,
-                extra_lifetimes,
+                generics: &generics,
                 trait_spec: trait_spec,
                 ty_inner: ty_inner,
-                ty_lhs: quote!(&'__a #ty_inner),
+                ty_lhs: quote!(&#new_lt0 #ty_inner),
                 lhs_self_as_inner: &quote!(*self),
-                ty_rhs: quote!(::std::borrow::Cow<'__a, #ty_outer #type_generics>),
+                ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
             }.gen_impl();
             quote! {
@@ -291,10 +279,9 @@ impl CmpTraitSpec {
 }
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct CmpImplSpec<'a, TyI, TyL, TyR> {
-    type_props: &'a TypeProps<'a>,
-    extra_lifetimes: &'a [syn::Lifetime],
+    generics: &'a syn::Generics,
     trait_spec: CmpTraitSpec,
     ty_inner: TyI,
     ty_lhs: TyL,
@@ -311,8 +298,7 @@ where
 {
     fn gen_impl(&self) -> quote::Tokens {
         let CmpImplSpec {
-            type_props,
-            extra_lifetimes,
+            generics,
             ref trait_spec,
             ref ty_inner,
             ref ty_lhs,
@@ -323,19 +309,7 @@ where
         let target_trait = trait_spec.target_trait();
         let method_name = trait_spec.method_name();
         let ty_ret = trait_spec.ty_ret();
-        let mut old_generics = type_props.generics.clone();
-        let generics = if extra_lifetimes.is_empty() {
-            old_generics
-        } else {
-            extra_lifetimes.into_iter().for_each(|lt| {
-                old_generics.params.insert(
-                    0,
-                    syn::GenericParam::Lifetime(syn::LifetimeDef::new(lt.clone())),
-                )
-            });
-            old_generics
-        };
-        let (impl_generics, _type_generics, where_clause) = generics.split_for_impl();
+        let (impl_generics, _, where_clause) = generics.split_for_impl();
         let fn_cmp = quote!(<#ty_inner as #target_trait<#ty_inner>>::#method_name);
         quote! {
             impl #impl_generics #target_trait<#ty_rhs> for #ty_lhs #where_clause {
