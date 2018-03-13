@@ -5,10 +5,6 @@
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 // About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
 #[repr(C)]
-// For details of unusability of `AsciiExt` and `Display`, see
-// <https://github.com/lo48576/opaque_typedef/issues/8#issuecomment-372379873>.
-// For details of unusability of `PartialEq(*)` and `PartialOrd(*)`, see
-// <https://github.com/lo48576/opaque_typedef/issues/8#issuecomment-372374678>.
 #[opaque_typedef(derive(AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref, DerefMut,
                         FromInner, Into(Arc, Box, Inner, Rc), PartialEq(Inner),
                         PartialOrd(Inner)))]
