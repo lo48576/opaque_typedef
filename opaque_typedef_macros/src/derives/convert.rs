@@ -1,5 +1,7 @@
 //! Impl generators for `std::convert::{From,Inner}` traits.
 
+use std::borrow::Cow;
+
 use quote;
 use quote::ToTokens;
 
@@ -33,7 +35,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> quote::Tokens {
             }
         },
         Sizedness::Unsized => {
-            let (generics, new_lifetimes) = extend_generics(props.generics, 1);
+            let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
             let new_lt = new_lifetimes[0];
             quote! {
@@ -72,7 +74,7 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> quote::Tokens {
             }
         },
         Sizedness::Unsized => {
-            let (generics, new_lifetimes) = extend_generics(props.generics, 1);
+            let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
             let new_lt = new_lifetimes[0];
             quote! {
@@ -100,7 +102,7 @@ pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> quote::Token
 
     let ty_outer = props.ty_outer.into_tokens();
     let type_generics = &props.type_generics;
-    let (generics, new_lifetimes) = extend_generics(props.generics, 1);
+    let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let new_lt = new_lifetimes[0];
     let ty_inner = props.field_inner.ty().into_tokens();
