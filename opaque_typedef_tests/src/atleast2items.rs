@@ -38,14 +38,11 @@ impl<T> SliceAtLeast2Items<T> {
 }
 
 
-/*
 /// Vec with at least 2 items.
-#[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMut(Deref, Inner), AsRef(Deref, Inner), Deref, DerefMut, Display,
-                        FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
-#[opaque_typedef(deref(target = "[T]", deref = "Vec::<T>::as_slice",
-                       deref_mut = "Vec::<T>::as_mut_slice"))]
-#[opaque_typedef(allow_mut_ref)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(AsRef(Deref, Inner), Deref, Display, FromInner, IntoInner,
+                        PartialEqInner, PartialOrdInner))]
+#[opaque_typedef(deref(target = "[T]", deref = "Vec::<T>::as_slice"))]
 #[opaque_typedef(validation(validator = "ensure_at_least_2_items", error_type = "TooFewItems",
                             error_msg = "Failed to create `VecAtLeast2Items`"))]
 pub struct VecAtLeast2Items<T> {
@@ -69,20 +66,19 @@ impl<T> VecAtLeast2Items<T> {
     }
 }
 
-
 // Implement `Borrow` and `ToOwned` to test `Cow<Mystr>`.
 impl<T> ::std::borrow::Borrow<SliceAtLeast2Items<T>> for VecAtLeast2Items<T> {
     fn borrow(&self) -> &SliceAtLeast2Items<T> {
         SliceAtLeast2Items::<T>::new(self.as_slice())
     }
 }
+
 impl<T: Clone> ToOwned for SliceAtLeast2Items<T> {
     type Owned = VecAtLeast2Items<T>;
     fn to_owned(&self) -> Self::Owned {
         VecAtLeast2Items::<T>::from_vec(self.as_slice().to_owned())
     }
 }
-*/
 
 
 /// A type of an error indicating the number of the items are too few.

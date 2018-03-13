@@ -3,7 +3,7 @@
 extern crate opaque_typedef;
 extern crate opaque_typedef_tests;
 
-use opaque_typedef_tests::atleast2items::SliceAtLeast2Items;
+use opaque_typedef_tests::atleast2items::{SliceAtLeast2Items, VecAtLeast2Items};
 
 
 mod slice {
@@ -117,6 +117,7 @@ mod slice {
             // `assert_eq!(ok_slice, my_slice.as_slice());`.
             assert_eq!(ok_slice, my_slice.as_slice());
         }
+
         #[test]
         fn partial_ord_inner() {
             use std::cmp::Ordering;
@@ -183,6 +184,109 @@ mod slice {
             let s = &[0i32, 1];
             let my_slice = SliceAtLeast2Items::new(s);
             let _: &SliceAtLeast2Items<i32> = AsRef::<SliceAtLeast2Items<i32>>::as_ref(my_slice);
+        }
+    }
+}
+
+mod vec {
+    use super::*;
+
+    #[test]
+    fn ok() {
+        let v = vec![0i32, 1];
+        let my_vec = VecAtLeast2Items::from_vec(v.clone());
+        assert_eq!(my_vec.as_slice(), v.as_slice());
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_too_few_items() {
+        let v = vec![0i32];
+        let _ = VecAtLeast2Items::from_vec(v);
+    }
+
+    mod convert {
+        use super::*;
+
+        #[test]
+        fn from_inner() {
+            let ok_vec = vec![0i32, 1];
+            let _: VecAtLeast2Items<i32> = <VecAtLeast2Items<i32>>::from(ok_vec);
+        }
+
+        #[test]
+        fn into_inner() {
+            let ok_vec = vec![0i32, 1];
+            let my_vec = VecAtLeast2Items::<i32>::from_vec(ok_vec.clone());
+            let inner = <VecAtLeast2Items<i32> as Into<Vec<i32>>>::into(my_vec);
+            assert_eq!(ok_vec, inner);
+        }
+    }
+
+    mod cmp {
+        use super::*;
+
+        #[test]
+        fn partial_eq_inner() {
+            let ok_vec = vec![0i32, 1];
+            let my_vec = VecAtLeast2Items::from_vec(ok_vec.clone());
+            assert!(<VecAtLeast2Items<i32> as PartialEq<Vec<i32>>>::eq(
+                &my_vec,
+                &ok_vec
+            ));
+            assert!(<&VecAtLeast2Items<i32> as PartialEq<Vec<i32>>>::eq(
+                &&my_vec,
+                &ok_vec
+            ));
+            assert_eq!(ok_vec.as_slice(), my_vec.as_slice());
+        }
+
+        #[test]
+        fn partial_ord_inner() {
+            use std::cmp::Ordering;
+
+            let ok_vec = vec![0i32, 1];
+            let my_vec = VecAtLeast2Items::from_vec(ok_vec.clone());
+            assert_eq!(
+                <VecAtLeast2Items<i32> as PartialOrd<Vec<i32>>>::partial_cmp(&my_vec, &ok_vec),
+                Some(Ordering::Equal)
+            );
+            assert_eq!(
+                <&VecAtLeast2Items<i32> as PartialOrd<Vec<i32>>>::partial_cmp(&&my_vec, &ok_vec),
+                Some(Ordering::Equal)
+            );
+        }
+    }
+
+    // `std::ascii::AsciiExt` is deprecated, so `eq_ignore_ascii_case()` here
+    // will be resolved to `slice::eq_ignore_ascii_case` by rust >= 1.23.0.
+    #[test]
+    #[allow(unused_imports)]
+    fn ascii_ext() {
+        use std::ascii::AsciiExt;
+
+        let s0 = vec![b'a', b'b'];
+        let v0 = VecAtLeast2Items::from_vec(s0);
+        let s1 = vec![b'A', b'B'];
+        let v1 = VecAtLeast2Items::from_vec(s1);
+        assert!(v0.eq_ignore_ascii_case(&v1));
+    }
+
+    mod as_ref {
+        use super::*;
+
+        #[test]
+        fn as_ref_deref() {
+            let v = vec![0i32, 1];
+            let my_vec = VecAtLeast2Items::from_vec(v);
+            let _: &[i32] = AsRef::<[i32]>::as_ref(&my_vec);
+        }
+
+        #[test]
+        fn as_ref_inner() {
+            let v = vec![0i32, 1];
+            let my_vec = VecAtLeast2Items::from_vec(v);
+            let _: &Vec<i32> = AsRef::<Vec<i32>>::as_ref(&my_vec);
         }
     }
 }
