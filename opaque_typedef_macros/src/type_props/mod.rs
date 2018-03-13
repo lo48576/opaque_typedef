@@ -293,4 +293,8 @@ impl<'a> TypeProps<'a> {
             .as_ref()
             .map_or_else(|| quote!(), |name| name.into_tokens())
     }
+
+    pub fn has_type_params(&self) -> bool {
+        self.generics.type_params().next().is_some()
+    }
 }

@@ -7,10 +7,10 @@
 #[repr(C)]
 // For details of unusability of `AsciiExt` and `Display`, see
 // <https://github.com/lo48576/opaque_typedef/issues/8#issuecomment-372379873>.
-// For details of unusability of `Into(*)`, `PartialEq(*)` and `PartialOrd(*)`, see
+// For details of unusability of `PartialEq(*)` and `PartialOrd(*)`, see
 // <https://github.com/lo48576/opaque_typedef/issues/8#issuecomment-372374678>.
 #[opaque_typedef(derive(AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref, DerefMut,
-                        FromInner))]
+                        FromInner, Into(Arc, Box, Inner, Rc)))]
 #[opaque_typedef(allow_mut_ref)]
 #[opaque_typedef(validation(validator = "ensure_at_least_2_items", error_type = "TooFewItems",
                             error_msg = "Failed to create `SliceAtLeast2Items`"))]
