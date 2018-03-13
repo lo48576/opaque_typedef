@@ -84,6 +84,7 @@ impl<T: Clone> ToOwned for SliceAtLeast2Items<T> {
 */
 
 
+/// A type of an error indicating the number of the items are too few.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TooFewItems(usize);
 
