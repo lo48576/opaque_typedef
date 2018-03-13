@@ -1,8 +1,13 @@
 //! Impl generators for `std::fmt::*` traits.
 
+use std::borrow::Cow;
+
 use quote;
+use quote::ToTokens;
+use syn;
 
 use type_props::TypeProps;
+use utils::extend_generics;
 
 use super::Derive;
 
@@ -21,11 +26,21 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
         _ => unreachable!("Should never happen"),
     };
     let ty_outer = props.ty_outer;
-    let impl_generics = &props.impl_generics;
     let type_generics = &props.type_generics;
-    let where_clause = &props.where_clause;
     let ty_inner = props.field_inner.ty();
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
+    let extra_preds = if props.has_type_params() {
+        let ty_inner = ty_inner.into_tokens();
+        let pred = syn::parse_str::<syn::WherePredicate>(&format!(
+            "{}: ::std::fmt::{}",
+            ty_inner, trait_name,
+        )).expect("Failed to generate `WherePredicate`");
+        vec![pred]
+    } else {
+        Vec::new()
+    };
+    let (generics, _) = extend_generics(Cow::Borrowed(props.generics), 0, &extra_preds);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
     quote! {
         impl #impl_generics ::std::fmt::#trait_name for #ty_outer #type_generics #where_clause {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {

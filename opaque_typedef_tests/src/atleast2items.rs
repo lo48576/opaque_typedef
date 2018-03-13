@@ -5,9 +5,13 @@
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 // About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
 #[repr(C)]
-#[opaque_typedef(derive(AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref, DerefMut,
-                        FromInner, Into(Arc, Box, Inner, Rc), PartialEq(Inner),
-                        PartialOrd(Inner)))]
+// `Binary`, `Display`, `LowerHex`, `Octal`, `UpperHex` is useless for usual
+// `[T]` types, but this is should not an error because it is implemeted only
+// when `[T]: Binary` (or some other traits).
+// These are specified here for testing purpose.
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self_), AsRef(Deref, Self_), Binary, DefaultRef,
+                        Deref, DerefMut, Display, FromInner, Into(Arc, Box, Inner, Rc),
+                        LowerHex, Octal, PartialEq(Inner), PartialOrd(Inner), UpperHex))]
 #[opaque_typedef(allow_mut_ref)]
 #[opaque_typedef(validation(validator = "ensure_at_least_2_items", error_type = "TooFewItems",
                             error_msg = "Failed to create `SliceAtLeast2Items`"))]

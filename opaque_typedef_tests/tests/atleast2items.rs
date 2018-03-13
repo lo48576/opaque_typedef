@@ -23,6 +23,14 @@ mod slice {
         let _ = SliceAtLeast2Items::new(s);
     }
 
+    #[test]
+    #[should_panic]
+    fn default() {
+        // Default slice for `&[i32]` is empty (less than 2 items),
+        // so this should fail.
+        let _: &SliceAtLeast2Items<i32> = Default::default();
+    }
+
     // Note:
     // Not `From<SliceAtLeast2Items<T>> for SmartPtr<[T]>` but
     // `Into<SmartPtr<[T]>> for SliceAtLeast2Items<T>` is implemented.
@@ -126,5 +134,16 @@ mod slice {
                 Some(Ordering::Equal)
             );
         }
+    }
+
+    #[test]
+    fn ascii_ext() {
+        use std::ascii::AsciiExt;
+
+        let s0 = &[b'a', b'b'];
+        let v0 = SliceAtLeast2Items::new(s0);
+        let s1 = &[b'A', b'B'];
+        let v1 = SliceAtLeast2Items::new(s1);
+        assert!(v0.eq_ignore_ascii_case(v1));
     }
 }

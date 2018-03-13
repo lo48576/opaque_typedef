@@ -259,9 +259,20 @@ impl Derive {
                 let type_generics = &props.type_generics;
                 let (generics, new_lifetimes) =
                     extend_generics(Cow::Borrowed(props.generics), 1, &[]);
-                let (impl_generics, _, where_clause) = generics.split_for_impl();
                 let new_lt = new_lifetimes[0];
                 let ty_inner = props.field_inner.ty().into_tokens();
+                let extra_preds = if props.has_type_params() {
+                    let pred = syn::parse_str::<syn::WherePredicate>(&format!(
+                        "&{} {}: ::std::default::Default",
+                        (&new_lt).into_tokens(),
+                        ty_inner,
+                    )).expect("Failed to generate `WherePredicate`");
+                    vec![pred]
+                } else {
+                    Vec::new()
+                };
+                let (generics, _) = extend_generics(generics, 0, &extra_preds);
+                let (impl_generics, _, where_clause) = generics.split_for_impl();
                 let helper_trait = props.helper_trait();
                 quote! {
                     impl #impl_generics
@@ -312,9 +323,7 @@ impl Derive {
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;
-                let impl_generics = &props.impl_generics;
                 let type_generics = &props.type_generics;
-                let where_clause = &props.where_clause;
                 let ty_inner = props.field_inner.ty();
                 let ty_inner_as_asciiext = quote!(<#ty_inner as ::std::ascii::AsciiExt>);
                 let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
@@ -327,6 +336,18 @@ impl Derive {
                     );
                 }
                 let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
+                let extra_preds = if props.has_type_params() {
+                    let ty_inner = ty_inner.into_tokens();
+                    let pred = syn::parse_str::<syn::WherePredicate>(&format!(
+                        "{}: ::std::ascii::AsciiExt",
+                        ty_inner
+                    )).expect("Failed to generate `WherePredicate`");
+                    vec![pred]
+                } else {
+                    Vec::new()
+                };
+                let (generics, _) = extend_generics(Cow::Borrowed(props.generics), 0, &extra_preds);
+                let (impl_generics, _, where_clause) = generics.split_for_impl();
                 quote! {
                     impl #impl_generics ::std::ascii::AsciiExt for #ty_outer #type_generics
                     #where_clause
