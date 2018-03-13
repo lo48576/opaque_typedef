@@ -112,10 +112,10 @@ For example:
 ```rust
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[repr(C)]
-#[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
-                        Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
-                        IntoInner, PartialEq(Inner, InnerCow, SelfCow),
-                        PartialOrd(Inner, InnerCow, SelfCow)))]
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref,
+                        DerefMut, Display, FromInner, Into(Arc, Box, Rc, Inner),
+                        PartialEq(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev),
+                        PartialOrd(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev)))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr(str);
 ```
@@ -142,8 +142,9 @@ If you specify `Deref`, `DerefMut`, `AsRefDeref` or something related to `Deref`
 ```rust
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
-                        Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
+#[opaque_typedef(derive(AsMut(Deref, Inner), AsRef(Deref, Inner), Deref, DerefMut, Display,
+                        FromInner, IntoInner, PartialEq(Inner, InnerRev),
+                        PartialOrd(Inner, InnerRev)))]
 #[opaque_typedef(deref(target = "str", deref = "String::as_str",
                        deref_mut = "String::as_mut_str"))]
 #[opaque_typedef(allow_mut_ref)]
@@ -178,9 +179,13 @@ To use custom validator, specify these attributes:
   * `validator`
       + Validator function.
         This should have types such as `Inner -> Result<Inner, Error>`.
+          - For sized types, `Inner -> Result<Inner, Error>`.
+            Validator can modify the given value and return the modified value.
+          - For unsized types, `&Inner -> Result<&Inner, Error>`.
   * `error_type`
       + Validation error type.
         Validator specified by `validator` should use this type as error.
+      + This cannot be generic, and cannot use any type parameters of the outer types.
   * `error_msg` (optional)
       + Error message on panic when validation failed.
         This value is used when panickable conversion failed, for example,
@@ -194,8 +199,8 @@ and [`opaque_typedef_tests/tests/even32.rs`](opaque_typedef_tests/tests/even32.r
 ```rust
 /// Even `i32`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEqInner, PartialOrdInner,
-                        LowerHex, Octal, UpperHex))]
+#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEq(Inner, InnerRev),
+                        PartialOrd(Inner, InnerRev), LowerHex, Octal, UpperHex))]
 #[opaque_typedef(validation(validator = "validate_even32", error_type = "OddError",
                             error_msg = "Failed to create `Even32`"))]
 pub struct Even32(i32);
@@ -270,21 +275,37 @@ The traits below are supported:
   * `DerefMut` implements `std::ops::DerefMut for Outer`.
   * `Display` implements `std::fmt::Display for Outer`.
   * `FromInner` implements `From<Inner> for Outer`.
-  * `IntoArc` implements `From<Outer> for Arc<Outer>`.
-  * `IntoBox` implements `From<Outer> for Box<Outer>`.
+  * `IntoArc` implements `From<Outer> for Arc<Outer>` (if possible) or `Into<Arc<Outer>> for Outer`.
+  * `IntoBox` implements `From<Outer> for Box<Outer>` (if possible) or `Into<Box<Outer>> for Outer`.
   * `IntoInner` implements `From<Outer> for Inner`.
-  * `IntoRc` implements `From<Outer> for Rc<Outer>`.
+  * `IntoRc` implements `From<Outer> for Rc<Outer>` (if possible) or `Into<Rc<Outer>> for Outer`.
   * `LowerExp` implements `std::fmt::LowerExp for Outer`.
   * `LowerHex` implements `std::fmt::LowerHex for Outer`.
   * `Octal` implements `std::fmt::Octal for Outer`.
   * `PartialEqInner` implements `PartialEq<Inner> for Outer` and similar ones.
+  * `PartialEqInnerRev` implements `PartialEq<Outer> for Inner` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqInner`.
   * `PartialEqInnerCow` implements `PartialEq<Cow<Inner>> for Outer` and similar ones.
+  * `PartialEqInnerCowRev` implements `PartialEq<Outer> for Cow<Inner>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqInnerCow`.
   * `PartialEqSelfCow` implements `PartialEq<Cow<Outer>> for Outer` and similar ones.
+  * `PartialEqSelfCowRev` implements `PartialEq<Outer> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqSelfCow`.
   * `PartialEqSelfCowAndInner` implements `PartialEq<Cow<Outer>> for Inner` and similar ones.
+  * `PartialEqSelfCowAndInnerCow` implements `PartialEq<Inner> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqSelfCowAndInner`.
   * `PartialOrdInner` implements `PartialOrd<Inner> for Outer` and similar ones.
+  * `PartialOrdInnerRev` implements `PartialOrd<Outer> for Inner` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdInner`.
   * `PartialOrdInnerCow` implements `PartialOrd<Cow<Inner>> for Outer` and similar ones.
+  * `PartialOrdInnerCowRev` implements `PartialOrd<Outer> for Cow<Inner>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdInnerCow`.
   * `PartialOrdSelfCow` implements `PartialOrd<Cow<Outer>> for Outer` and similar ones.
+  * `PartialOrdSelfCowRev` implements `PartialOrd<Outer> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdSelfCow`.
   * `PartialOrdSelfCowAndInner` implements `PartialOrd<Cow<Outer>> for Inner` and similar ones.
+  * `PartialOrdSelfCowAndInnerCow` implements `PartialOrd<Inner> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdSelfCowAndInner`.
   * `Pointer` implements `std::fmt::Pointer for Outer`.
   * `UpperExp` implements `std::fmt::UpperExp for Outer`.
   * `UpperHex` implements `std::fmt::UpperHex for Outer`.
@@ -297,7 +318,6 @@ Note that some (such as `DefaultRef`) are available only for sized types.
   * More traits
       + Especially `std::ops::*` binary operators
       + Nightly-only traits (`TryFrom`, `TryInto`, ...)
-  * Type parameters support
 
 ## License
 
