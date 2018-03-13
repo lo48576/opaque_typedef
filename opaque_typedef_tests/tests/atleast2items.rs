@@ -66,4 +66,65 @@ mod slice {
             assert_eq!(ok_slice, inner);
         }
     }
+
+    // Note:
+    // `PartialEq<[T]> for SliceAtLeast2Items<T>` can be implemented but
+    // `PartialEq<SliceAtLeast2Items<T>> for [T]` cannot.
+    // You can use inner slice exposed by `SliceAtLeast2Items::as_slice()`
+    // or `AsRef::<[T]>::as_ref()` if you don't want to care operands order.
+    mod cmp {
+        use super::*;
+
+        #[test]
+        fn partial_eq_inner() {
+            let ok_slice: &[_] = &[0i32, 1];
+            let my_slice = SliceAtLeast2Items::new(ok_slice);
+            assert!(<SliceAtLeast2Items<i32> as PartialEq<[i32]>>::eq(
+                my_slice,
+                ok_slice
+            ));
+            assert!(<SliceAtLeast2Items<i32> as PartialEq<&[i32]>>::eq(
+                my_slice,
+                &ok_slice
+            ));
+            assert!(<&SliceAtLeast2Items<i32> as PartialEq<[i32]>>::eq(
+                &my_slice,
+                ok_slice
+            ));
+            assert!(<&SliceAtLeast2Items<i32> as PartialEq<&[i32]>>::eq(
+                &my_slice,
+                &ok_slice
+            ));
+            //assert!(<[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(ok_slice, my_slice));
+            //assert!(<[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(ok_slice, &my_slice));
+            //assert!(<&[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(&ok_slice, my_slice));
+            //assert!(<&[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(&ok_slice, &my_slice));
+            // You can't `assert_eq!(ok_slice, my_slice);`, but you can
+            // `assert_eq!(ok_slice, my_slice.as_slice());`.
+            assert_eq!(ok_slice, my_slice.as_slice());
+        }
+        #[test]
+        fn partial_ord_inner() {
+            use std::cmp::Ordering;
+
+            let ok_slice: &[_] = &[0i32, 1];
+            let my_slice = SliceAtLeast2Items::new(ok_slice);
+            assert_eq!(
+                <SliceAtLeast2Items<i32> as PartialOrd<[i32]>>::partial_cmp(my_slice, ok_slice),
+                Some(Ordering::Equal)
+            );
+            assert_eq!(
+                <SliceAtLeast2Items<i32> as PartialOrd<&[i32]>>::partial_cmp(my_slice, &ok_slice),
+                Some(Ordering::Equal)
+            );
+            assert_eq!(
+                <&SliceAtLeast2Items<i32> as PartialOrd<[i32]>>::partial_cmp(&my_slice, ok_slice),
+                Some(Ordering::Equal)
+            );
+            assert_eq!(
+                <&SliceAtLeast2Items<i32> as PartialOrd<&[i32]>>::partial_cmp(&my_slice, &ok_slice),
+                Some(Ordering::Equal)
+            );
+        }
+    }
 }

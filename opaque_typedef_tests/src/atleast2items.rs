@@ -10,7 +10,8 @@
 // For details of unusability of `PartialEq(*)` and `PartialOrd(*)`, see
 // <https://github.com/lo48576/opaque_typedef/issues/8#issuecomment-372374678>.
 #[opaque_typedef(derive(AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref, DerefMut,
-                        FromInner, Into(Arc, Box, Inner, Rc)))]
+                        FromInner, Into(Arc, Box, Inner, Rc), PartialEq(Inner),
+                        PartialOrd(Inner)))]
 #[opaque_typedef(allow_mut_ref)]
 #[opaque_typedef(validation(validator = "ensure_at_least_2_items", error_type = "TooFewItems",
                             error_msg = "Failed to create `SliceAtLeast2Items`"))]

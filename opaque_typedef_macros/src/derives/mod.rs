@@ -62,20 +62,36 @@ pub enum Derive {
     Octal,
     /// `PartialEq<Inner> for Outer` and similar ones.
     PartialEqInner,
+    /// `PartialEq<Outer> for Inner` and similar ones.
+    PartialEqInnerRev,
     /// `PartialEq<Cow<Inner>> for Outer` and similar ones.
     PartialEqInnerCow,
+    /// `PartialEq<Outer> for Cow<Inner>` and similar ones.
+    PartialEqInnerCowRev,
     /// `PartialEq<Cow<Outer>> for Outer` and similar ones.
     PartialEqSelfCow,
+    /// `PartialEq<Outer> for Cow<Outer>` and similar ones.
+    PartialEqSelfCowRev,
     /// `PartialEq<Cow<Outer>> for Inner` and similar ones.
     PartialEqSelfCowAndInner,
+    /// `PartialEq<Inner> for Cow<Outer>` and similar ones.
+    PartialEqSelfCowAndInnerRev,
     /// `PartialOrd<Inner> for Outer` and similar ones.
     PartialOrdInner,
+    /// `PartialOrd<Outer> for Inner` and similar ones.
+    PartialOrdInnerRev,
     /// `PartialOrd<Cow<Inner>> for Outer` and similar ones.
     PartialOrdInnerCow,
+    /// `PartialOrd<Outer> for Cow<Inner>` and similar ones.
+    PartialOrdInnerCowRev,
     /// `PartialOrd<Cow<Outer>> for Outer` and similar ones.
     PartialOrdSelfCow,
+    /// `PartialOrd<Outer> for Cow<Outer>` and similar ones.
+    PartialOrdSelfCowRev,
     /// `PartialOrd<Cow<Outer>> for Inner` and similar ones.
     PartialOrdSelfCowAndInner,
+    /// `PartialOrd<Inner> for Cow<Outer>` and similar ones.
+    PartialOrdSelfCowAndInnerRev,
     /// `std::fmt::Pointer for Outer`.
     Pointer,
     /// `std::fmt::UpperExp for Outer`.
@@ -173,18 +189,26 @@ impl Derive {
             "PartialEq" => {
                 derives.extend(children.into_iter().map(|&child| match child {
                     "Inner" => Derive::PartialEqInner,
+                    "InnerRev" => Derive::PartialEqInnerRev,
                     "InnerCow" => Derive::PartialEqInnerCow,
+                    "InnerCowRev" => Derive::PartialEqInnerCowRev,
                     "SelfCow" => Derive::PartialEqSelfCow,
+                    "SelfCowRev" => Derive::PartialEqSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
+                    "SelfCowAndInnerRev" => Derive::PartialEqSelfCowAndInnerRev,
                     _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
                 }));
             },
             "PartialOrd" => {
                 derives.extend(children.into_iter().map(|&child| match child {
                     "Inner" => Derive::PartialOrdInner,
+                    "InnerRev" => Derive::PartialOrdInnerRev,
                     "InnerCow" => Derive::PartialOrdInnerCow,
+                    "InnerCowRev" => Derive::PartialOrdInnerCowRev,
                     "SelfCow" => Derive::PartialOrdSelfCow,
+                    "SelfCowRev" => Derive::PartialOrdSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
+                    "SelfCowAndInnerRev" => Derive::PartialOrdSelfCowAndInnerRev,
                     _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
                 }));
             },
@@ -253,21 +277,35 @@ impl Derive {
             },
             // `std::cmp::Partial{Eq,Ord}` traits.
             (Derive::PartialEqInner, _)
+            | (Derive::PartialEqInnerRev, _)
             | (Derive::PartialEqInnerCow, Sizedness::Unsized)
+            | (Derive::PartialEqInnerCowRev, Sizedness::Unsized)
             | (Derive::PartialEqSelfCow, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCowRev, Sizedness::Unsized)
             | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized)
+            | (Derive::PartialEqSelfCowAndInnerRev, Sizedness::Unsized)
             | (Derive::PartialOrdInner, _)
+            | (Derive::PartialOrdInnerRev, _)
             | (Derive::PartialOrdInnerCow, Sizedness::Unsized)
+            | (Derive::PartialOrdInnerCowRev, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCow, Sizedness::Unsized)
-            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized) => {
+            | (Derive::PartialOrdSelfCowRev, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized)
+            | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Unsized) => {
                 cmp::gen_impl_partial_cmp(*self, props)
             },
             (Derive::PartialEqInnerCow, Sizedness::Sized)
+            | (Derive::PartialEqInnerCowRev, Sizedness::Sized)
             | (Derive::PartialEqSelfCow, Sizedness::Sized)
+            | (Derive::PartialEqSelfCowRev, Sizedness::Sized)
             | (Derive::PartialEqSelfCowAndInner, Sizedness::Sized)
+            | (Derive::PartialEqSelfCowAndInnerRev, Sizedness::Sized)
             | (Derive::PartialOrdInnerCow, Sizedness::Sized)
+            | (Derive::PartialOrdInnerCowRev, Sizedness::Sized)
             | (Derive::PartialOrdSelfCow, Sizedness::Sized)
-            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Sized) => panic!(
+            | (Derive::PartialOrdSelfCowRev, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCowAndInner, Sizedness::Sized)
+            | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Sized) => panic!(
                 "`#[opaque_typedef(derive({}))]` is not supported for sized types",
                 self.as_ref()
             ),
