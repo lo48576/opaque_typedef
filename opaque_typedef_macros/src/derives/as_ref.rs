@@ -21,6 +21,18 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
         Derive::AsMutSelf | Derive::AsRefSelf => quote!(#ty_outer #type_generics),
         _ => unreachable!("Should never happen"),
     };
+    match target {
+        Derive::AsMutDeref | Derive::AsMutInner | Derive::AsMutSelf => {
+            if !props.is_mut_ref_allowed {
+                panic!(
+                    "`#[opaque_typedef(derive({}))]` requires \
+                     `#[opaque_typedef(allow_mut_ref)]`, but not specified",
+                    target.as_ref()
+                );
+            }
+        },
+        _ => {},
+    }
     let expr = match target {
         Derive::AsMutDeref => gen_deref_mut_expr(props),
         Derive::AsMutInner => props.tokens_outer_expr_as_inner_mut(quote!(self)),
