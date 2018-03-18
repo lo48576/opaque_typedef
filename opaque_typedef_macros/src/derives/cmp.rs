@@ -6,7 +6,7 @@ use quote;
 use quote::ToTokens;
 use syn;
 
-use type_props::TypeProps;
+use type_props::{Sizedness, TypeProps};
 use utils::extend_generics;
 
 use super::Derive;
@@ -51,32 +51,39 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 ty_rhs: ty_inner,
                 rhs_other_as_inner: &quote!(other),
             }.gen_impl();
-            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
-            let new_lt = &new_lts[0];
-            let inner_and_outer_ref = CmpImplSpec {
-                type_props: &props,
-                generics: &generics,
-                trait_spec: trait_spec,
-                ty_inner: ty_inner,
-                ty_lhs: quote!(&#new_lt #ty_outer #type_generics),
-                lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
-                ty_rhs: ty_inner,
-                rhs_other_as_inner: &quote!(other),
-            }.gen_impl();
-            let inner_ref_and_outer = CmpImplSpec {
-                type_props: &props,
-                generics: &generics,
-                trait_spec: trait_spec,
-                ty_inner: ty_inner,
-                ty_lhs: quote!(#ty_outer #type_generics),
-                lhs_self_as_inner: &self_as_inner,
-                ty_rhs: quote!(&#new_lt #ty_inner),
-                rhs_other_as_inner: &quote!(*other),
-            }.gen_impl();
+            let extra = if props.inner_sizedness == Sizedness::Sized && props.has_type_params() {
+                quote!()
+            } else {
+                let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+                let new_lt = &new_lts[0];
+                let inner_and_outer_ref = CmpImplSpec {
+                    type_props: &props,
+                    generics: &generics,
+                    trait_spec: trait_spec,
+                    ty_inner: ty_inner,
+                    ty_lhs: quote!(&#new_lt #ty_outer #type_generics),
+                    lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
+                    ty_rhs: ty_inner,
+                    rhs_other_as_inner: &quote!(other),
+                }.gen_impl();
+                let inner_ref_and_outer = CmpImplSpec {
+                    type_props: &props,
+                    generics: &generics,
+                    trait_spec: trait_spec,
+                    ty_inner: ty_inner,
+                    ty_lhs: quote!(#ty_outer #type_generics),
+                    lhs_self_as_inner: &self_as_inner,
+                    ty_rhs: quote!(&#new_lt #ty_inner),
+                    rhs_other_as_inner: &quote!(*other),
+                }.gen_impl();
+                quote! {
+                    #inner_and_outer_ref
+                    #inner_ref_and_outer
+                }
+            };
             quote! {
                 #inner_and_outer
-                #inner_and_outer_ref
-                #inner_ref_and_outer
+                #extra
             }
         },
         Derive::PartialEqInnerRev | Derive::PartialOrdInnerRev => {
@@ -90,32 +97,39 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
             }.gen_impl();
-            let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
-            let new_lt = &new_lts[0];
-            let inner_and_outer_ref_rev = CmpImplSpec {
-                type_props: &props,
-                generics: &generics,
-                trait_spec: trait_spec,
-                ty_inner: ty_inner,
-                ty_lhs: ty_inner,
-                lhs_self_as_inner: &quote!(self),
-                ty_rhs: quote!(&#new_lt #ty_outer #type_generics),
-                rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
-            }.gen_impl();
-            let inner_ref_and_outer_rev = CmpImplSpec {
-                type_props: &props,
-                generics: &generics,
-                trait_spec: trait_spec,
-                ty_inner: ty_inner,
-                ty_lhs: quote!(&#new_lt #ty_inner),
-                lhs_self_as_inner: &quote!(*self),
-                ty_rhs: quote!(#ty_outer #type_generics),
-                rhs_other_as_inner: &other_as_inner,
-            }.gen_impl();
+            let extra = if props.inner_sizedness == Sizedness::Sized && props.has_type_params() {
+                quote!()
+            } else {
+                let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+                let new_lt = &new_lts[0];
+                let inner_and_outer_ref_rev = CmpImplSpec {
+                    type_props: &props,
+                    generics: &generics,
+                    trait_spec: trait_spec,
+                    ty_inner: ty_inner,
+                    ty_lhs: ty_inner,
+                    lhs_self_as_inner: &quote!(self),
+                    ty_rhs: quote!(&#new_lt #ty_outer #type_generics),
+                    rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
+                }.gen_impl();
+                let inner_ref_and_outer_rev = CmpImplSpec {
+                    type_props: &props,
+                    generics: &generics,
+                    trait_spec: trait_spec,
+                    ty_inner: ty_inner,
+                    ty_lhs: quote!(&#new_lt #ty_inner),
+                    lhs_self_as_inner: &quote!(*self),
+                    ty_rhs: quote!(#ty_outer #type_generics),
+                    rhs_other_as_inner: &other_as_inner,
+                }.gen_impl();
+                quote! {
+                    #inner_and_outer_ref_rev
+                    #inner_ref_and_outer_rev
+                }
+            };
             quote! {
                 #inner_and_outer_rev
-                #inner_and_outer_ref_rev
-                #inner_ref_and_outer_rev
+                #extra
             }
         },
         Derive::PartialEqInnerCow | Derive::PartialOrdInnerCow => {
