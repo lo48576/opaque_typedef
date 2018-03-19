@@ -20,6 +20,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
         | Derive::PartialEqInnerRev
         | Derive::PartialEqInnerCow
         | Derive::PartialEqInnerCowRev
+        | Derive::PartialEqSelf
         | Derive::PartialEqSelfCow
         | Derive::PartialEqSelfCowRev
         | Derive::PartialEqSelfCowAndInner
@@ -28,6 +29,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
         | Derive::PartialOrdInnerRev
         | Derive::PartialOrdInnerCow
         | Derive::PartialOrdInnerCowRev
+        | Derive::PartialOrdSelf
         | Derive::PartialOrdSelfCow
         | Derive::PartialOrdSelfCowRev
         | Derive::PartialOrdSelfCowAndInner
@@ -192,6 +194,21 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
             quote! {
                 #inner_cow_and_outer_rev
                 #inner_cow_and_outer_ref_rev
+            }
+        },
+        Derive::PartialEqSelf | Derive::PartialOrdSelf => {
+            let outer_and_outer = CmpImplSpec {
+                type_props: &props,
+                generics: props.generics,
+                trait_spec: trait_spec,
+                ty_inner: ty_inner,
+                ty_lhs: quote!(#ty_outer #type_generics),
+                lhs_self_as_inner: &self_as_inner,
+                ty_rhs: quote!(#ty_outer #type_generics),
+                rhs_other_as_inner: &other_as_inner,
+            }.gen_impl();
+            quote! {
+                #outer_and_outer
             }
         },
         Derive::PartialEqSelfCow | Derive::PartialOrdSelfCow => {

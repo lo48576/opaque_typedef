@@ -68,6 +68,8 @@ pub enum Derive {
     PartialEqInnerCow,
     /// `PartialEq<Outer> for Cow<Inner>` and similar ones.
     PartialEqInnerCowRev,
+    /// `PartialEq<Outer> for Outer` and similar ones.
+    PartialEqSelf,
     /// `PartialEq<Cow<Outer>> for Outer` and similar ones.
     PartialEqSelfCow,
     /// `PartialEq<Outer> for Cow<Outer>` and similar ones.
@@ -84,6 +86,8 @@ pub enum Derive {
     PartialOrdInnerCow,
     /// `PartialOrd<Outer> for Cow<Inner>` and similar ones.
     PartialOrdInnerCowRev,
+    /// `PartialOrd<Outer> for Outer` and similar ones.
+    PartialOrdSelf,
     /// `PartialOrd<Cow<Outer>> for Outer` and similar ones.
     PartialOrdSelfCow,
     /// `PartialOrd<Outer> for Cow<Outer>` and similar ones.
@@ -192,6 +196,7 @@ impl Derive {
                     "InnerRev" => Derive::PartialEqInnerRev,
                     "InnerCow" => Derive::PartialEqInnerCow,
                     "InnerCowRev" => Derive::PartialEqInnerCowRev,
+                    "Self_" => Derive::PartialEqSelf,
                     "SelfCow" => Derive::PartialEqSelfCow,
                     "SelfCowRev" => Derive::PartialEqSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
@@ -205,6 +210,7 @@ impl Derive {
                     "InnerRev" => Derive::PartialOrdInnerRev,
                     "InnerCow" => Derive::PartialOrdInnerCow,
                     "InnerCowRev" => Derive::PartialOrdInnerCowRev,
+                    "Self_" => Derive::PartialOrdSelf,
                     "SelfCow" => Derive::PartialOrdSelfCow,
                     "SelfCowRev" => Derive::PartialOrdSelfCowRev,
                     "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
@@ -291,6 +297,7 @@ impl Derive {
             | (Derive::PartialEqInnerRev, _)
             | (Derive::PartialEqInnerCow, Sizedness::Unsized)
             | (Derive::PartialEqInnerCowRev, Sizedness::Unsized)
+            | (Derive::PartialEqSelf, _)
             | (Derive::PartialEqSelfCow, Sizedness::Unsized)
             | (Derive::PartialEqSelfCowRev, Sizedness::Unsized)
             | (Derive::PartialEqSelfCowAndInner, Sizedness::Unsized)
@@ -299,6 +306,7 @@ impl Derive {
             | (Derive::PartialOrdInnerRev, _)
             | (Derive::PartialOrdInnerCow, Sizedness::Unsized)
             | (Derive::PartialOrdInnerCowRev, Sizedness::Unsized)
+            | (Derive::PartialOrdSelf, _)
             | (Derive::PartialOrdSelfCow, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCowRev, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized)
