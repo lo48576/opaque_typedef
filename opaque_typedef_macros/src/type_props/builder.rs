@@ -6,7 +6,7 @@ use syn::DeriveInput;
 
 use attrs::{get_meta_content_by_path, has_word_meta, is_attr_with_path};
 use derives::Derive;
-use type_props::{DerefSpec, Field, Sizedness, TypeProps, ValidationSpec};
+use type_props::{CmpSpec, DerefSpec, Field, Sizedness, TypeProps, ValidationSpec};
 use utils::expect_singleton_iter;
 
 
@@ -255,6 +255,87 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
 }
 
 
+fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
+    let namevalues = attrs
+        .into_iter()
+        .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
+        .filter_map(|attr| attr.interpret_meta())
+        .flat_map(|meta| get_meta_content_by_path(meta, &["opaque_typedef", "cmp"]))
+        .filter_map(|meta| match meta {
+            syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    fn get_attr_by_name<'a>(
+        namevalues: &'a [syn::MetaNameValue],
+        name: &str,
+    ) -> Option<&'a syn::LitStr> {
+        let iter = namevalues
+            .into_iter()
+            .filter(|nv| nv.ident.as_ref() == name)
+            .map(|nv| &nv.lit);
+        let lit = expect_singleton_iter(iter)
+            .at_most_one()
+            .unwrap_or_else(|| {
+                panic!(
+                    "`#[opaque_typedef(cmp({} = ..))]` can be specified \
+                     at most once for each type",
+                    name
+                )
+            })?;
+        match *lit {
+            syn::Lit::Str(ref s) => Some(s),
+            ref lit => panic!(
+                "String value is expected for `#[opaque_typedef(cmp({} = ..))]`, \
+                 but got `{}` (invalid type)",
+                name,
+                lit.into_tokens()
+            ),
+        }
+    }
+
+    let partial_eq = get_attr_by_name(&namevalues, "partial_eq").map(|litstr| {
+        litstr.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(cmp(partial_eq = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+
+    let partial_ord = get_attr_by_name(&namevalues, "partial_ord").map(|litstr| {
+        litstr.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(cmp(partial_ord = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+
+    let ord = get_attr_by_name(&namevalues, "ord").map(|litstr| {
+        litstr.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(cmp(ord = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+
+    CmpSpec {
+        partial_eq,
+        partial_ord,
+        ord,
+    }
+}
+
+
 /// A builder of `TypeProps`.
 #[derive(Default, Clone)]
 pub struct TypePropsBuilder<'a> {
@@ -276,6 +357,8 @@ pub struct TypePropsBuilder<'a> {
     is_mut_ref_allowed: Option<bool>,
     /// Validation spec.
     validation_spec: Option<ValidationSpec>,
+    /// Cmp spec.
+    cmp_spec: Option<CmpSpec>,
 }
 
 impl<'a> TypePropsBuilder<'a> {
@@ -295,6 +378,7 @@ impl<'a> TypePropsBuilder<'a> {
         self.deref_spec = Some(get_deref_spec(&input.attrs));
         self.is_mut_ref_allowed = Some(get_mut_ref_allowed(&input.attrs));
         self.validation_spec = Some(get_validation_spec(&input.attrs));
+        self.cmp_spec = Some(get_cmp_spec(&input.attrs));
     }
 
     /// Builds a `TypeProps`.
@@ -311,6 +395,7 @@ impl<'a> TypePropsBuilder<'a> {
         let deref_spec = self.deref_spec.expect(MSG_SHOULD_LOAD);
         let is_mut_ref_allowed = self.is_mut_ref_allowed.expect(MSG_SHOULD_LOAD);
         let validation_spec = self.validation_spec.expect(MSG_SHOULD_LOAD);
+        let cmp_spec = self.cmp_spec.expect(MSG_SHOULD_LOAD);
 
         TypeProps {
             ty_outer,
@@ -324,6 +409,7 @@ impl<'a> TypePropsBuilder<'a> {
             deref_spec,
             is_mut_ref_allowed,
             validation_spec,
+            cmp_spec,
         }
     }
 }

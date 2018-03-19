@@ -14,7 +14,8 @@ proc-macro = true
 quote = "^0.4.2"
 strum = "^0.9"
 strum_macros = "^0.9"
-syn = "^0.12.13"
+# `full` feature is required to parse closures.
+syn = { version = "^0.12.13", features = ["full"] }
 
 [badges]
 travis-ci = { repository = "lo48576/opaque_typedef" }

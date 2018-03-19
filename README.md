@@ -241,6 +241,50 @@ mod tests {
 }
 ```
 
+### 6. Specify custom comparator (optional)
+
+You can use custom implementations for `PartialEq` and `PartialOrd`.
+
+To use custom comparator, specify these attributes:
+
+  * `partial_eq`
+      + Partial equality function.
+        This should have types such as `&Inner -> &Inner -> bool`.
+  * `partial_ord`
+      + Partial order function.
+        This should have types such as `&Inner -> &Inner -> Option<::std::cmp::Ordering>`.
+  * `ord`
+      + Total order function.
+        This should have types such as `&Inner -> &Inner -> ::std::cmp::Ordering`.
+      + `#[derive(Ord)]` doesn't use `PartialOrd::partial_cmp` impl, so they can be inconsistent by mistake.
+        Remember to **keep them (including `PartialEq::eq`) consistent**.
+
+The example below is taken from
+[`opaque_typedef_tests/src/reverse_order.rs`](opaque_typedef_tests/src/reverse_order.rs)
+and [`opaque_typedef_tests/tests/reverse_order.rs`](opaque_typedef_tests/tests/reverse_order.rs).
+
+```rust
+/// A wrapper type with reverse order.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref), AsRef(Deref), Binary, Deref, DerefMut, Display,
+                        FromInner, LowerHex, Octal, PartialOrdSelf, UpperHex))]
+#[opaque_typedef(cmp(partial_ord = "(|a, b| PartialOrd::partial_cmp(a, b).map(|o| o.reverse()))",
+                     ord = "(|a, b| Ord::cmp(a, b).reverse())"))]
+#[opaque_typedef(allow_mut_ref)]
+pub struct ReverseOrderSized<T>(pub T);
+
+
+#[test]
+fn reverse_i32() {
+    use std::cmp::Ordering;
+    assert_eq!(ReverseOrderSized(3i32).partial_cmp(&ReverseOrderSized(2i32)), Some(Ordering::Less));
+    assert!(ReverseOrderSized(3i32) < ReverseOrderSized(2i32));
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(2i32)), Ordering::Less);
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(3i32)), Ordering::Equal);
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(4i32)), Ordering::Greater);
+}
+```
+
 ## Features
 
 ### Defining basic constructions and casts
@@ -288,6 +332,8 @@ The traits below are supported:
   * `PartialEqInnerCow` implements `PartialEq<Cow<Inner>> for Outer` and similar ones.
   * `PartialEqInnerCowRev` implements `PartialEq<Outer> for Cow<Inner>` and similar ones.
       + This is reverse (operands order swapped) version of `PartialEqInnerCow`.
+  * `PartialEqSelf` implements `PartialEq<Outer> for Outer` and similar ones.
+      + This is very similar to `#[derive(PartialEq)]`, but it will be useful with custom comparison.
   * `PartialEqSelfCow` implements `PartialEq<Cow<Outer>> for Outer` and similar ones.
   * `PartialEqSelfCowRev` implements `PartialEq<Outer> for Cow<Outer>` and similar ones.
       + This is reverse (operands order swapped) version of `PartialEqSelfCow`.
@@ -300,6 +346,8 @@ The traits below are supported:
   * `PartialOrdInnerCow` implements `PartialOrd<Cow<Inner>> for Outer` and similar ones.
   * `PartialOrdInnerCowRev` implements `PartialOrd<Outer> for Cow<Inner>` and similar ones.
       + This is reverse (operands order swapped) version of `PartialOrdInnerCow`.
+  * `PartialOrdSelf` implements `PartialOrd<Outer> for Outer` and similar ones.
+      + This is very similar to `#[derive(PartialOrd)]`, but it will be useful with custom comparison.
   * `PartialOrdSelfCow` implements `PartialOrd<Cow<Outer>> for Outer` and similar ones.
   * `PartialOrdSelfCowRev` implements `PartialOrd<Outer> for Cow<Outer>` and similar ones.
       + This is reverse (operands order swapped) version of `PartialOrdSelfCow`.
@@ -307,6 +355,8 @@ The traits below are supported:
   * `PartialOrdSelfCowAndInnerCow` implements `PartialOrd<Inner> for Cow<Outer>` and similar ones.
       + This is reverse (operands order swapped) version of `PartialOrdSelfCowAndInner`.
   * `Pointer` implements `std::fmt::Pointer for Outer`.
+  * `Ord` implements `std::cmp::Ord for Outer`.
+      + This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
   * `UpperExp` implements `std::fmt::UpperExp for Outer`.
   * `UpperHex` implements `std::fmt::UpperHex for Outer`.
 

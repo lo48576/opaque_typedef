@@ -234,10 +234,6 @@ mod vec {
                 &my_vec,
                 &ok_vec
             ));
-            assert!(<&VecAtLeast2Items<i32> as PartialEq<Vec<i32>>>::eq(
-                &&my_vec,
-                &ok_vec
-            ));
             assert_eq!(ok_vec.as_slice(), my_vec.as_slice());
         }
 
@@ -249,10 +245,6 @@ mod vec {
             let my_vec = VecAtLeast2Items::from_vec(ok_vec.clone());
             assert_eq!(
                 <VecAtLeast2Items<i32> as PartialOrd<Vec<i32>>>::partial_cmp(&my_vec, &ok_vec),
-                Some(Ordering::Equal)
-            );
-            assert_eq!(
-                <&VecAtLeast2Items<i32> as PartialOrd<Vec<i32>>>::partial_cmp(&&my_vec, &ok_vec),
                 Some(Ordering::Equal)
             );
         }
