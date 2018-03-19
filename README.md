@@ -133,7 +133,7 @@ Note that some traits can be shortened:
   * `PartialOrdInner, PartialOrdSelfCow` can be written as `PartialOrd(Inner, SelfCow)`
 
 To see lists of "derive"-able items, read the rest of the document or see
-[the source (`Derive` enum in `opaque_typedef_macros/src/derives.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives.rs).
+[the source (`Derive` enum in `opaque_typedef_macros/src/derives/mod.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives/mod.rs).
 
 ### 4.1. Specify deref target (optional)
 
