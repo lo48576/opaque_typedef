@@ -109,6 +109,31 @@ impl ValidationSpec {
 }
 
 
+#[derive(Default, Clone)]
+pub struct CmpSpec {
+    /// `PartialEq` comparator.
+    pub partial_eq: Option<syn::Expr>,
+    /// `PartialOrd` comparator.
+    pub partial_ord: Option<syn::Expr>,
+}
+
+impl CmpSpec {
+    pub fn partial_eq(&self) -> quote::Tokens {
+        match self.partial_eq {
+            Some(ref v) => v.into_tokens(),
+            None => quote!(PartialEq::eq),
+        }
+    }
+
+    pub fn partial_ord(&self) -> quote::Tokens {
+        match self.partial_ord {
+            Some(ref v) => v.into_tokens(),
+            None => quote!(PartialOrd::partial_cmp),
+        }
+    }
+}
+
+
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
 pub struct TypeProps<'a> {
@@ -134,6 +159,8 @@ pub struct TypeProps<'a> {
     pub is_mut_ref_allowed: bool,
     /// Validation spec.
     pub validation_spec: ValidationSpec,
+    /// Cmp spec.
+    pub cmp_spec: CmpSpec,
 }
 
 impl<'a> TypeProps<'a> {

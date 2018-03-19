@@ -6,7 +6,7 @@ use quote;
 use quote::ToTokens;
 use syn;
 
-use type_props::{Sizedness, TypeProps};
+use type_props::{CmpSpec, Sizedness, TypeProps};
 use utils::extend_generics;
 
 use super::Derive;
@@ -47,6 +47,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: props.generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
@@ -62,6 +63,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                     type_props: &props,
                     generics: &generics,
                     trait_spec: trait_spec,
+                    cmp_spec: &props.cmp_spec,
                     ty_inner: ty_inner,
                     ty_lhs: quote!(&#new_lt #ty_outer #type_generics),
                     lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
@@ -72,6 +74,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                     type_props: &props,
                     generics: &generics,
                     trait_spec: trait_spec,
+                    cmp_spec: &props.cmp_spec,
                     ty_inner: ty_inner,
                     ty_lhs: quote!(#ty_outer #type_generics),
                     lhs_self_as_inner: &self_as_inner,
@@ -93,6 +96,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: props.generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: ty_inner,
                 lhs_self_as_inner: &quote!(self),
@@ -108,6 +112,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                     type_props: &props,
                     generics: &generics,
                     trait_spec: trait_spec,
+                    cmp_spec: &props.cmp_spec,
                     ty_inner: ty_inner,
                     ty_lhs: ty_inner,
                     lhs_self_as_inner: &quote!(self),
@@ -118,6 +123,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                     type_props: &props,
                     generics: &generics,
                     trait_spec: trait_spec,
+                    cmp_spec: &props.cmp_spec,
                     ty_inner: ty_inner,
                     ty_lhs: quote!(&#new_lt #ty_inner),
                     lhs_self_as_inner: &quote!(*self),
@@ -141,6 +147,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_inner>),
                 lhs_self_as_inner: &quote!(&*self),
@@ -154,6 +161,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_inner>),
                 lhs_self_as_inner: &quote!(&*self),
@@ -172,6 +180,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
@@ -185,6 +194,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(&#new_lt0 #ty_outer #type_generics),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
@@ -201,6 +211,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: props.generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
@@ -218,6 +229,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
@@ -231,6 +243,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
@@ -249,6 +262,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(#ty_outer #type_generics),
                 lhs_self_as_inner: &self_as_inner,
@@ -262,6 +276,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(&#new_lt0 #ty_outer #type_generics),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
@@ -280,6 +295,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
@@ -293,6 +309,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(::std::borrow::Cow<#new_lt0, #ty_outer #type_generics>),
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
@@ -311,6 +328,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: ty_inner,
                 lhs_self_as_inner: &quote!(self),
@@ -324,6 +342,7 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens 
                 type_props: &props,
                 generics: &generics,
                 trait_spec: trait_spec,
+                cmp_spec: &props.cmp_spec,
                 ty_inner: ty_inner,
                 ty_lhs: quote!(&#new_lt0 #ty_inner),
                 lhs_self_as_inner: &quote!(*self),
@@ -361,6 +380,13 @@ impl CmpTraitSpec {
         }
     }
 
+    pub fn comparator(&self, cmp_spec: &CmpSpec) -> quote::Tokens {
+        match *self {
+            CmpTraitSpec::PartialEq => cmp_spec.partial_eq(),
+            CmpTraitSpec::PartialOrd => cmp_spec.partial_ord(),
+        }
+    }
+
     pub fn ty_ret(&self) -> quote::Tokens {
         match *self {
             CmpTraitSpec::PartialEq => quote!(bool),
@@ -375,6 +401,7 @@ struct CmpImplSpec<'a, TyI, TyL, TyR> {
     type_props: &'a TypeProps<'a>,
     generics: &'a syn::Generics,
     trait_spec: CmpTraitSpec,
+    cmp_spec: &'a CmpSpec,
     ty_inner: TyI,
     ty_lhs: TyL,
     lhs_self_as_inner: &'a quote::Tokens,
@@ -393,6 +420,7 @@ where
             type_props,
             generics,
             ref trait_spec,
+            ref cmp_spec,
             ref ty_inner,
             ref ty_lhs,
             lhs_self_as_inner,
@@ -411,14 +439,14 @@ where
             Vec::new()
         };
         let method_name = trait_spec.method_name();
+        let fn_cmp = trait_spec.comparator(cmp_spec);
         let ty_ret = trait_spec.ty_ret();
         let (generics, _) = extend_generics(Cow::Borrowed(generics), 0, &extra_preds);
         let (impl_generics, _, where_clause) = generics.split_for_impl();
-        let fn_cmp = quote!(<#ty_inner as #target_trait<#ty_inner>>::#method_name);
         quote! {
             impl #impl_generics #target_trait<#ty_rhs> for #ty_lhs #where_clause {
                 fn #method_name(&self, other: &#ty_rhs) -> #ty_ret {
-                    #fn_cmp(#lhs_self_as_inner, #rhs_other_as_inner)
+                    #fn_cmp(#lhs_self_as_inner as &#ty_inner, #rhs_other_as_inner as &#ty_inner)
                 }
             }
         }
