@@ -36,7 +36,6 @@ pub fn gen_impl_ord(props: &TypeProps) -> quote::Tokens {
 
 /// Generates an impl for the target.
 pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens {
-    let _ = props;
     let trait_spec = match target {
         Derive::PartialEqInner
         | Derive::PartialEqInnerRev
