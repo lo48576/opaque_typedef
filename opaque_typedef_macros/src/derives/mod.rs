@@ -98,6 +98,8 @@ pub enum Derive {
     PartialOrdSelfCowAndInnerRev,
     /// `std::fmt::Pointer for Outer`.
     Pointer,
+    /// `std::cmp::Ord for Outer`.
+    Ord,
     /// `std::fmt::UpperExp for Outer`.
     UpperExp,
     /// `std::fmt::UpperHex for Outer`.
@@ -328,6 +330,8 @@ impl Derive {
                 "`#[opaque_typedef(derive({}))]` is not supported for sized types",
                 self.as_ref()
             ),
+            // `std::cmp::Ord` trait.
+            (Derive::Ord, _) => cmp::gen_impl_ord(props),
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;

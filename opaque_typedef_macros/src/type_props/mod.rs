@@ -111,10 +111,12 @@ impl ValidationSpec {
 
 #[derive(Default, Clone)]
 pub struct CmpSpec {
-    /// `PartialEq` comparator.
+    /// `PartialEq` and `Eq` comparator.
     pub partial_eq: Option<syn::Expr>,
     /// `PartialOrd` comparator.
     pub partial_ord: Option<syn::Expr>,
+    /// `Ord` comparator.
+    pub ord: Option<syn::Expr>,
 }
 
 impl CmpSpec {
@@ -129,6 +131,13 @@ impl CmpSpec {
         match self.partial_ord {
             Some(ref v) => v.into_tokens(),
             None => quote!(PartialOrd::partial_cmp),
+        }
+    }
+
+    pub fn ord(&self) -> quote::Tokens {
+        match self.ord {
+            Some(ref v) => v.into_tokens(),
+            None => quote!(Ord::cmp),
         }
     }
 }

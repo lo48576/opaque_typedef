@@ -317,9 +317,21 @@ fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
         })
     });
 
+    let ord = get_attr_by_name(&namevalues, "ord").map(|litstr| {
+        litstr.parse::<syn::Expr>().unwrap_or_else(|e| {
+            panic!(
+                "`#[opaque_typedef(cmp(ord = ..))]` is specified \
+                 but failed to parse `{}` as expression: {}",
+                litstr.value(),
+                e
+            )
+        })
+    });
+
     CmpSpec {
         partial_eq,
         partial_ord,
+        ord,
     }
 }
 
