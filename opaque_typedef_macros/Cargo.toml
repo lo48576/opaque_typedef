@@ -11,11 +11,11 @@ repository = "https://github.com/lo48576/opaque_typedef"
 proc-macro = true
 
 [dependencies]
-quote = "^0.4.2"
+quote = "^0.5"
 strum = "^0.9"
 strum_macros = "^0.9"
 # `full` feature is required to parse closures.
-syn = { version = "^0.12.13", features = ["full"] }
+syn = { version = "^0.13", features = ["full"] }
 
 [badges]
 travis-ci = { repository = "lo48576/opaque_typedef" }
