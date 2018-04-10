@@ -8,24 +8,38 @@
 //      it causes error "E0117".
 //      for detail, run `rustc --explain E0117`.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
-#[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
-                        Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
-                        IntoInner, PartialEq(Inner, InnerCow, SelfCow),
-                        PartialOrd(Inner, InnerCow, SelfCow)))]
+// About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
+#[repr(C)]
+#[opaque_typedef(
+    derive(
+        AsciiExt,
+        AsMut(Deref, Self_),
+        AsRef(Deref, Self_),
+        DefaultRef,
+        Deref,
+        DerefMut,
+        Display,
+        FromInner,
+        Into(Arc, Box, Rc, Inner),
+        PartialEq(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev),
+        PartialOrd(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev)
+    )
+)]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr {
-    #[opaque_typedef(inner)] inner: str,
+    #[opaque_typedef(inner)]
+    inner: str,
 }
 
 impl MyStr {
     /// Creates a new `&MyStr` from the given string slice.
     pub fn new(v: &str) -> &Self {
-        ::opaque_typedef::OpaqueTypedefUnsized::from_inner(v).unwrap()
+        ::opaque_typedef::OpaqueTypedefUnsized::from_inner(v)
     }
 
     /// Creates a new `&mut MyStr` from the given mutable string slice.
     pub fn new_mut(v: &mut str) -> &mut Self {
-        ::opaque_typedef::OpaqueTypedefUnsized::from_inner_mut(v).unwrap()
+        ::opaque_typedef::OpaqueTypedefUnsized::from_inner_mut(v)
     }
 
     /// Returns a reference to the inner string slice.
@@ -37,10 +51,20 @@ impl MyStr {
 
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(derive(AsMutDeref, AsMutInner, AsRefDeref, AsRefInner, Deref, DerefMut,
-                        Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner))]
-#[opaque_typedef(deref(target = "str", deref = "MyString::as_str",
-                       deref_mut = "MyString::as_mut_str"))]
+#[opaque_typedef(
+    derive(
+        AsMut(Deref, Inner),
+        AsRef(Deref, Inner),
+        Deref,
+        DerefMut,
+        Display,
+        FromInner,
+        IntoInner,
+        PartialEq(Inner, InnerRev),
+        PartialOrd(Inner, InnerRev)
+    )
+)]
+#[opaque_typedef(deref(target = "str", deref = "String::as_str", deref_mut = "String::as_mut_str"))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyString {
     inner: String,
@@ -49,7 +73,7 @@ pub struct MyString {
 impl MyString {
     /// Creates a new `MyString` from the given string.
     pub fn from_string(v: String) -> Self {
-        ::opaque_typedef::OpaqueTypedef::from_inner(v).unwrap()
+        ::opaque_typedef::OpaqueTypedef::from_inner(v)
     }
 
     /// Returns a reference to the inner string slice.

@@ -150,14 +150,13 @@ mod my_str {
         assert!(<&str as PartialEq<&MyStr>>::eq(&ok_str, &my_str));
     }
 
-    /*
     // `str` is the inner type of `MyStr`.
     // `OsStr` is the inner type of `Path`.
     // So the assertions like the below should be successful for `str` and `MyStr`.
     #[test]
     fn sample_partial_eq_path() {
-        use std::path::Path;
         use std::ffi::OsStr;
+        use std::path::Path;
         let ok_str = OsStr::new("foobar");
         let my_str = Path::new(ok_str);
         assert!(<Path as PartialEq<OsStr>>::eq(my_str, ok_str));
@@ -169,7 +168,6 @@ mod my_str {
         assert!(<&OsStr as PartialEq<Path>>::eq(&ok_str, my_str));
         assert!(<&OsStr as PartialEq<&Path>>::eq(&ok_str, &my_str));
     }
-    */
 
     #[test]
     fn partial_eq_inner_cow() {

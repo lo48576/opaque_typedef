@@ -1,8 +1,6 @@
 //! Custom derives for easy opaque typedef.
 #![recursion_limit = "128"]
 
-#[macro_use]
-extern crate lazy_static;
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;
@@ -12,38 +10,36 @@ extern crate strum_macros;
 extern crate syn;
 
 use proc_macro::TokenStream;
+use syn::DeriveInput;
 
-use utils::{Sizedness, TypeProperties};
+use type_props::{Sizedness, TypeProps};
 
 mod attrs;
 mod derives;
-mod fields;
-mod names;
+mod type_props;
 mod utils;
 
 
-/// The entrypoint for `#[derive(OpaqueTypedef)]`.
+/// The entrypoint for a `#[derive(OpaqueTypedef)]`-ed type.
 #[proc_macro_derive(OpaqueTypedef, attributes(opaque_typedef))]
 pub fn opaque_typedef(input: TokenStream) -> TokenStream {
-    let s = input.to_string();
-    let ast = syn::parse_derive_input(&s).unwrap();
-    let gen = gen_opaque_typedef(&ast, Sizedness::Sized);
-    gen.parse().unwrap()
+    let input: DeriveInput = syn::parse(input).unwrap();
+    let gen = gen_opaque_typedef_impls(input, Sizedness::Sized);
+    gen.into()
 }
 
 
-/// The entrypoint for `#[derive(OpaqueTypedefUnsized)]`.
+/// The entrypoint for a `#[derive(OpaqueTypedefUnsized)]`-ed type.
 #[proc_macro_derive(OpaqueTypedefUnsized, attributes(opaque_typedef))]
-pub fn opaque_typedef_slice(input: TokenStream) -> TokenStream {
-    let s = input.to_string();
-    let ast = syn::parse_derive_input(&s).unwrap();
-    let gen = gen_opaque_typedef(&ast, Sizedness::Unsized);
-    gen.parse().unwrap()
+pub fn opaque_typedef_unsized(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = syn::parse(input).unwrap();
+    let gen = gen_opaque_typedef_impls(input, Sizedness::Unsized);
+    gen.into()
 }
 
 
-/// Generates additional implementations for a `#[derive(OpaqueTypedef*)]`-ed type.
-fn gen_opaque_typedef(ast: &syn::DeriveInput, inner_sizedness: Sizedness) -> quote::Tokens {
-    let props = TypeProperties::from_ast(ast, inner_sizedness);
-    props.impl_traits()
+/// Generates additional impls for a `#[derive(OpaqueTypedef*)]`-ed type.
+fn gen_opaque_typedef_impls(input: DeriveInput, sizedness: Sizedness) -> quote::Tokens {
+    let props = TypeProps::load(&input, sizedness);
+    props.gen_impls()
 }

@@ -6,13 +6,13 @@ opaque_typedef:
 [![Documentation](https://docs.rs/opaque_typedef/badge.svg)](https://docs.rs/opaque_typedef)  
 opaque_typedef_macros:
 [![Latest version](https://img.shields.io/crates/v/opaque_typedef_macros.svg)](https://crates.io/crates/opaque_typedef_macros)
-[![Documentation](https://docs.rs/opaque_typedef_macros/badge.svg)](https://docs.rs/opaque_typedef_macros)
+<!--[![Documentation](https://docs.rs/opaque_typedef_macros/badge.svg)](https://docs.rs/opaque_typedef_macros)-->
 
 This is a proc-macro crate for [the Rust programming language](https://www.rust-lang.org/).
 
 This crate helps developers to define opaque typedef (strong typedef) types easily with less boilerplates.
 
-**NOTE**: This library is under development.
+**NOTE**: This library is under development and unstable.
 
 ## Opaque typedef
 
@@ -28,7 +28,7 @@ and you may want to implement some traits and don't want to implement some other
 
 opaque\_typedef crate helps you "derive" specific traits (i.e. reuse the traits implemented for internal types) for your type.
 
-To see example, see files under the `opaque_typedef_tests/src/` directory.
+To see example, see files under the [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_typedef/tree/develop/opaque_typedef_tests/src) directory.
 
 ## Terms
 Think `struct Outer(Inner);`:
@@ -41,11 +41,13 @@ Think `struct Outer(Inner);`:
 
 ## How to use
 
+Examples are in [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_typedef/tree/develop/opaque_typedef_tests/src).
+
 ### 1. Specify "extern crate"
 
 `Cargo.toml`:
 
-```
+```toml
 [dependencies]
 opaque_typedef = "^0.0.1"
 opaque_typedef_macros = "^0.0.1"
@@ -53,17 +55,17 @@ opaque_typedef_macros = "^0.0.1"
 
 `lib.rs` or `main.rs`:
 
-```
-extern crate opaque_typedef
+```rust
+extern crate opaque_typedef;
 #[macro_use]
-extern crate opaque_typedef_macros
+extern crate opaque_typedef_macros;
 ```
 
 ### 2. Derive `OpaqueTypedef` for sized types, `OpaqueTypedefUnsized` for unsized types
 
 Sized type:
 
-```
+```rust
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 pub struct MyString(String);
@@ -71,14 +73,19 @@ pub struct MyString(String);
 
 Unsized type:
 
-```
+```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+#[repr(C)]
 pub struct MyStr(str);
 ```
 
+Note that `#[repr(C)]` (or `#[repr(transparent)]`) is necessary for unsized types.
+
 Then you can use `OpaqueTypedef` trait or `OpaqueTypedefUnsized` trait.
 It will be useful to implement methods for your types!
+
+About the necessity of `#[repr(*)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
 
 ### 3. Specify if the mutable reference can be used for deriving traits (optional)
 
@@ -86,9 +93,10 @@ If you want opaque\_typedef to derive traits who might return mutable reference 
 or traits who might mutate inner value (such as `AddAssign`), you should specify `#[opaque_typedef(allow_mut_ref)]`.
 
 
-```
+```rust
 /// My string slice.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
+#[repr(C)]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr(str);
 ```
@@ -101,23 +109,181 @@ You can specify traits with `#[opaque_typedef(derive(Trait1, Trait2, ...))]`.
 
 For example:
 
-```
+```rust
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
-#[opaque_typedef(derive(AsciiExt, AsMutDeref, AsMutSelf, AsRefDeref, AsRefSelf, DefaultRef,
-                        Deref, DerefMut, Display, FromInner, IntoArc, IntoBox, IntoRc,
-                        IntoInner, PartialEq(Inner, InnerCow, SelfCow),
-                        PartialOrd(Inner, InnerCow, SelfCow)))]
+#[repr(C)]
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref,
+                        DerefMut, Display, FromInner, Into(Arc, Box, Rc, Inner),
+                        PartialEq(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev),
+                        PartialOrd(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev)))]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyStr(str);
 ```
 
 Note that some traits can be shortened:
 
+  * `AsMutDeref` can be written as `AsMut(Deref)`
+      + There is an exception:
+        `AsMutSelf` can be written as `AsMut(Self_)`, but not as `AsMut(Self)`.
+        This is because rustc expected identifiers inside the parens but `Self` is a keyword...
+  * `AsRefDeref` can be written as `AsRef(Deref)`, same way as `AsMut*`
+      + Shortened notation of `AsRefSelf` is `AsRef(Self_)`, same as that of `AsMutSelf`.
+  * `IntoRc` can be written as `Into(Rc)`
   * `PartialEqInner` can be written as `PartialEq(Inner)`
   * `PartialOrdInner, PartialOrdSelfCow` can be written as `PartialOrd(Inner, SelfCow)`
 
 To see lists of "derive"-able items, read the rest of the document or see
-[the source (`Derive` enum in `opaque_typedef_macros/src/derives.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives.rs).
+[the source (`Derive` enum in `opaque_typedef_macros/src/derives/mod.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives/mod.rs).
+
+### 4.1. Specify deref target (optional)
+
+If you specify `Deref`, `DerefMut`, `AsRefDeref` or something related to `Deref`, you can also specify "deref target" by `#[opaque_typedef(deref(...))]`.
+
+```rust
+/// My owned string.
+#[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(AsMut(Deref, Inner), AsRef(Deref, Inner), Deref, DerefMut, Display,
+                        FromInner, IntoInner, PartialEq(Inner, InnerRev),
+                        PartialOrd(Inner, InnerRev)))]
+#[opaque_typedef(deref(target = "str", deref = "String::as_str",
+                       deref_mut = "String::as_mut_str"))]
+#[opaque_typedef(allow_mut_ref)]
+pub struct MyString {
+    inner: String,
+}
+```
+
+Opaque\_typedef uses the inner type as the default deref target type, but you can use a different type as the example above.
+
+  * `target`:
+      + Deref target type.
+  * `deref`:
+      + Conversion function from a reference to the **inner** type into a **reference** to the outer type.
+      + The function should implement `Fn(&Inner) -> &DerefTarget`.
+  * `deref_mut`:
+      + Conversion function from a mutable reference to the **inner** type into a mutable **reference** to the outer type.
+      + The function should implement `Fn(&mut Inner) -> &mut DerefTarget`.
+
+In the example, `AsMutInner` implements `AsMut<String> for MyString`, and `AsMutDeref` implements `AsMut<str> for MyString`.
+
+If you don't specify `#[opaque_typedef(allow_mut_ref)]`, `deref_mut` would not be used and you can omit it.
+
+### 5. Specify custom validator (optional)
+
+You can specify custom validator.
+The value of inner type is validated on conversion into outer type.
+By custom validator, you can restrict the inner value.
+
+To use custom validator, specify these attributes:
+
+  * `validator`
+      + Validator function.
+        This should have types such as `Inner -> Result<Inner, Error>`.
+          - For sized types, `Inner -> Result<Inner, Error>`.
+            Validator can modify the given value and return the modified value.
+          - For unsized types, `&Inner -> Result<&Inner, Error>`.
+  * `error_type`
+      + Validation error type.
+        Validator specified by `validator` should use this type as error.
+      + This cannot be generic, and cannot use any type parameters of the outer types.
+  * `error_msg` (optional)
+      + Error message on panic when validation failed.
+        This value is used when panickable conversion failed, for example,
+        when invalid value is passed to `Outer::from_inner` (not `Outer::try_from_inner`).
+      + Internally, `unwrap()` will be used to panic when `error_msg` is absent,
+        and `expect(error_msg)` will be used when `error_msg` is specified.
+
+The example below is taken from [`opaque_typedef_tests/src/even32.rs`](opaque_typedef_tests/src/even32.rs)
+and [`opaque_typedef_tests/tests/even32.rs`](opaque_typedef_tests/tests/even32.rs).
+
+```rust
+/// Even `i32`.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(Binary, Deref, Display, FromInner, PartialEq(Inner, InnerRev),
+                        PartialOrd(Inner, InnerRev), LowerHex, Octal, UpperHex))]
+#[opaque_typedef(validation(validator = "validate_even32", error_type = "OddError",
+                            error_msg = "Failed to create `Even32`"))]
+pub struct Even32(i32);
+
+impl Even32 {
+    /// Returns the inner `i32` even value.
+    pub fn to_i32(&self) -> i32 {
+        self.0
+    }
+}
+
+/// A type of an error indicating the integer is an odd number, not even.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct OddError;
+
+fn validate_even32(v: i32) -> Result<i32, OddError> {
+    if v % 2 == 0 {
+        Ok(v)
+    } else {
+        Err(OddError)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn ok() {
+        let v = Even32::from(42);
+        assert_eq!(v.to_i32(), 42);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_odd() {
+        // Panics with message "Failed to create `Even32`: OddError".
+        let _ = Even32::from(3);
+    }
+}
+```
+
+### 6. Specify custom comparator (optional)
+
+You can use custom implementations for `PartialEq` and `PartialOrd`.
+
+To use custom comparator, specify these attributes:
+
+  * `partial_eq`
+      + Partial equality function.
+        This should have types such as `&Inner -> &Inner -> bool`.
+  * `partial_ord`
+      + Partial order function.
+        This should have types such as `&Inner -> &Inner -> Option<::std::cmp::Ordering>`.
+  * `ord`
+      + Total order function.
+        This should have types such as `&Inner -> &Inner -> ::std::cmp::Ordering`.
+      + `#[derive(Ord)]` doesn't use `PartialOrd::partial_cmp` impl, so they can be inconsistent by mistake.
+        Remember to **keep them (including `PartialEq::eq`) consistent**.
+
+The example below is taken from
+[`opaque_typedef_tests/src/reverse_order.rs`](opaque_typedef_tests/src/reverse_order.rs)
+and [`opaque_typedef_tests/tests/reverse_order.rs`](opaque_typedef_tests/tests/reverse_order.rs).
+
+```rust
+/// A wrapper type with reverse order.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Ord, Hash, OpaqueTypedef)]
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref), AsRef(Deref), Binary, Deref, DerefMut, Display,
+                        FromInner, LowerHex, Octal, PartialOrdSelf, UpperHex))]
+#[opaque_typedef(cmp(partial_ord = "(|a, b| PartialOrd::partial_cmp(a, b).map(|o| o.reverse()))",
+                     ord = "(|a, b| Ord::cmp(a, b).reverse())"))]
+#[opaque_typedef(allow_mut_ref)]
+pub struct ReverseOrderSized<T>(pub T);
+
+
+#[test]
+fn reverse_i32() {
+    use std::cmp::Ordering;
+    assert_eq!(ReverseOrderSized(3i32).partial_cmp(&ReverseOrderSized(2i32)), Some(Ordering::Less));
+    assert!(ReverseOrderSized(3i32) < ReverseOrderSized(2i32));
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(2i32)), Ordering::Less);
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(3i32)), Ordering::Equal);
+    assert_eq!(ReverseOrderSized(3i32).cmp(&ReverseOrderSized(4i32)), Ordering::Greater);
+}
+```
 
 ## Features
 
@@ -153,22 +319,44 @@ The traits below are supported:
   * `DerefMut` implements `std::ops::DerefMut for Outer`.
   * `Display` implements `std::fmt::Display for Outer`.
   * `FromInner` implements `From<Inner> for Outer`.
-  * `IntoArc` implements `From<Outer> for Arc<Outer>`.
-  * `IntoBox` implements `From<Outer> for Box<Outer>`.
+  * `IntoArc` implements `From<Outer> for Arc<Outer>` (if possible) or `Into<Arc<Outer>> for Outer`.
+  * `IntoBox` implements `From<Outer> for Box<Outer>` (if possible) or `Into<Box<Outer>> for Outer`.
   * `IntoInner` implements `From<Outer> for Inner`.
-  * `IntoRc` implements `From<Outer> for Rc<Outer>`.
+  * `IntoRc` implements `From<Outer> for Rc<Outer>` (if possible) or `Into<Rc<Outer>> for Outer`.
   * `LowerExp` implements `std::fmt::LowerExp for Outer`.
   * `LowerHex` implements `std::fmt::LowerHex for Outer`.
   * `Octal` implements `std::fmt::Octal for Outer`.
   * `PartialEqInner` implements `PartialEq<Inner> for Outer` and similar ones.
+  * `PartialEqInnerRev` implements `PartialEq<Outer> for Inner` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqInner`.
   * `PartialEqInnerCow` implements `PartialEq<Cow<Inner>> for Outer` and similar ones.
+  * `PartialEqInnerCowRev` implements `PartialEq<Outer> for Cow<Inner>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqInnerCow`.
+  * `PartialEqSelf` implements `PartialEq<Outer> for Outer` and similar ones.
+      + This is very similar to `#[derive(PartialEq)]`, but it will be useful with custom comparison.
   * `PartialEqSelfCow` implements `PartialEq<Cow<Outer>> for Outer` and similar ones.
+  * `PartialEqSelfCowRev` implements `PartialEq<Outer> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqSelfCow`.
   * `PartialEqSelfCowAndInner` implements `PartialEq<Cow<Outer>> for Inner` and similar ones.
+  * `PartialEqSelfCowAndInnerCow` implements `PartialEq<Inner> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialEqSelfCowAndInner`.
   * `PartialOrdInner` implements `PartialOrd<Inner> for Outer` and similar ones.
+  * `PartialOrdInnerRev` implements `PartialOrd<Outer> for Inner` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdInner`.
   * `PartialOrdInnerCow` implements `PartialOrd<Cow<Inner>> for Outer` and similar ones.
+  * `PartialOrdInnerCowRev` implements `PartialOrd<Outer> for Cow<Inner>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdInnerCow`.
+  * `PartialOrdSelf` implements `PartialOrd<Outer> for Outer` and similar ones.
+      + This is very similar to `#[derive(PartialOrd)]`, but it will be useful with custom comparison.
   * `PartialOrdSelfCow` implements `PartialOrd<Cow<Outer>> for Outer` and similar ones.
+  * `PartialOrdSelfCowRev` implements `PartialOrd<Outer> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdSelfCow`.
   * `PartialOrdSelfCowAndInner` implements `PartialOrd<Cow<Outer>> for Inner` and similar ones.
+  * `PartialOrdSelfCowAndInnerCow` implements `PartialOrd<Inner> for Cow<Outer>` and similar ones.
+      + This is reverse (operands order swapped) version of `PartialOrdSelfCowAndInner`.
   * `Pointer` implements `std::fmt::Pointer for Outer`.
+  * `Ord` implements `std::cmp::Ord for Outer`.
+      + This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
   * `UpperExp` implements `std::fmt::UpperExp for Outer`.
   * `UpperHex` implements `std::fmt::UpperHex for Outer`.
 
@@ -176,12 +364,10 @@ Note that some (such as `DefaultRef`) are available only for sized types.
 
 ## TODO
 
-  * Custom comparison functions
-  * Validation on conversion from inner type into outer type
   * More traits
-      + Especially `std::ops::*` binary operators
-      + Nightly-only traits (`TryFrom`, `TryInto`, ...)
-  * Type parameters support
+      + Especially `std::ops::*` binary operators ([#7](https://github.com/lo48576/opaque_typedef/issues/7))
+      + Nightly-only traits (`TryFrom`, `TryInto`, ...) ([#6](https://github.com/lo48576/opaque_typedef/issues/6))
+  * Support types with multiple fields ([#9](https://github.com/lo48576/opaque_typedef/issues/9))
 
 ## License
 

@@ -1,11 +1,12 @@
 [package]
 name = "opaque_typedef"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
 license = "MIT/Apache-2.0"
-readme = "../README.md"
+readme = "README.md"
 description = "Supports defining opaque typedefs"
 repository = "https://github.com/lo48576/opaque_typedef"
+keywords = ["derive", "opaque", "strong", "typedef"]
 
 [dependencies]
 
