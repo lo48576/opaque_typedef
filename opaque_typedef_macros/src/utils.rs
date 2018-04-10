@@ -72,18 +72,7 @@ where
     }
     if !new_where_predicates.is_empty() {
         let generics = generics_cow.to_mut();
-        if generics.where_clause.is_none() {
-            let where_clause = syn::WhereClause {
-                where_token: Default::default(),
-                predicates: Default::default(),
-            };
-            generics.where_clause = Some(where_clause);
-        }
-        assert!(generics.where_clause.is_some());
-        let where_clause = generics
-            .where_clause
-            .as_mut()
-            .expect("Shhould never happen");
+        let where_clause = generics.make_where_clause();
         for pred in new_where_predicates {
             where_clause.predicates.push(pred.clone());
         }

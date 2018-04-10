@@ -41,8 +41,9 @@
 ### Changed (non-breaking)
 
   * Bump dependencies.
-      + Use `quote ^0.4.2` and `syn ^0.12.13` crates.
-        They had breaking changes and it is why `opaque_typedef_macros` is totally rewritten
+      + Use `quote ^0.5` and `syn ^0.13.1` crates.
+        They had breaking changes (from `quote ^0.3` and `syn ^0.11`),
+        and it is why `opaque_typedef_macros` is totally rewritten
         ([5bf3c37](https://github.com/lo48576/opaque_typedef/commit/5bf3c37aa1e89aff6812785b90f789e73e0f11af)).
       + Use `strum ^0.9`.
 
