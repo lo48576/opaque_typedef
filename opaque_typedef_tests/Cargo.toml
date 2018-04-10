@@ -1,9 +1,9 @@
 [package]
 name = "opaque_typedef_tests"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
 license = "MIT/Apache-2.0"
-readme = "../README.md"
+readme = "README.md"
 
 [dependencies]
 #opaque_typedef = "^0.0.1"
