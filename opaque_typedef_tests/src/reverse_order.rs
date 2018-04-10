@@ -10,9 +10,28 @@
 // `impl<T> From<ReverseOrderSized<T>> for MyType`,
 // then they conflicts (in case of `T = MyType`, they are both
 // `From<ReverseOrderSized<MyType>> for MyType`).
-#[opaque_typedef(derive(AsciiExt, AsMut(Deref), AsRef(Deref), Binary, Deref, DerefMut, Display,
-                        FromInner, LowerHex, Octal, Ord, PartialOrdSelf, UpperHex))]
-#[opaque_typedef(cmp(partial_ord = "(|a, b| PartialOrd::partial_cmp(a, b).map(|o| o.reverse()))",
-                     ord = "(|a, b| Ord::cmp(a, b).reverse())"))]
+#[opaque_typedef(
+    derive(
+        AsciiExt,
+        AsMut(Deref),
+        AsRef(Deref),
+        Binary,
+        Deref,
+        DerefMut,
+        Display,
+        FromInner,
+        LowerHex,
+        Octal,
+        Ord,
+        PartialOrdSelf,
+        UpperHex
+    )
+)]
+#[opaque_typedef(
+    cmp(
+        partial_ord = "(|a, b| PartialOrd::partial_cmp(a, b).map(|o| o.reverse()))",
+        ord = "(|a, b| Ord::cmp(a, b).reverse())"
+    )
+)]
 #[opaque_typedef(allow_mut_ref)]
 pub struct ReverseOrderSized<T>(pub T);

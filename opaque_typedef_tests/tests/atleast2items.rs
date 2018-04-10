@@ -94,20 +94,16 @@ mod slice {
             let ok_slice: &[_] = &[0i32, 1];
             let my_slice = SliceAtLeast2Items::new(ok_slice);
             assert!(<SliceAtLeast2Items<i32> as PartialEq<[i32]>>::eq(
-                my_slice,
-                ok_slice
+                my_slice, ok_slice
             ));
             assert!(<SliceAtLeast2Items<i32> as PartialEq<&[i32]>>::eq(
-                my_slice,
-                &ok_slice
+                my_slice, &ok_slice
             ));
             assert!(<&SliceAtLeast2Items<i32> as PartialEq<[i32]>>::eq(
-                &my_slice,
-                ok_slice
+                &my_slice, ok_slice
             ));
             assert!(<&SliceAtLeast2Items<i32> as PartialEq<&[i32]>>::eq(
-                &my_slice,
-                &ok_slice
+                &my_slice, &ok_slice
             ));
             //assert!(<[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(ok_slice, my_slice));
             //assert!(<[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(ok_slice, &my_slice));
@@ -231,8 +227,7 @@ mod vec {
             let ok_vec = vec![0i32, 1];
             let my_vec = VecAtLeast2Items::from_vec(ok_vec.clone());
             assert!(<VecAtLeast2Items<i32> as PartialEq<Vec<i32>>>::eq(
-                &my_vec,
-                &ok_vec
+                &my_vec, &ok_vec
             ));
             assert_eq!(ok_vec.as_slice(), my_vec.as_slice());
         }
