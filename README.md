@@ -12,7 +12,7 @@ This is a proc-macro crate for [the Rust programming language](https://www.rust-
 
 This crate helps developers to define opaque typedef (strong typedef) types easily with less boilerplates.
 
-**NOTE**: This library is under development.
+**NOTE**: This library is under development and unstable.
 
 ## Opaque typedef
 
@@ -364,10 +364,10 @@ Note that some (such as `DefaultRef`) are available only for sized types.
 
 ## TODO
 
-  * Custom comparison functions
   * More traits
-      + Especially `std::ops::*` binary operators
-      + Nightly-only traits (`TryFrom`, `TryInto`, ...)
+      + Especially `std::ops::*` binary operators ([#7](https://github.com/lo48576/opaque_typedef/issues/7))
+      + Nightly-only traits (`TryFrom`, `TryInto`, ...) ([#6](https://github.com/lo48576/opaque_typedef/issues/6))
+  * Support types with multiple fields ([#9](https://github.com/lo48576/opaque_typedef/issues/9))
 
 ## License
 
