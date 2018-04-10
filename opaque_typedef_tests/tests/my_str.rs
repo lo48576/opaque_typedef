@@ -155,8 +155,8 @@ mod my_str {
     // So the assertions like the below should be successful for `str` and `MyStr`.
     #[test]
     fn sample_partial_eq_path() {
-        use std::path::Path;
         use std::ffi::OsStr;
+        use std::path::Path;
         let ok_str = OsStr::new("foobar");
         let my_str = Path::new(ok_str);
         assert!(<Path as PartialEq<OsStr>>::eq(my_str, ok_str));

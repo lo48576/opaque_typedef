@@ -105,10 +105,20 @@ mod slice {
             assert!(<&SliceAtLeast2Items<i32> as PartialEq<&[i32]>>::eq(
                 &my_slice, &ok_slice
             ));
-            //assert!(<[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(ok_slice, my_slice));
-            //assert!(<[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(ok_slice, &my_slice));
-            //assert!(<&[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(&ok_slice, my_slice));
-            //assert!(<&[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(&ok_slice, &my_slice));
+            /*
+            assert!(<[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(
+                ok_slice, my_slice
+            ));
+            assert!(<[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(
+                ok_slice, &my_slice
+            ));
+            assert!(<&[i32] as PartialEq<SliceAtLeast2Items<i32>>>::eq(
+                &ok_slice, my_slice
+            ));
+            assert!(<&[i32] as PartialEq<&SliceAtLeast2Items<i32>>>::eq(
+                &ok_slice, &my_slice
+            ));
+            */
             // You can't `assert_eq!(ok_slice, my_slice);`, but you can
             // `assert_eq!(ok_slice, my_slice.as_slice());`.
             assert_eq!(ok_slice, my_slice.as_slice());
