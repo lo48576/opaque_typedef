@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.0.2] - 2018-04-10
+
 * `opaque_typedef_macros` is [(almost) completely rewritten](https://github.com/lo48576/opaque_typedef/commit/5bf3c37aa1e89aff6812785b90f789e73e0f11af)!
 * Many errors in README document are fixed.
 * Custom comparator, validator, and generics are supported! :tada:
@@ -56,7 +58,7 @@
       + If omitted, the inner type is used as deref target.
 
 
-## [0.0.1] 2017-12-06
+## [0.0.1] - 2017-12-06
 
 Initial release.
 
@@ -68,5 +70,6 @@ Initial release.
 
 
 
-[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.1...develop>
+[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.2...develop>
+[0.0.2]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.2>
 [0.0.1]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.1>

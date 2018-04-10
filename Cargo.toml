@@ -4,3 +4,7 @@ members = [
     "opaque_typedef_macros",
     "opaque_typedef_tests",
 ]
+
+[patch.crates-io]
+opaque_typedef = { path = "opaque_typedef" }
+opaque_typedef_macros = { path = "opaque_typedef_macros" }
