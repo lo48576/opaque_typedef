@@ -6,6 +6,7 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 description = "Supports defining opaque typedefs"
 repository = "https://github.com/lo48576/opaque_typedef"
+keywords = ["derive", "opaque", "strong", "typedef"]
 
 [lib]
 proc-macro = true
