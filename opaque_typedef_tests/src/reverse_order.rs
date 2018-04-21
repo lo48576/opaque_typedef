@@ -12,7 +12,6 @@
 // `From<ReverseOrderSized<MyType>> for MyType`).
 #[opaque_typedef(
     derive(
-        AsciiExt,
         AsMut(Deref),
         AsRef(Deref),
         Binary,

@@ -149,17 +149,6 @@ mod slice {
         }
     }
 
-    #[test]
-    fn ascii_ext() {
-        use std::ascii::AsciiExt;
-
-        let s0 = &[b'a', b'b'];
-        let v0 = SliceAtLeast2Items::new(s0);
-        let s1 = &[b'A', b'B'];
-        let v1 = SliceAtLeast2Items::new(s1);
-        assert!(v0.eq_ignore_ascii_case(v1));
-    }
-
     mod as_ref {
         use super::*;
 
@@ -253,20 +242,6 @@ mod vec {
                 Some(Ordering::Equal)
             );
         }
-    }
-
-    // `std::ascii::AsciiExt` is deprecated, so `eq_ignore_ascii_case()` here
-    // will be resolved to `slice::eq_ignore_ascii_case` by rust >= 1.23.0.
-    #[test]
-    #[allow(unused_imports)]
-    fn ascii_ext() {
-        use std::ascii::AsciiExt;
-
-        let s0 = vec![b'a', b'b'];
-        let v0 = VecAtLeast2Items::from_vec(s0);
-        let s1 = vec![b'A', b'B'];
-        let v1 = VecAtLeast2Items::from_vec(s1);
-        assert!(v0.eq_ignore_ascii_case(&v1));
     }
 
     mod as_ref {

@@ -12,7 +12,6 @@
 #[repr(C)]
 #[opaque_typedef(
     derive(
-        AsciiExt,
         AsMut(Deref, Self_),
         AsRef(Deref, Self_),
         DefaultRef,
