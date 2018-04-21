@@ -12,6 +12,7 @@ keywords = ["derive", "opaque", "strong", "typedef"]
 proc-macro = true
 
 [dependencies]
+lazy_static = "^1.0"
 quote = "^0.5"
 strum = "^0.9"
 strum_macros = "^0.9"

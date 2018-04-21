@@ -1,6 +1,7 @@
 //! Derive targets.
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 use quote;
 use quote::ToTokens;
@@ -164,64 +165,65 @@ impl Derive {
 
     /// Returns derive targets specified by `parent(child1, child2, ...)` style.
     fn append_from_nested_names(parent: &str, children: &[&str], derives: &mut Vec<Self>) {
-        match parent {
-            "AsMut" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Deref" => Derive::AsMutDeref,
-                    "Inner" => Derive::AsMutInner,
-                    // `Self` cannot be an identifier but parsed as identifier...
-                    "Self_" => Derive::AsMutSelf,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "AsRef" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Deref" => Derive::AsRefDeref,
-                    "Inner" => Derive::AsRefInner,
-                    // `Self` cannot be an identifier but parsed as identifier...
-                    "Self_" => Derive::AsRefSelf,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "Into" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Arc" => Derive::IntoArc,
-                    "Box" => Derive::IntoBox,
-                    "Inner" => Derive::IntoInner,
-                    "Rc" => Derive::IntoRc,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "PartialEq" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Inner" => Derive::PartialEqInner,
-                    "InnerRev" => Derive::PartialEqInnerRev,
-                    "InnerCow" => Derive::PartialEqInnerCow,
-                    "InnerCowRev" => Derive::PartialEqInnerCowRev,
-                    "Self_" => Derive::PartialEqSelf,
-                    "SelfCow" => Derive::PartialEqSelfCow,
-                    "SelfCowRev" => Derive::PartialEqSelfCowRev,
-                    "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
-                    "SelfCowAndInnerRev" => Derive::PartialEqSelfCowAndInnerRev,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "PartialOrd" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Inner" => Derive::PartialOrdInner,
-                    "InnerRev" => Derive::PartialOrdInnerRev,
-                    "InnerCow" => Derive::PartialOrdInnerCow,
-                    "InnerCowRev" => Derive::PartialOrdInnerCowRev,
-                    "Self_" => Derive::PartialOrdSelf,
-                    "SelfCow" => Derive::PartialOrdSelfCow,
-                    "SelfCowRev" => Derive::PartialOrdSelfCowRev,
-                    "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
-                    "SelfCowAndInnerRev" => Derive::PartialOrdSelfCowAndInnerRev,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            _ => abort_on_unknown_derive_target(format_args!("{}(..)", parent)),
+        lazy_static! {
+            static ref NESTED_DERIVES: HashMap<&'static str, HashMap<&'static str, Derive>> = {
+                // Note that `Self` cannot be used for child target, because the
+                // token `Self` cannot be an identifier but parsed as
+                // identifier.
+                const TARGETS: &[(&'static str, &'static [(&'static str, Derive)])] = &[
+                    ("AsMut", &[
+                        ("Deref", Derive::AsMutDeref),
+                        ("Inner", Derive::AsMutInner),
+                        ("Self_", Derive::AsMutSelf),
+                    ]),
+                    ("AsRef", &[
+                        ("Deref", Derive::AsRefDeref),
+                        ("Inner", Derive::AsRefInner),
+                        ("Self_", Derive::AsRefSelf),
+                    ]),
+                    ("Into", &[
+                        ("Arc", Derive::IntoArc),
+                        ("Box", Derive::IntoBox),
+                        ("Inner", Derive::IntoInner),
+                        ("Rc", Derive::IntoRc),
+                    ]),
+                    ("PartialEq", &[
+                        ("Inner", Derive::PartialEqInner),
+                        ("InnerRev", Derive::PartialEqInnerRev),
+                        ("InnerCow", Derive::PartialEqInnerCow),
+                        ("InnerCowRev", Derive::PartialEqInnerCowRev),
+                        ("Self_", Derive::PartialEqSelf),
+                        ("SelfCow", Derive::PartialEqSelfCow),
+                        ("SelfCowRev", Derive::PartialEqSelfCowRev),
+                        ("SelfCowAndInner", Derive::PartialEqSelfCowAndInner),
+                        ("SelfCowAndInnerRev", Derive::PartialEqSelfCowAndInnerRev),
+                    ]),
+                    ("PartialOrd", &[
+                        ("Inner", Derive::PartialOrdInner),
+                        ("InnerRev", Derive::PartialOrdInnerRev),
+                        ("InnerCow", Derive::PartialOrdInnerCow),
+                        ("InnerCowRev", Derive::PartialOrdInnerCowRev),
+                        ("Self_", Derive::PartialOrdSelf),
+                        ("SelfCow", Derive::PartialOrdSelfCow),
+                        ("SelfCowRev", Derive::PartialOrdSelfCowRev),
+                        ("SelfCowAndInner", Derive::PartialOrdSelfCowAndInner),
+                        ("SelfCowAndInnerRev", Derive::PartialOrdSelfCowAndInnerRev),
+                    ]),
+                ];
+                TARGETS.into_iter().map(|&(parent, subtargets)| {
+                    (parent, subtargets.into_iter().map(|&v| v).collect())
+                }).collect()
+            };
         }
+
+        let submap = NESTED_DERIVES.get(parent).unwrap_or_else(|| {
+            abort_on_unknown_derive_target(format_args!("{}(..)", parent));
+        });
+        derives.extend(children.into_iter().map(|&child| {
+            submap.get(child).unwrap_or_else(|| {
+                abort_on_unknown_derive_target(format_args!("{}({})", parent, child));
+            })
+        }));
     }
 
     /// Generates impls for the auto-derive target.
