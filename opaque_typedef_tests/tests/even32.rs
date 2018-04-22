@@ -162,3 +162,35 @@ mod fmt {
         assert_eq!(format!("{:#X}", v), "0x2A");
     }
 }
+
+mod ops {
+    use super::*;
+
+    #[test]
+    fn add() {
+        let raw_x = 10;
+        let x = Even32::from(raw_x);
+        let raw_y = 32;
+        let y = Even32::from(raw_y);
+        let raw_sum = raw_x + raw_y;
+        let sum = Even32::from(raw_sum);
+        // raw_raw
+        assert_eq!(x + y, sum);
+    }
+
+    #[test]
+    fn add_ref() {
+        let raw_x = 10;
+        let x = Even32::from(raw_x);
+        let raw_y = 32;
+        let y = Even32::from(raw_y);
+        let raw_sum = raw_x + raw_y;
+        let sum = Even32::from(raw_sum);
+        // raw_ref
+        assert_eq!(x + &y, sum);
+        // ref_raw
+        assert_eq!(&x + y, sum);
+        // ref_ref
+        assert_eq!(&x + &y, sum);
+    }
+}

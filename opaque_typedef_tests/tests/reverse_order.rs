@@ -71,4 +71,41 @@ mod sized {
             assert_reverse_cmp("hello", "world");
         }
     }
+
+    mod ops {
+        use super::*;
+
+        #[test]
+        fn add() {
+            let raw_x = 10;
+            let x = ReverseOrderSized::from(raw_x);
+            let raw_y = 32;
+            let y = ReverseOrderSized::from(raw_y);
+            let raw_sum = raw_x + raw_y;
+            let sum = ReverseOrderSized::from(raw_sum);
+            // raw_raw
+            assert_eq!(x + y, sum);
+            assert_eq!(x + raw_y, sum);
+            //assert_eq!(raw_x + y, sum);
+        }
+
+        #[test]
+        fn add_ref() {
+            let raw_x = 10;
+            let x = ReverseOrderSized::from(raw_x);
+            let raw_y = 32;
+            let y = ReverseOrderSized::from(raw_y);
+            let raw_sum = raw_x + raw_y;
+            let sum = ReverseOrderSized::from(raw_sum);
+            // raw_ref
+            assert_eq!(x + &y, sum);
+            assert_eq!(x + &raw_y, sum);
+            // ref_raw
+            assert_eq!(&x + y, sum);
+            assert_eq!(&x + raw_y, sum);
+            // ref_ref
+            assert_eq!(&x + &y, sum);
+            assert_eq!(&x + &raw_y, sum);
+        }
+    }
 }

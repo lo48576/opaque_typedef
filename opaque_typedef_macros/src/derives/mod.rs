@@ -11,16 +11,31 @@ use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
 use utils::extend_generics;
 
+use self::ops::{BinOpSpec, OperandTypeSpec};
+
 mod as_ref;
 mod cmp;
 mod convert;
 mod deref;
 mod fmt;
+mod ops;
 
 
 /// Auto-derive target trait.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString)]
 pub enum Derive {
+    /// `std::ops::Add<Outer> for Outer`.
+    AddSelf,
+    /// `std::ops::Add<Inner> for Outer`.
+    AddInner,
+    /// `std::ops::Add<Outer> for Inner`.
+    AddInnerRev,
+    /// `std::ops::Add<Outer> for Outer` variations.
+    AddRefSelf,
+    /// `std::ops::Add<Inner> for Outer` variations.
+    AddRefInner,
+    /// `std::ops::Add<Outer> for Inner` variations.
+    AddRefInnerRev,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
     /// `AsMut<DerefTarget> for Outer`.
@@ -209,6 +224,16 @@ impl Derive {
                         ("SelfCowAndInner", Derive::PartialOrdSelfCowAndInner),
                         ("SelfCowAndInnerRev", Derive::PartialOrdSelfCowAndInnerRev),
                     ]),
+                    ("Add", &[
+                        ("Self_", Derive::AddSelf),
+                        ("Inner", Derive::AddInner),
+                        ("InnerRev", Derive::AddInnerRev),
+                    ]),
+                    ("AddRef", &[
+                        ("Self_", Derive::AddRefSelf),
+                        ("Inner", Derive::AddRefInner),
+                        ("InnerRev", Derive::AddRefInnerRev),
+                    ]),
                 ];
                 TARGETS.into_iter().map(|&(parent, subtargets)| {
                     (parent, subtargets.into_iter().map(|&v| v).collect())
@@ -334,6 +359,53 @@ impl Derive {
             ),
             // `std::cmp::Ord` trait.
             (Derive::Ord, _) => cmp::gen_impl_ord(props),
+            // `std::ops::Add` trait.
+            (Derive::AddSelf, _)
+            | (Derive::AddInner, _)
+            | (Derive::AddInnerRev, _)
+            | (Derive::AddRefSelf, _)
+            | (Derive::AddRefInner, _)
+            | (Derive::AddRefInnerRev, _) => {
+                let op_spec = match *self {
+                    Derive::AddSelf
+                    | Derive::AddInner
+                    | Derive::AddInnerRev
+                    | Derive::AddRefSelf
+                    | Derive::AddRefInner
+                    | Derive::AddRefInnerRev => BinOpSpec::Add,
+                    _ => unreachable!(),
+                };
+                let lhs_spec = match *self {
+                    Derive::AddSelf
+                    | Derive::AddInner
+                    | Derive::AddRefSelf
+                    | Derive::AddRefInner => OperandTypeSpec::Outer,
+                    | Derive::AddInnerRev | Derive::AddRefInnerRev => OperandTypeSpec::Inner,
+                    _ => unreachable!(),
+                };
+                let rhs_spec = match *self {
+                    Derive::AddSelf
+                    | Derive::AddInnerRev
+                    | Derive::AddRefSelf
+                    | Derive::AddRefInnerRev => OperandTypeSpec::Outer,
+                    | Derive::AddInner | Derive::AddRefInner => OperandTypeSpec::Inner,
+                    _ => unreachable!(),
+                };
+                let is_raw = match *self {
+                    Derive::AddSelf | Derive::AddInner | Derive::AddInnerRev => true,
+                    | Derive::AddRefSelf | Derive::AddRefInner | Derive::AddRefInnerRev => false,
+                    _ => unreachable!(),
+                };
+                match (is_raw, props.inner_sizedness) {
+                    (true, Sizedness::Sized) => {
+                        ops::gen_impl_bin_op_sized_raw(props, op_spec, lhs_spec, rhs_spec)
+                    },
+                    (false, Sizedness::Sized) => {
+                        ops::gen_impl_bin_op_sized_ref(props, op_spec, lhs_spec, rhs_spec)
+                    },
+                    (_, Sizedness::Unsized) => unimplemented!(),
+                }
+            },
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;
