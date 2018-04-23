@@ -5,8 +5,10 @@
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(
     derive(
-        Add(Self_, Inner, InnerRev),
-        AddRef(Self_, Inner, InnerRev),
+        Add(Self_),
+        AddRef(Self_),
+        AddAssign(Self_),
+        AddAssignRef(Self_),
         Binary,
         Deref,
         Display,

@@ -123,6 +123,8 @@ impl OperandSpec {
 pub enum BinOpSpec {
     /// `std::ops::Add`.
     Add,
+    /// `std::ops::AddAssign`.
+    AddAssign,
 }
 
 impl BinOpSpec {
@@ -130,6 +132,7 @@ impl BinOpSpec {
     pub fn tokens_trait_path(&self) -> quote::Tokens {
         match *self {
             BinOpSpec::Add => quote!(::std::ops::Add),
+            BinOpSpec::AddAssign => quote!(::std::ops::AddAssign),
         }
     }
 
@@ -137,18 +140,20 @@ impl BinOpSpec {
     pub fn tokens_method(&self) -> quote::Tokens {
         match *self {
             BinOpSpec::Add => quote!(add),
+            BinOpSpec::AddAssign => quote!(add_assign),
         }
     }
 
     pub fn tokens_arg_self(&self) -> quote::Tokens {
         match *self {
             BinOpSpec::Add => quote!(self),
+            BinOpSpec::AddAssign => quote!(&mut self),
         }
     }
 
     pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add => ty_rhs.into_tokens(),
+            BinOpSpec::Add | BinOpSpec::AddAssign => ty_rhs.into_tokens(),
         }
     }
 
@@ -157,28 +162,56 @@ impl BinOpSpec {
             BinOpSpec::Add => quote! {
                 type Output = #ty_outer;
             },
+            BinOpSpec::AddAssign => quote!(),
         }
     }
 
     pub fn tokens_ty_ret(&self) -> quote::Tokens {
         match *self {
             BinOpSpec::Add => quote!(Self::Output),
+            BinOpSpec::AddAssign => quote!(()),
         }
     }
 
-    pub fn tokens_body<T, U, V>(
-        &self,
-        ty_outer: T,
-        helper_trait: U,
-        inner_result: V,
-    ) -> quote::Tokens
+    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> quote::Tokens
     where
         T: ToTokens,
         U: ToTokens,
-        V: ToTokens,
     {
         match *self {
-            BinOpSpec::Add => quote!(<#ty_outer as #helper_trait>::from_inner(#inner_result)),
+            BinOpSpec::Add => quote!(<#ty_outer as #helper_trait>::from_inner),
+            BinOpSpec::AddAssign => quote!(),
+        }
+    }
+
+    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> quote::Tokens {
+        let expr = quote!(self);
+        match *self {
+            BinOpSpec::Add => match (lhs_spec.type_, lhs_spec.wrapper) {
+                (OperandTypeSpec::Inner, _) => expr,
+                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
+                    props.tokens_outer_expr_into_inner(expr)
+                },
+                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
+                    props.tokens_outer_expr_as_inner(expr)
+                },
+            },
+            BinOpSpec::AddAssign => match (lhs_spec.type_, lhs_spec.wrapper) {
+                (OperandTypeSpec::Inner, _) => quote!(&mut #expr),
+                (OperandTypeSpec::Outer, _) => props.tokens_outer_expr_as_inner_mut_nocheck(expr),
+            },
+        }
+    }
+
+    pub fn tokens_rhs_inner_arg<T: ToTokens>(
+        &self,
+        props: &TypeProps,
+        rhs_spec: OperandSpec,
+        rhs_expr: T,
+    ) -> quote::Tokens {
+        let inner = rhs_spec.tokens_inner(props, rhs_expr);
+        match *self {
+            BinOpSpec::Add | BinOpSpec::AddAssign => inner,
         }
     }
 }
@@ -207,28 +240,47 @@ pub fn gen_impl_bin_op_sized_ref(
     rhs_spec: OperandTypeSpec,
 ) -> quote::Tokens {
     assert!(lhs_spec != OperandTypeSpec::Inner || rhs_spec != OperandTypeSpec::Inner);
-    let raw_ref = gen_impl_bin_op_sized(
-        props,
-        op_spec,
-        lhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
-        rhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
-    );
-    let ref_raw = gen_impl_bin_op_sized(
-        props,
-        op_spec,
-        lhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
-        rhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
-    );
-    let ref_ref = gen_impl_bin_op_sized(
-        props,
-        op_spec,
-        lhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
-        rhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
-    );
-    quote! {
-        #raw_ref
-        #ref_raw
-        #ref_ref
+    let gen_raw_ref = || {
+        gen_impl_bin_op_sized(
+            props,
+            op_spec,
+            lhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
+            rhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
+        )
+    };
+    let gen_ref_raw = || {
+        gen_impl_bin_op_sized(
+            props,
+            op_spec,
+            lhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
+            rhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
+        )
+    };
+    let gen_ref_ref = || {
+        gen_impl_bin_op_sized(
+            props,
+            op_spec,
+            lhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
+            rhs_spec.with_wrapper(OperandTypeWrapperSpec::Ref),
+        )
+    };
+    match op_spec {
+        BinOpSpec::Add => {
+            let raw_ref = gen_raw_ref();
+            let ref_raw = gen_ref_raw();
+            let ref_ref = gen_ref_ref();
+            quote! {
+                #raw_ref
+                #ref_raw
+                #ref_ref
+            }
+        },
+        BinOpSpec::AddAssign => {
+            let raw_ref = gen_raw_ref();
+            quote! {
+                #raw_ref
+            }
+        },
     }
 }
 
@@ -296,18 +348,10 @@ pub fn gen_impl_bin_op_sized(
     let associated = op_spec.tokens_associated_stuff(&ty_outer_generic);
     let method_name = op_spec.tokens_method();
     let ty_ret = op_spec.tokens_ty_ret();
-
-    let body = {
-        let self_inner = lhs_spec.tokens_inner(props, quote!(self));
-        let other_inner = rhs_spec.tokens_inner(props, &other);
-        let inner_result = quote! {
-            #target_trait::#method_name(
-                #self_inner,
-                #other_inner
-            )
-        };
-        op_spec.tokens_body(&ty_outer_generic, props.helper_trait(), inner_result)
-    };
+    let self_inner = op_spec.tokens_lhs_inner_arg(props, lhs_spec);
+    let other_inner = op_spec.tokens_rhs_inner_arg(props, rhs_spec, &other);
+    let from_inner_result =
+        op_spec.tokens_from_inner_result(&ty_outer_generic, props.helper_trait());
 
     quote! {
         impl #impl_generics #target_trait<#ty_rhs_impl> for #ty_lhs_impl
@@ -316,7 +360,12 @@ pub fn gen_impl_bin_op_sized(
             #associated
 
             fn #method_name(#lhs_self_arg, #other: #ty_rhs_arg) -> #ty_ret {
-                #body
+                #from_inner_result(
+                    #target_trait::#method_name(
+                        #self_inner,
+                        #other_inner
+                    )
+                )
             }
         }
     }

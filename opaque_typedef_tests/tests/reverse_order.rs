@@ -107,5 +107,39 @@ mod sized {
             assert_eq!(&x + &y, sum);
             assert_eq!(&x + &raw_y, sum);
         }
+
+        #[test]
+        fn add_assign() {
+            /*
+            let raw_x = 10;
+            let x = ReverseOrderSized::from(raw_x);
+            let raw_y = 32;
+            let y = ReverseOrderSized::from(raw_y);
+            let raw_sum = raw_x + raw_y;
+            let sum = ReverseOrderSized::from(raw_sum);
+            // raw_raw
+            {
+                let mut x = x;
+                x += y;
+                assert_eq!(x, sum);
+            }
+            {
+                let mut x = x;
+                x += raw_y;
+                assert_eq!(x, sum);
+            }
+            // raw_ref
+            {
+                let mut x = x;
+                x += &y;
+                assert_eq!(x, sum);
+            }
+            {
+                let mut x = x;
+                x += &raw_y;
+                assert_eq!(x, sum);
+            }
+            */
+        }
     }
 }

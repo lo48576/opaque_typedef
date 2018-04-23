@@ -36,6 +36,14 @@ pub enum Derive {
     AddRefInner,
     /// `std::ops::Add<Outer> for Inner` variations.
     AddRefInnerRev,
+    /// `std::ops::AddAssign<Outer> for Outer`.
+    AddAssignSelf,
+    /// `std::ops::AddAssign<Inner> for Outer`.
+    AddAssignInner,
+    /// `std::ops::AddAssign<&Outer> for Outer`.
+    AddAssignRefSelf,
+    /// `std::ops::AddAssign<&Inner> for Outer`.
+    AddAssignRefInner,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
     /// `AsMut<DerefTarget> for Outer`.
@@ -234,6 +242,14 @@ impl Derive {
                         ("Inner", Derive::AddRefInner),
                         ("InnerRev", Derive::AddRefInnerRev),
                     ]),
+                    ("AddAssign", &[
+                        ("Self_", Derive::AddAssignSelf),
+                        ("Inner", Derive::AddAssignInner),
+                    ]),
+                    ("AddAssignRef", &[
+                        ("Self_", Derive::AddAssignRefSelf),
+                        ("Inner", Derive::AddAssignRefInner),
+                    ]),
                 ];
                 TARGETS.into_iter().map(|&(parent, subtargets)| {
                     (parent, subtargets.into_iter().map(|&v| v).collect())
@@ -359,13 +375,17 @@ impl Derive {
             ),
             // `std::cmp::Ord` trait.
             (Derive::Ord, _) => cmp::gen_impl_ord(props),
-            // `std::ops::Add` trait.
+            // `std::ops::*` binary operator traits.
             (Derive::AddSelf, _)
             | (Derive::AddInner, _)
             | (Derive::AddInnerRev, _)
             | (Derive::AddRefSelf, _)
             | (Derive::AddRefInner, _)
-            | (Derive::AddRefInnerRev, _) => {
+            | (Derive::AddRefInnerRev, _)
+            | (Derive::AddAssignSelf, _)
+            | (Derive::AddAssignInner, _)
+            | (Derive::AddAssignRefSelf, _)
+            | (Derive::AddAssignRefInner, _) => {
                 let op_spec = match *self {
                     Derive::AddSelf
                     | Derive::AddInner
@@ -373,13 +393,21 @@ impl Derive {
                     | Derive::AddRefSelf
                     | Derive::AddRefInner
                     | Derive::AddRefInnerRev => BinOpSpec::Add,
+                    Derive::AddAssignSelf
+                    | Derive::AddAssignInner
+                    | Derive::AddAssignRefSelf
+                    | Derive::AddAssignRefInner => BinOpSpec::AddAssign,
                     _ => unreachable!(),
                 };
                 let lhs_spec = match *self {
                     Derive::AddSelf
                     | Derive::AddInner
                     | Derive::AddRefSelf
-                    | Derive::AddRefInner => OperandTypeSpec::Outer,
+                    | Derive::AddRefInner
+                    | Derive::AddAssignSelf
+                    | Derive::AddAssignInner
+                    | Derive::AddAssignRefSelf
+                    | Derive::AddAssignRefInner => OperandTypeSpec::Outer,
                     | Derive::AddInnerRev | Derive::AddRefInnerRev => OperandTypeSpec::Inner,
                     _ => unreachable!(),
                 };
@@ -387,13 +415,26 @@ impl Derive {
                     Derive::AddSelf
                     | Derive::AddInnerRev
                     | Derive::AddRefSelf
-                    | Derive::AddRefInnerRev => OperandTypeSpec::Outer,
-                    | Derive::AddInner | Derive::AddRefInner => OperandTypeSpec::Inner,
+                    | Derive::AddRefInnerRev
+                    | Derive::AddAssignSelf
+                    | Derive::AddAssignRefSelf => OperandTypeSpec::Outer,
+                    | Derive::AddInner
+                    | Derive::AddRefInner
+                    | Derive::AddAssignInner
+                    | Derive::AddAssignRefInner => OperandTypeSpec::Inner,
                     _ => unreachable!(),
                 };
                 let is_raw = match *self {
-                    Derive::AddSelf | Derive::AddInner | Derive::AddInnerRev => true,
-                    | Derive::AddRefSelf | Derive::AddRefInner | Derive::AddRefInnerRev => false,
+                    Derive::AddSelf
+                    | Derive::AddInner
+                    | Derive::AddInnerRev
+                    | Derive::AddAssignSelf
+                    | Derive::AddAssignInner => true,
+                    | Derive::AddRefSelf
+                    | Derive::AddRefInner
+                    | Derive::AddRefInnerRev
+                    | Derive::AddAssignRefSelf
+                    | Derive::AddAssignRefInner => false,
                     _ => unreachable!(),
                 };
                 match (is_raw, props.inner_sizedness) {
