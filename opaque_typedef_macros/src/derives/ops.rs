@@ -139,6 +139,48 @@ impl BinOpSpec {
             BinOpSpec::Add => quote!(add),
         }
     }
+
+    pub fn tokens_arg_self(&self) -> quote::Tokens {
+        match *self {
+            BinOpSpec::Add => quote!(self),
+        }
+    }
+
+    pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> quote::Tokens {
+        match *self {
+            BinOpSpec::Add => ty_rhs.into_tokens(),
+        }
+    }
+
+    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+        match *self {
+            BinOpSpec::Add => quote! {
+                type Output = #ty_outer;
+            },
+        }
+    }
+
+    pub fn tokens_ty_ret(&self) -> quote::Tokens {
+        match *self {
+            BinOpSpec::Add => quote!(Self::Output),
+        }
+    }
+
+    pub fn tokens_body<T, U, V>(
+        &self,
+        ty_outer: T,
+        helper_trait: U,
+        inner_result: V,
+    ) -> quote::Tokens
+    where
+        T: ToTokens,
+        U: ToTokens,
+        V: ToTokens,
+    {
+        match *self {
+            BinOpSpec::Add => quote!(<#ty_outer as #helper_trait>::from_inner(#inner_result)),
+        }
+    }
 }
 
 
@@ -205,7 +247,7 @@ pub fn gen_impl_bin_op_sized(
     let ty_inner = props.field_inner.ty();
     let target_trait = op_spec.tokens_trait_path();
 
-    let (generics, ty_lhs, ty_rhs, ty_lhs_inner, ty_rhs_inner) = {
+    let (generics, ty_lhs_impl, ty_rhs_impl, ty_lhs_inner, ty_rhs_inner) = {
         let num_extra_lts_lhs = lhs_spec.num_required_extra_lifetimes();
         let num_extra_lts_rhs = rhs_spec.num_required_extra_lifetimes();
         let num_extra_lts = num_extra_lts_lhs + num_extra_lts_rhs;
@@ -215,15 +257,21 @@ pub fn gen_impl_bin_op_sized(
         } else {
             (generics, vec![])
         };
-        let ty_lhs =
+        let ty_lhs_impl =
             lhs_spec.tokens_ty_operand(&new_lts[..num_extra_lts_lhs], ty_inner, &ty_outer_generic);
-        let ty_rhs =
+        let ty_rhs_impl =
             rhs_spec.tokens_ty_operand(&new_lts[num_extra_lts_lhs..], ty_inner, &ty_outer_generic);
         let ty_lhs_inner =
             lhs_spec.tokens_ty_operand_inner(&new_lts[..num_extra_lts_lhs], ty_inner);
         let ty_rhs_inner =
             rhs_spec.tokens_ty_operand_inner(&new_lts[num_extra_lts_lhs..], ty_inner);
-        (generics, ty_lhs, ty_rhs, ty_lhs_inner, ty_rhs_inner)
+        (
+            generics,
+            ty_lhs_impl,
+            ty_rhs_impl,
+            ty_lhs_inner,
+            ty_rhs_inner,
+        )
     };
     let (generics, _) = {
         let extra_preds = if props.has_type_params() {
@@ -242,27 +290,33 @@ pub fn gen_impl_bin_op_sized(
     };
     let (impl_generics, _, where_clause) = generics.split_for_impl();
 
-    let from_inner = {
-        let helper_trait = props.helper_trait();
-        quote!(<#ty_outer_generic as #helper_trait>::from_inner)
-    };
-    let self_inner = lhs_spec.tokens_inner(props, quote!(self));
-    let other_inner = rhs_spec.tokens_inner(props, quote!(other));
+    let other = quote!(other);
+    let lhs_self_arg = op_spec.tokens_arg_self();
+    let ty_rhs_arg = op_spec.tokens_ty_rhs_arg(&ty_rhs_impl);
+    let associated = op_spec.tokens_associated_stuff(&ty_outer_generic);
     let method_name = op_spec.tokens_method();
+    let ty_ret = op_spec.tokens_ty_ret();
+
+    let body = {
+        let self_inner = lhs_spec.tokens_inner(props, quote!(self));
+        let other_inner = rhs_spec.tokens_inner(props, &other);
+        let inner_result = quote! {
+            #target_trait::#method_name(
+                #self_inner,
+                #other_inner
+            )
+        };
+        op_spec.tokens_body(&ty_outer_generic, props.helper_trait(), inner_result)
+    };
 
     quote! {
-        impl #impl_generics #target_trait<#ty_rhs> for #ty_lhs
+        impl #impl_generics #target_trait<#ty_rhs_impl> for #ty_lhs_impl
         #where_clause
         {
-            type Output = #ty_outer_generic;
+            #associated
 
-            fn #method_name(self, other: #ty_rhs) -> Self::Output {
-                #from_inner(
-                    #target_trait::#method_name(
-                        #self_inner,
-                        #other_inner
-                    )
-                )
+            fn #method_name(#lhs_self_arg, #other: #ty_rhs_arg) -> #ty_ret {
+                #body
             }
         }
     }
