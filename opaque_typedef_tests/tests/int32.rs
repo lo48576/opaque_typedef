@@ -234,6 +234,7 @@ mod ops {
         };
     }
 
+    // Arithmetic.
     test_binop_num!(add, 10, 32, ::std::ops::Add::add, direct);
     test_binop_num!(add_ref, 10, 32, ::std::ops::Add::add, references);
     test_binop_num!(div, 32, 10, ::std::ops::Div::div, direct);
@@ -244,6 +245,13 @@ mod ops {
     test_binop_num!(rem_ref, 32, 10, ::std::ops::Rem::rem, references);
     test_binop_num!(sub, 10, 32, ::std::ops::Sub::sub, direct);
     test_binop_num!(sub_ref, 10, 32, ::std::ops::Sub::sub, references);
+    // Bitwise.
+    test_binop_num!(bitand, 10, 32, ::std::ops::BitAnd::bitand, direct);
+    test_binop_num!(bitand_ref, 10, 32, ::std::ops::BitAnd::bitand, references);
+    test_binop_num!(bitor, 10, 32, ::std::ops::BitAnd::bitand, direct);
+    test_binop_num!(bitor_ref, 10, 32, ::std::ops::BitAnd::bitand, references);
+    test_binop_num!(bitxor, 10, 32, ::std::ops::BitAnd::bitand, direct);
+    test_binop_num!(bitxor_ref, 10, 32, ::std::ops::BitAnd::bitand, references);
 
     macro_rules! test_binop_num_assign {
         ($testname:ident, $x:expr, $y:expr, $method:expr,direct) => {
@@ -294,6 +302,7 @@ mod ops {
         };
     }
 
+    // Arithmetic.
     test_binop_num_assign!(
         add_assign,
         10,
@@ -362,6 +371,50 @@ mod ops {
         10,
         32,
         ::std::ops::SubAssign::sub_assign,
+        references
+    );
+
+    // Bitwise.
+    test_binop_num_assign!(
+        bitand_assign,
+        10,
+        32,
+        ::std::ops::BitAndAssign::bitand_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        bitand_assign_ref,
+        10,
+        32,
+        ::std::ops::BitAndAssign::bitand_assign,
+        references
+    );
+    test_binop_num_assign!(
+        bitor_assign,
+        10,
+        32,
+        ::std::ops::BitOrAssign::bitor_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        bitor_assign_ref,
+        10,
+        32,
+        ::std::ops::BitOrAssign::bitor_assign,
+        references
+    );
+    test_binop_num_assign!(
+        bitxor_assign,
+        10,
+        32,
+        ::std::ops::BitXorAssign::bitxor_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        bitxor_assign_ref,
+        10,
+        32,
+        ::std::ops::BitXorAssign::bitxor_assign,
         references
     );
 }

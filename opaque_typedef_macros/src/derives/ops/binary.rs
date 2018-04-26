@@ -30,6 +30,63 @@ pub enum BinOpSpec {
         )
     )]
     AddAssign,
+    /// `std::ops::BitAnd`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitAnd",
+            method = "bitand",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
+    )]
+    BitAnd,
+    /// `std::ops::AddAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitAndAssign",
+            method = "bitand_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
+    BitAndAssign,
+    /// `std::ops::BitOr`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitOr", method = "bitor", self_ = "self", ty_ret = "Self::Output"
+        )
+    )]
+    BitOr,
+    /// `std::ops::AddAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitOrAssign",
+            method = "bitor_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
+    BitOrAssign,
+    /// `std::ops::BitXor`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitXor",
+            method = "bitxor",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
+    )]
+    BitXor,
+    /// `std::ops::AddAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::BitXorAssign",
+            method = "bitxor_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
+    BitXorAssign,
     /// `std::ops::Div`.
     #[strum(
         props(trait_ = "::std::ops::Div", method = "div", self_ = "self", ty_ret = "Self::Output")
@@ -128,6 +185,12 @@ impl BinOpSpec {
         match *self {
             BinOpSpec::Add
             | BinOpSpec::AddAssign
+            | BinOpSpec::BitAnd
+            | BinOpSpec::BitAndAssign
+            | BinOpSpec::BitOr
+            | BinOpSpec::BitOrAssign
+            | BinOpSpec::BitXor
+            | BinOpSpec::BitXorAssign
             | BinOpSpec::Div
             | BinOpSpec::DivAssign
             | BinOpSpec::Mul
@@ -141,12 +204,22 @@ impl BinOpSpec {
 
     pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+            BinOpSpec::Add
+            | BinOpSpec::BitAnd
+            | BinOpSpec::BitOr
+            | BinOpSpec::BitXor
+            | BinOpSpec::Div
+            | BinOpSpec::Mul
+            | BinOpSpec::Rem
+            | BinOpSpec::Sub => {
                 quote! {
                     type Output = #ty_outer;
                 }
             },
             BinOpSpec::AddAssign
+            | BinOpSpec::BitAndAssign
+            | BinOpSpec::BitOrAssign
+            | BinOpSpec::BitXorAssign
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
@@ -164,10 +237,18 @@ impl BinOpSpec {
         U: ToTokens,
     {
         match *self {
-            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
-                quote!(<#ty_outer as #helper_trait>::from_inner)
-            },
+            BinOpSpec::Add
+            | BinOpSpec::BitAnd
+            | BinOpSpec::BitOr
+            | BinOpSpec::BitXor
+            | BinOpSpec::Div
+            | BinOpSpec::Mul
+            | BinOpSpec::Rem
+            | BinOpSpec::Sub => quote!(<#ty_outer as #helper_trait>::from_inner),
             BinOpSpec::AddAssign
+            | BinOpSpec::BitAndAssign
+            | BinOpSpec::BitOrAssign
+            | BinOpSpec::BitXorAssign
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
@@ -178,18 +259,26 @@ impl BinOpSpec {
     pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> quote::Tokens {
         let expr = quote!(self);
         match *self {
-            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
-                match (lhs_spec.type_, lhs_spec.wrapper) {
-                    (OperandTypeSpec::Inner, _) => expr,
-                    (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
-                        props.tokens_outer_expr_into_inner(expr)
-                    },
-                    (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
-                        props.tokens_outer_expr_as_inner(expr)
-                    },
-                }
+            BinOpSpec::Add
+            | BinOpSpec::BitAnd
+            | BinOpSpec::BitOr
+            | BinOpSpec::BitXor
+            | BinOpSpec::Div
+            | BinOpSpec::Mul
+            | BinOpSpec::Rem
+            | BinOpSpec::Sub => match (lhs_spec.type_, lhs_spec.wrapper) {
+                (OperandTypeSpec::Inner, _) => expr,
+                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
+                    props.tokens_outer_expr_into_inner(expr)
+                },
+                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
+                    props.tokens_outer_expr_as_inner(expr)
+                },
             },
             BinOpSpec::AddAssign
+            | BinOpSpec::BitAndAssign
+            | BinOpSpec::BitOrAssign
+            | BinOpSpec::BitXorAssign
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
@@ -209,11 +298,17 @@ impl BinOpSpec {
         let inner = rhs_spec.tokens_inner(props, rhs_expr);
         match *self {
             BinOpSpec::Add
+            | BinOpSpec::BitAnd
+            | BinOpSpec::BitOr
+            | BinOpSpec::BitXor
             | BinOpSpec::Div
             | BinOpSpec::Mul
             | BinOpSpec::Rem
             | BinOpSpec::Sub
             | BinOpSpec::AddAssign
+            | BinOpSpec::BitAndAssign
+            | BinOpSpec::BitOrAssign
+            | BinOpSpec::BitXorAssign
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
@@ -271,7 +366,14 @@ pub fn gen_impl_sized_ref(
         )
     };
     match op_spec {
-        BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+        BinOpSpec::Add
+        | BinOpSpec::BitAnd
+        | BinOpSpec::BitOr
+        | BinOpSpec::BitXor
+        | BinOpSpec::Div
+        | BinOpSpec::Mul
+        | BinOpSpec::Rem
+        | BinOpSpec::Sub => {
             let raw_ref = gen_raw_ref();
             let ref_raw = gen_ref_raw();
             let ref_ref = gen_ref_ref();
@@ -282,6 +384,9 @@ pub fn gen_impl_sized_ref(
             }
         },
         BinOpSpec::AddAssign
+        | BinOpSpec::BitAndAssign
+        | BinOpSpec::BitOrAssign
+        | BinOpSpec::BitXorAssign
         | BinOpSpec::DivAssign
         | BinOpSpec::MulAssign
         | BinOpSpec::RemAssign

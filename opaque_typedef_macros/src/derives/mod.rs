@@ -55,6 +55,96 @@ pub enum Derive {
     /// `std::ops::AddAssign<&Inner> for Outer`.
     #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
     AddAssignRefInner,
+    /// `std::ops::BitAnd<Outer> for Outer`.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitAndSelf,
+    /// `std::ops::BitAnd<Inner> for Outer`.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitAndInner,
+    /// `std::ops::BitAnd<Outer> for Inner`.
+    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitAndInnerRev,
+    /// `std::ops::BitAnd<Outer> for Outer` variations.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitAndRefSelf,
+    /// `std::ops::BitAnd<Inner> for Outer` variations.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitAndRefInner,
+    /// `std::ops::BitAnd<Outer> for Inner` variations.
+    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitAndRefInnerRev,
+    /// `std::ops::BitAndAssign<Outer> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitAndAssignSelf,
+    /// `std::ops::BitAndAssign<Inner> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitAndAssignInner,
+    /// `std::ops::BitAndAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitAndAssignRefSelf,
+    /// `std::ops::BitAndAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitAndAssignRefInner,
+    /// `std::ops::BitOr<Outer> for Outer`.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitOrSelf,
+    /// `std::ops::BitOr<Inner> for Outer`.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitOrInner,
+    /// `std::ops::BitOr<Outer> for Inner`.
+    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitOrInnerRev,
+    /// `std::ops::BitOr<Outer> for Outer` variations.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitOrRefSelf,
+    /// `std::ops::BitOr<Inner> for Outer` variations.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitOrRefInner,
+    /// `std::ops::BitOr<Outer> for Inner` variations.
+    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitOrRefInnerRev,
+    /// `std::ops::BitOrAssign<Outer> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitOrAssignSelf,
+    /// `std::ops::BitOrAssign<Inner> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitOrAssignInner,
+    /// `std::ops::BitOrAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitOrAssignRefSelf,
+    /// `std::ops::BitOrAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitOrAssignRefInner,
+    /// `std::ops::BitXor<Outer> for Outer`.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitXorSelf,
+    /// `std::ops::BitXor<Inner> for Outer`.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitXorInner,
+    /// `std::ops::BitXor<Outer> for Inner`.
+    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitXorInnerRev,
+    /// `std::ops::BitXor<Outer> for Outer` variations.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitXorRefSelf,
+    /// `std::ops::BitXor<Inner> for Outer` variations.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitXorRefInner,
+    /// `std::ops::BitXor<Outer> for Inner` variations.
+    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitXorRefInnerRev,
+    /// `std::ops::BitXorAssign<Outer> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitXorAssignSelf,
+    /// `std::ops::BitXorAssign<Inner> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitXorAssignInner,
+    /// `std::ops::BitXorAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitXorAssignRefSelf,
+    /// `std::ops::BitXorAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitXorAssignRefInner,
     /// `std::ops::Div<Outer> for Outer`.
     #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
     DivSelf,
@@ -380,6 +470,60 @@ impl Derive {
                     ("AddAssignRef", &[
                         ("Self_", Derive::AddAssignRefSelf),
                         ("Inner", Derive::AddAssignRefInner),
+                    ]),
+                    ("BitAnd", &[
+                        ("Self_", Derive::BitAndSelf),
+                        ("Inner", Derive::BitAndInner),
+                        ("InnerRev", Derive::BitAndInnerRev),
+                    ]),
+                    ("BitAndRef", &[
+                        ("Self_", Derive::BitAndRefSelf),
+                        ("Inner", Derive::BitAndRefInner),
+                        ("InnerRev", Derive::BitAndRefInnerRev),
+                    ]),
+                    ("BitAndAssign", &[
+                        ("Self_", Derive::BitAndAssignSelf),
+                        ("Inner", Derive::BitAndAssignInner),
+                    ]),
+                    ("BitAndAssignRef", &[
+                        ("Self_", Derive::BitAndAssignRefSelf),
+                        ("Inner", Derive::BitAndAssignRefInner),
+                    ]),
+                    ("BitOr", &[
+                        ("Self_", Derive::BitOrSelf),
+                        ("Inner", Derive::BitOrInner),
+                        ("InnerRev", Derive::BitOrInnerRev),
+                    ]),
+                    ("BitOrRef", &[
+                        ("Self_", Derive::BitOrRefSelf),
+                        ("Inner", Derive::BitOrRefInner),
+                        ("InnerRev", Derive::BitOrRefInnerRev),
+                    ]),
+                    ("BitOrAssign", &[
+                        ("Self_", Derive::BitOrAssignSelf),
+                        ("Inner", Derive::BitOrAssignInner),
+                    ]),
+                    ("BitOrAssignRef", &[
+                        ("Self_", Derive::BitOrAssignRefSelf),
+                        ("Inner", Derive::BitOrAssignRefInner),
+                    ]),
+                    ("BitXor", &[
+                        ("Self_", Derive::BitXorSelf),
+                        ("Inner", Derive::BitXorInner),
+                        ("InnerRev", Derive::BitXorInnerRev),
+                    ]),
+                    ("BitXorRef", &[
+                        ("Self_", Derive::BitXorRefSelf),
+                        ("Inner", Derive::BitXorRefInner),
+                        ("InnerRev", Derive::BitXorRefInnerRev),
+                    ]),
+                    ("BitXorAssign", &[
+                        ("Self_", Derive::BitXorAssignSelf),
+                        ("Inner", Derive::BitXorAssignInner),
+                    ]),
+                    ("BitXorAssignRef", &[
+                        ("Self_", Derive::BitXorAssignRefSelf),
+                        ("Inner", Derive::BitXorAssignRefInner),
                     ]),
                     ("Div", &[
                         ("Self_", Derive::DivSelf),
