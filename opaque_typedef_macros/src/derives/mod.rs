@@ -11,7 +11,8 @@ use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
 use utils::extend_generics;
 
-use self::ops::{BinOpSpec, OperandTypeSpec};
+use self::ops::binary::BinOpSpec;
+use self::ops::OperandTypeSpec;
 
 mod as_ref;
 mod cmp;
@@ -439,10 +440,10 @@ impl Derive {
                 };
                 match (is_raw, props.inner_sizedness) {
                     (true, Sizedness::Sized) => {
-                        ops::gen_impl_bin_op_sized_raw(props, op_spec, lhs_spec, rhs_spec)
+                        ops::binary::gen_impl_sized_raw(props, op_spec, lhs_spec, rhs_spec)
                     },
                     (false, Sizedness::Sized) => {
-                        ops::gen_impl_bin_op_sized_ref(props, op_spec, lhs_spec, rhs_spec)
+                        ops::binary::gen_impl_sized_ref(props, op_spec, lhs_spec, rhs_spec)
                     },
                     (_, Sizedness::Unsized) => unimplemented!(),
                 }
