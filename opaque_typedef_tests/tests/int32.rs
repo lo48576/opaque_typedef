@@ -193,81 +193,175 @@ mod convert {
 mod ops {
     use super::*;
 
-    #[test]
-    fn add() {
-        let raw_x = 10;
-        let x = Int32::from(raw_x);
-        let raw_y = 32;
-        let y = Int32::from(raw_y);
-        let raw_sum = raw_x + raw_y;
-        let sum = Int32::from(raw_sum);
-        // raw_raw
-        assert_eq!(x + y, sum);
-        assert_eq!(x + raw_y, sum);
-        assert_eq!(raw_x + y, sum);
+    macro_rules! test_binop_num {
+        ($testname:ident, $x:expr, $y:expr, $method:expr,direct) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_y = $y;
+                let y = Int32::from(raw_y);
+                let raw_result = $method(raw_x, raw_y);
+                let result = Int32::from(raw_result);
+                // raw_raw
+                assert_eq!($method(x, y), result);
+                assert_eq!($method(x, raw_y), result);
+                assert_eq!($method(raw_x, y), result);
+            }
+        };
+        ($testname:ident, $x:expr, $y:expr, $method:expr,references) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_y = $y;
+                let y = Int32::from(raw_y);
+                let raw_result = $method(raw_x, raw_y);
+                let result = Int32::from(raw_result);
+                // raw_ref
+                assert_eq!($method(x, &y), result);
+                assert_eq!($method(x, &raw_y), result);
+                assert_eq!($method(raw_x, &y), result);
+                // ref_raw
+                assert_eq!($method(&x, y), result);
+                assert_eq!($method(&x, raw_y), result);
+                assert_eq!($method(&raw_x, y), result);
+                // ref_ref
+                assert_eq!($method(&x, &y), result);
+                assert_eq!($method(&x, &raw_y), result);
+                assert_eq!($method(&raw_x, &y), result);
+            }
+        };
     }
 
-    #[test]
-    fn add_ref() {
-        let raw_x = 10;
-        let x = Int32::from(raw_x);
-        let raw_y = 32;
-        let y = Int32::from(raw_y);
-        let raw_sum = raw_x + raw_y;
-        let sum = Int32::from(raw_sum);
-        // raw_ref
-        assert_eq!(x + &y, sum);
-        assert_eq!(x + &raw_y, sum);
-        assert_eq!(raw_x + &y, sum);
-        // ref_raw
-        assert_eq!(&x + y, sum);
-        assert_eq!(&x + raw_y, sum);
-        assert_eq!(&raw_x + y, sum);
-        // ref_ref
-        assert_eq!(&x + &y, sum);
-        assert_eq!(&x + &raw_y, sum);
-        assert_eq!(&raw_x + &y, sum);
+    test_binop_num!(add, 10, 32, ::std::ops::Add::add, direct);
+    test_binop_num!(add_ref, 10, 32, ::std::ops::Add::add, references);
+    test_binop_num!(div, 32, 10, ::std::ops::Div::div, direct);
+    test_binop_num!(div_ref, 32, 10, ::std::ops::Div::div, references);
+    test_binop_num!(mul, 10, 32, ::std::ops::Mul::mul, direct);
+    test_binop_num!(mul_ref, 10, 32, ::std::ops::Mul::mul, references);
+    test_binop_num!(rem, 32, 10, ::std::ops::Rem::rem, direct);
+    test_binop_num!(rem_ref, 32, 10, ::std::ops::Rem::rem, references);
+    test_binop_num!(sub, 10, 32, ::std::ops::Sub::sub, direct);
+    test_binop_num!(sub_ref, 10, 32, ::std::ops::Sub::sub, references);
+
+    macro_rules! test_binop_num_assign {
+        ($testname:ident, $x:expr, $y:expr, $method:expr,direct) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_y = $y;
+                let y = Int32::from(raw_y);
+                let mut raw_result = raw_x;
+                $method(&mut raw_result, raw_y);
+                let result = Int32::from(raw_result);
+                // raw_raw
+                {
+                    let mut x = x;
+                    $method(&mut x, y);
+                    assert_eq!(x, result);
+                }
+                {
+                    let mut x = x;
+                    $method(&mut x, raw_y);
+                    assert_eq!(x, result);
+                }
+            }
+        };
+        ($testname:ident, $x:expr, $y:expr, $method:expr,references) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_y = $y;
+                let y = Int32::from(raw_y);
+                let mut raw_result = raw_x;
+                $method(&mut raw_result, raw_y);
+                let result = Int32::from(raw_result);
+                // raw_ref
+                {
+                    let mut x = x;
+                    $method(&mut x, &y);
+                    assert_eq!(x, result);
+                }
+                {
+                    let mut x = x;
+                    $method(&mut x, &raw_y);
+                    assert_eq!(x, result);
+                }
+            }
+        };
     }
 
-    #[test]
-    fn add_assign() {
-        let raw_x = 10;
-        let x = Int32::from(raw_x);
-        let raw_y = 32;
-        let y = Int32::from(raw_y);
-        let raw_sum = raw_x + raw_y;
-        let sum = Int32::from(raw_sum);
-        // raw_raw
-        {
-            let mut x = x;
-            x += y;
-            assert_eq!(x, sum);
-        }
-        {
-            let mut x = x;
-            x += raw_y;
-            assert_eq!(x, sum);
-        }
-    }
-
-    #[test]
-    fn add_assign_ref() {
-        let raw_x = 10;
-        let x = Int32::from(raw_x);
-        let raw_y = 32;
-        let y = Int32::from(raw_y);
-        let raw_sum = raw_x + raw_y;
-        let sum = Int32::from(raw_sum);
-        // raw_ref
-        {
-            let mut x = x;
-            x += &y;
-            assert_eq!(x, sum);
-        }
-        {
-            let mut x = x;
-            x += &raw_y;
-            assert_eq!(x, sum);
-        }
-    }
+    test_binop_num_assign!(
+        add_assign,
+        10,
+        32,
+        ::std::ops::AddAssign::add_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        add_assign_ref,
+        10,
+        32,
+        ::std::ops::AddAssign::add_assign,
+        references
+    );
+    test_binop_num_assign!(
+        div_assign,
+        32,
+        10,
+        ::std::ops::DivAssign::div_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        div_assign_ref,
+        32,
+        10,
+        ::std::ops::DivAssign::div_assign,
+        references
+    );
+    test_binop_num_assign!(
+        mul_assign,
+        10,
+        32,
+        ::std::ops::MulAssign::mul_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        mul_assign_ref,
+        10,
+        32,
+        ::std::ops::MulAssign::mul_assign,
+        references
+    );
+    test_binop_num_assign!(
+        rem_assign,
+        32,
+        10,
+        ::std::ops::RemAssign::rem_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        rem_assign_ref,
+        32,
+        10,
+        ::std::ops::RemAssign::rem_assign,
+        references
+    );
+    test_binop_num_assign!(
+        sub_assign,
+        10,
+        32,
+        ::std::ops::SubAssign::sub_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        sub_assign_ref,
+        10,
+        32,
+        ::std::ops::SubAssign::sub_assign,
+        references
+    );
 }

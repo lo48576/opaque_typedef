@@ -19,6 +19,22 @@ pub enum BinOpSpec {
     Add,
     /// `std::ops::AddAssign`.
     AddAssign,
+    /// `std::ops::Div`.
+    Div,
+    /// `std::ops::DivAssign`.
+    DivAssign,
+    /// `std::ops::Mul`.
+    Mul,
+    /// `std::ops::MulAssign`.
+    MulAssign,
+    /// `std::ops::Rem`.
+    Rem,
+    /// `std::ops::RemAssign`.
+    RemAssign,
+    /// `std::ops::Sub`.
+    Sub,
+    /// `std::ops::SubAssign`.
+    SubAssign,
 }
 
 impl BinOpSpec {
@@ -27,6 +43,14 @@ impl BinOpSpec {
         match *self {
             BinOpSpec::Add => quote!(::std::ops::Add),
             BinOpSpec::AddAssign => quote!(::std::ops::AddAssign),
+            BinOpSpec::Div => quote!(::std::ops::Div),
+            BinOpSpec::DivAssign => quote!(::std::ops::DivAssign),
+            BinOpSpec::Mul => quote!(::std::ops::Mul),
+            BinOpSpec::MulAssign => quote!(::std::ops::MulAssign),
+            BinOpSpec::Rem => quote!(::std::ops::Rem),
+            BinOpSpec::RemAssign => quote!(::std::ops::RemAssign),
+            BinOpSpec::Sub => quote!(::std::ops::Sub),
+            BinOpSpec::SubAssign => quote!(::std::ops::SubAssign),
         }
     }
 
@@ -35,35 +59,70 @@ impl BinOpSpec {
         match *self {
             BinOpSpec::Add => quote!(add),
             BinOpSpec::AddAssign => quote!(add_assign),
+            BinOpSpec::Div => quote!(div),
+            BinOpSpec::DivAssign => quote!(div_assign),
+            BinOpSpec::Mul => quote!(mul),
+            BinOpSpec::MulAssign => quote!(mul_assign),
+            BinOpSpec::Rem => quote!(rem),
+            BinOpSpec::RemAssign => quote!(rem_assign),
+            BinOpSpec::Sub => quote!(sub),
+            BinOpSpec::SubAssign => quote!(sub_assign),
         }
     }
 
     pub fn tokens_arg_self(&self) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add => quote!(self),
-            BinOpSpec::AddAssign => quote!(&mut self),
+            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+                quote!(self)
+            },
+            BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => quote!(&mut self),
         }
     }
 
     pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add | BinOpSpec::AddAssign => ty_rhs.into_tokens(),
+            BinOpSpec::Add
+            | BinOpSpec::AddAssign
+            | BinOpSpec::Div
+            | BinOpSpec::DivAssign
+            | BinOpSpec::Mul
+            | BinOpSpec::MulAssign
+            | BinOpSpec::Rem
+            | BinOpSpec::RemAssign
+            | BinOpSpec::Sub
+            | BinOpSpec::SubAssign => ty_rhs.into_tokens(),
         }
     }
 
     pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add => quote! {
-                type Output = #ty_outer;
+            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+                quote! {
+                    type Output = #ty_outer;
+                }
             },
-            BinOpSpec::AddAssign => quote!(),
+            BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => quote!(),
         }
     }
 
     pub fn tokens_ty_ret(&self) -> quote::Tokens {
         match *self {
-            BinOpSpec::Add => quote!(Self::Output),
-            BinOpSpec::AddAssign => quote!(()),
+            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+                quote!(Self::Output)
+            },
+            BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => quote!(()),
         }
     }
 
@@ -73,24 +132,36 @@ impl BinOpSpec {
         U: ToTokens,
     {
         match *self {
-            BinOpSpec::Add => quote!(<#ty_outer as #helper_trait>::from_inner),
-            BinOpSpec::AddAssign => quote!(),
+            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+                quote!(<#ty_outer as #helper_trait>::from_inner)
+            },
+            BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => quote!(),
         }
     }
 
     pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> quote::Tokens {
         let expr = quote!(self);
         match *self {
-            BinOpSpec::Add => match (lhs_spec.type_, lhs_spec.wrapper) {
-                (OperandTypeSpec::Inner, _) => expr,
-                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
-                    props.tokens_outer_expr_into_inner(expr)
-                },
-                (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
-                    props.tokens_outer_expr_as_inner(expr)
-                },
+            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
+                match (lhs_spec.type_, lhs_spec.wrapper) {
+                    (OperandTypeSpec::Inner, _) => expr,
+                    (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
+                        props.tokens_outer_expr_into_inner(expr)
+                    },
+                    (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
+                        props.tokens_outer_expr_as_inner(expr)
+                    },
+                }
             },
-            BinOpSpec::AddAssign => match (lhs_spec.type_, lhs_spec.wrapper) {
+            BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => match (lhs_spec.type_, lhs_spec.wrapper) {
                 (OperandTypeSpec::Inner, _) => quote!(&mut #expr),
                 (OperandTypeSpec::Outer, _) => props.tokens_outer_expr_as_inner_mut_nocheck(expr),
             },
@@ -105,7 +176,16 @@ impl BinOpSpec {
     ) -> quote::Tokens {
         let inner = rhs_spec.tokens_inner(props, rhs_expr);
         match *self {
-            BinOpSpec::Add | BinOpSpec::AddAssign => inner,
+            BinOpSpec::Add
+            | BinOpSpec::Div
+            | BinOpSpec::Mul
+            | BinOpSpec::Rem
+            | BinOpSpec::Sub
+            | BinOpSpec::AddAssign
+            | BinOpSpec::DivAssign
+            | BinOpSpec::MulAssign
+            | BinOpSpec::RemAssign
+            | BinOpSpec::SubAssign => inner,
         }
     }
 }
@@ -159,7 +239,7 @@ pub fn gen_impl_sized_ref(
         )
     };
     match op_spec {
-        BinOpSpec::Add => {
+        BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
             let raw_ref = gen_raw_ref();
             let ref_raw = gen_ref_raw();
             let ref_ref = gen_ref_ref();
@@ -169,7 +249,11 @@ pub fn gen_impl_sized_ref(
                 #ref_ref
             }
         },
-        BinOpSpec::AddAssign => {
+        BinOpSpec::AddAssign
+        | BinOpSpec::DivAssign
+        | BinOpSpec::MulAssign
+        | BinOpSpec::RemAssign
+        | BinOpSpec::SubAssign => {
             let raw_ref = gen_raw_ref();
             quote! {
                 #raw_ref

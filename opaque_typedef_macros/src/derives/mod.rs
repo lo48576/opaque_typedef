@@ -55,6 +55,126 @@ pub enum Derive {
     /// `std::ops::AddAssign<&Inner> for Outer`.
     #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
     AddAssignRefInner,
+    /// `std::ops::Div<Outer> for Outer`.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    DivSelf,
+    /// `std::ops::Div<Inner> for Outer`.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    DivInner,
+    /// `std::ops::Div<Outer> for Inner`.
+    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    DivInnerRev,
+    /// `std::ops::Div<Outer> for Outer` variations.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    DivRefSelf,
+    /// `std::ops::Div<Inner> for Outer` variations.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    DivRefInner,
+    /// `std::ops::Div<Outer> for Inner` variations.
+    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    DivRefInnerRev,
+    /// `std::ops::DivAssign<Outer> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    DivAssignSelf,
+    /// `std::ops::DivAssign<Inner> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    DivAssignInner,
+    /// `std::ops::DivAssign<&Outer> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    DivAssignRefSelf,
+    /// `std::ops::DivAssign<&Inner> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    DivAssignRefInner,
+    /// `std::ops::Mul<Outer> for Outer`.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    MulSelf,
+    /// `std::ops::Mul<Inner> for Outer`.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    MulInner,
+    /// `std::ops::Mul<Outer> for Inner`.
+    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    MulInnerRev,
+    /// `std::ops::Mul<Outer> for Outer` variations.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    MulRefSelf,
+    /// `std::ops::Mul<Inner> for Outer` variations.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    MulRefInner,
+    /// `std::ops::Mul<Outer> for Inner` variations.
+    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    MulRefInnerRev,
+    /// `std::ops::MulAssign<Outer> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    MulAssignSelf,
+    /// `std::ops::MulAssign<Inner> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    MulAssignInner,
+    /// `std::ops::MulAssign<&Outer> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    MulAssignRefSelf,
+    /// `std::ops::MulAssign<&Inner> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    MulAssignRefInner,
+    /// `std::ops::Rem<Outer> for Outer`.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    RemSelf,
+    /// `std::ops::Rem<Inner> for Outer`.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    RemInner,
+    /// `std::ops::Rem<Outer> for Inner`.
+    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    RemInnerRev,
+    /// `std::ops::Rem<Outer> for Outer` variations.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    RemRefSelf,
+    /// `std::ops::Rem<Inner> for Outer` variations.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    RemRefInner,
+    /// `std::ops::Rem<Outer> for Inner` variations.
+    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    RemRefInnerRev,
+    /// `std::ops::RemAssign<Outer> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    RemAssignSelf,
+    /// `std::ops::RemAssign<Inner> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    RemAssignInner,
+    /// `std::ops::RemAssign<&Outer> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    RemAssignRefSelf,
+    /// `std::ops::RemAssign<&Inner> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    RemAssignRefInner,
+    /// `std::ops::Sub<Outer> for Outer`.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    SubSelf,
+    /// `std::ops::Sub<Inner> for Outer`.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    SubInner,
+    /// `std::ops::Sub<Outer> for Inner`.
+    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    SubInnerRev,
+    /// `std::ops::Sub<Outer> for Outer` variations.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    SubRefSelf,
+    /// `std::ops::Sub<Inner> for Outer` variations.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    SubRefInner,
+    /// `std::ops::Sub<Outer> for Inner` variations.
+    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    SubRefInnerRev,
+    /// `std::ops::SubAssign<Outer> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    SubAssignSelf,
+    /// `std::ops::SubAssign<Inner> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    SubAssignInner,
+    /// `std::ops::SubAssign<&Outer> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    SubAssignRefSelf,
+    /// `std::ops::SubAssign<&Inner> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    SubAssignRefInner,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
     /// `AsMut<DerefTarget> for Outer`.
@@ -260,6 +380,78 @@ impl Derive {
                     ("AddAssignRef", &[
                         ("Self_", Derive::AddAssignRefSelf),
                         ("Inner", Derive::AddAssignRefInner),
+                    ]),
+                    ("Div", &[
+                        ("Self_", Derive::DivSelf),
+                        ("Inner", Derive::DivInner),
+                        ("InnerRev", Derive::DivInnerRev),
+                    ]),
+                    ("DivRef", &[
+                        ("Self_", Derive::DivRefSelf),
+                        ("Inner", Derive::DivRefInner),
+                        ("InnerRev", Derive::DivRefInnerRev),
+                    ]),
+                    ("DivAssign", &[
+                        ("Self_", Derive::DivAssignSelf),
+                        ("Inner", Derive::DivAssignInner),
+                    ]),
+                    ("DivAssignRef", &[
+                        ("Self_", Derive::DivAssignRefSelf),
+                        ("Inner", Derive::DivAssignRefInner),
+                    ]),
+                    ("Mul", &[
+                        ("Self_", Derive::MulSelf),
+                        ("Inner", Derive::MulInner),
+                        ("InnerRev", Derive::MulInnerRev),
+                    ]),
+                    ("MulRef", &[
+                        ("Self_", Derive::MulRefSelf),
+                        ("Inner", Derive::MulRefInner),
+                        ("InnerRev", Derive::MulRefInnerRev),
+                    ]),
+                    ("MulAssign", &[
+                        ("Self_", Derive::MulAssignSelf),
+                        ("Inner", Derive::MulAssignInner),
+                    ]),
+                    ("MulAssignRef", &[
+                        ("Self_", Derive::MulAssignRefSelf),
+                        ("Inner", Derive::MulAssignRefInner),
+                    ]),
+                    ("Rem", &[
+                        ("Self_", Derive::RemSelf),
+                        ("Inner", Derive::RemInner),
+                        ("InnerRev", Derive::RemInnerRev),
+                    ]),
+                    ("RemRef", &[
+                        ("Self_", Derive::RemRefSelf),
+                        ("Inner", Derive::RemRefInner),
+                        ("InnerRev", Derive::RemRefInnerRev),
+                    ]),
+                    ("RemAssign", &[
+                        ("Self_", Derive::RemAssignSelf),
+                        ("Inner", Derive::RemAssignInner),
+                    ]),
+                    ("RemAssignRef", &[
+                        ("Self_", Derive::RemAssignRefSelf),
+                        ("Inner", Derive::RemAssignRefInner),
+                    ]),
+                    ("Sub", &[
+                        ("Self_", Derive::SubSelf),
+                        ("Inner", Derive::SubInner),
+                        ("InnerRev", Derive::SubInnerRev),
+                    ]),
+                    ("SubRef", &[
+                        ("Self_", Derive::SubRefSelf),
+                        ("Inner", Derive::SubRefInner),
+                        ("InnerRev", Derive::SubRefInnerRev),
+                    ]),
+                    ("SubAssign", &[
+                        ("Self_", Derive::SubAssignSelf),
+                        ("Inner", Derive::SubAssignInner),
+                    ]),
+                    ("SubAssignRef", &[
+                        ("Self_", Derive::SubAssignRefSelf),
+                        ("Inner", Derive::SubAssignRefInner),
                     ]),
                 ];
                 TARGETS.into_iter().map(|&(parent, subtargets)| {
