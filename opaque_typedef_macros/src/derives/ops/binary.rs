@@ -13,74 +13,115 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 
 
 /// Binary operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString, EnumProperty)]
 pub enum BinOpSpec {
     /// `std::ops::Add`.
+    #[strum(
+        props(trait_ = "::std::ops::Add", method = "add", self_ = "self", ty_ret = "Self::Output")
+    )]
     Add,
     /// `std::ops::AddAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::AddAssign",
+            method = "add_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
     AddAssign,
     /// `std::ops::Div`.
+    #[strum(
+        props(trait_ = "::std::ops::Div", method = "div", self_ = "self", ty_ret = "Self::Output")
+    )]
     Div,
     /// `std::ops::DivAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::DivAssign",
+            method = "div_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
     DivAssign,
     /// `std::ops::Mul`.
+    #[strum(
+        props(trait_ = "::std::ops::Mul", method = "mul", self_ = "self", ty_ret = "Self::Output")
+    )]
     Mul,
     /// `std::ops::MulAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::MulAssign",
+            method = "mul_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
     MulAssign,
     /// `std::ops::Rem`.
+    #[strum(
+        props(trait_ = "::std::ops::Rem", method = "rem", self_ = "self", ty_ret = "Self::Output")
+    )]
     Rem,
     /// `std::ops::RemAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::RemAssign",
+            method = "rem_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
     RemAssign,
     /// `std::ops::Sub`.
+    #[strum(
+        props(trait_ = "::std::ops::Sub", method = "sub", self_ = "self", ty_ret = "Self::Output")
+    )]
     Sub,
     /// `std::ops::SubAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::SubAssign",
+            method = "sub_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
     SubAssign,
 }
 
 impl BinOpSpec {
+    fn parse_prop<T: syn::synom::Synom>(&self, prop_name: &str) -> T {
+        use strum::EnumProperty;
+
+        let val = self.get_str(prop_name).unwrap_or_else(|| {
+            panic!(
+                "`BinOpSpec::{:?}` should have property `{}` but not found",
+                *self, prop_name
+            );
+        });
+        syn::parse_str::<T>(val).unwrap_or_else(|e| {
+            panic!(
+                "`BinOpSpec::{:?}` has property `{} = {:?}`, but failed to parse: {}",
+                *self, prop_name, val, e
+            );
+        })
+    }
+
     /// Returns target trait path.
     pub fn tokens_trait_path(&self) -> quote::Tokens {
-        match *self {
-            BinOpSpec::Add => quote!(::std::ops::Add),
-            BinOpSpec::AddAssign => quote!(::std::ops::AddAssign),
-            BinOpSpec::Div => quote!(::std::ops::Div),
-            BinOpSpec::DivAssign => quote!(::std::ops::DivAssign),
-            BinOpSpec::Mul => quote!(::std::ops::Mul),
-            BinOpSpec::MulAssign => quote!(::std::ops::MulAssign),
-            BinOpSpec::Rem => quote!(::std::ops::Rem),
-            BinOpSpec::RemAssign => quote!(::std::ops::RemAssign),
-            BinOpSpec::Sub => quote!(::std::ops::Sub),
-            BinOpSpec::SubAssign => quote!(::std::ops::SubAssign),
-        }
+        self.parse_prop::<syn::Path>("trait_").into_tokens()
     }
 
     /// Returns method name to implement.
     pub fn tokens_method(&self) -> quote::Tokens {
-        match *self {
-            BinOpSpec::Add => quote!(add),
-            BinOpSpec::AddAssign => quote!(add_assign),
-            BinOpSpec::Div => quote!(div),
-            BinOpSpec::DivAssign => quote!(div_assign),
-            BinOpSpec::Mul => quote!(mul),
-            BinOpSpec::MulAssign => quote!(mul_assign),
-            BinOpSpec::Rem => quote!(rem),
-            BinOpSpec::RemAssign => quote!(rem_assign),
-            BinOpSpec::Sub => quote!(sub),
-            BinOpSpec::SubAssign => quote!(sub_assign),
-        }
+        self.parse_prop::<syn::Ident>("method").into_tokens()
     }
 
     pub fn tokens_arg_self(&self) -> quote::Tokens {
-        match *self {
-            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
-                quote!(self)
-            },
-            BinOpSpec::AddAssign
-            | BinOpSpec::DivAssign
-            | BinOpSpec::MulAssign
-            | BinOpSpec::RemAssign
-            | BinOpSpec::SubAssign => quote!(&mut self),
-        }
+        self.parse_prop::<syn::Expr>("self_").into_tokens()
     }
 
     pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> quote::Tokens {
@@ -114,16 +155,7 @@ impl BinOpSpec {
     }
 
     pub fn tokens_ty_ret(&self) -> quote::Tokens {
-        match *self {
-            BinOpSpec::Add | BinOpSpec::Div | BinOpSpec::Mul | BinOpSpec::Rem | BinOpSpec::Sub => {
-                quote!(Self::Output)
-            },
-            BinOpSpec::AddAssign
-            | BinOpSpec::DivAssign
-            | BinOpSpec::MulAssign
-            | BinOpSpec::RemAssign
-            | BinOpSpec::SubAssign => quote!(()),
-        }
+        self.parse_prop::<syn::Type>("ty_ret").into_tokens()
     }
 
     pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> quote::Tokens
