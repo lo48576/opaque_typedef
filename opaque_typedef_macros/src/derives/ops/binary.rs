@@ -13,7 +13,7 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 
 
 /// Binary operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
 pub enum BinOpSpec {
     /// `std::ops::Add`.
     Add,

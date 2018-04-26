@@ -4,13 +4,14 @@ use quote;
 use quote::ToTokens;
 use syn;
 
+use derives::Derive;
 use type_props::TypeProps;
 
 pub mod binary;
 
 
 /// Operand type (inner or outer).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
 pub enum OperandTypeSpec {
     /// Outer type or its variant.
     Outer,
@@ -113,5 +114,108 @@ impl OperandSpec {
             OperandTypeWrapperSpec::Raw => 0,
             OperandTypeWrapperSpec::Ref => 1,
         }
+    }
+}
+
+
+/// Operator impl variation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
+pub enum OpImplVariation {
+    /// Use target (inner / outer) type directly.
+    Direct,
+    /// Use target (inner / outer) type and their references.
+    References,
+}
+
+
+/// Operator spec.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum OpSpec {
+    /// Binary operator.
+    Binary {
+        op_spec: binary::BinOpSpec,
+        variation: OpImplVariation,
+        lhs: OperandTypeSpec,
+        rhs: OperandTypeSpec,
+    },
+}
+
+impl OpSpec {
+    /// Creates `OpSpec` from a derive target.
+    pub fn from_derive_target(target: Derive) -> Option<Self> {
+        //use std::str::FromStr;
+        use strum::EnumProperty;
+
+        let op = target.get_str("op")?;
+        if let Ok(op_spec) = op.parse::<binary::BinOpSpec>() {
+            let lhs = target.get_str("lhs").unwrap_or_else(|| {
+                panic!(
+                    "Binary operator {:?} should have `lhs` property but not",
+                    op_spec
+                );
+            });
+            let lhs: OperandTypeSpec = lhs.parse().unwrap_or_else(|_| {
+                panic!(
+                    "Operator property `lhs` = {:?} for binary operator {:?} is invalid",
+                    lhs, op_spec
+                );
+            });
+            let rhs = target.get_str("rhs").unwrap_or_else(|| {
+                panic!(
+                    "Binary operator {:?} should have `rhs` property but not",
+                    op_spec
+                );
+            });
+            let rhs: OperandTypeSpec = rhs.parse().unwrap_or_else(|_| {
+                panic!(
+                    "Operator property `rhs` = {:?} for binary operator {:?} is invalid",
+                    rhs, op_spec
+                );
+            });
+            let variation = target.get_str("variation").unwrap_or_else(|| {
+                panic!(
+                    "Binary operator {:?} should have `variation` property but not",
+                    op_spec
+                );
+            });
+            let variation: OpImplVariation = variation.parse().unwrap_or_else(|_| {
+                panic!(
+                    "Operator property `variation` = {:?} for binary operator {:?} is invalid",
+                    variation, op_spec
+                );
+            });
+            Some(OpSpec::Binary {
+                op_spec,
+                variation,
+                lhs,
+                rhs,
+            })
+        } else {
+            panic!(
+                "Derive target {:?} has invalid property op={:?}",
+                target, op
+            )
+        }
+    }
+
+    pub fn gen_impl_sized(&self, props: &TypeProps) -> quote::Tokens {
+        match *self {
+            OpSpec::Binary {
+                op_spec,
+                variation: OpImplVariation::Direct,
+                lhs,
+                rhs,
+            } => binary::gen_impl_sized_raw(props, op_spec, lhs, rhs),
+            OpSpec::Binary {
+                op_spec,
+                variation: OpImplVariation::References,
+                lhs,
+                rhs,
+            } => binary::gen_impl_sized_ref(props, op_spec, lhs, rhs),
+        }
+    }
+
+    pub fn gen_impl_unsized(&self, _props: &TypeProps) -> quote::Tokens {
+        unimplemented!();
     }
 }

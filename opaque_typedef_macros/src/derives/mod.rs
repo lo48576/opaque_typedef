@@ -11,8 +11,7 @@ use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
 use utils::extend_generics;
 
-use self::ops::binary::BinOpSpec;
-use self::ops::OperandTypeSpec;
+use self::ops::OpSpec;
 
 mod as_ref;
 mod cmp;
@@ -23,27 +22,38 @@ mod ops;
 
 
 /// Auto-derive target trait.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString,
+         EnumProperty)]
 pub enum Derive {
     /// `std::ops::Add<Outer> for Outer`.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
     AddSelf,
     /// `std::ops::Add<Inner> for Outer`.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
     AddInner,
     /// `std::ops::Add<Outer> for Inner`.
+    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
     AddInnerRev,
     /// `std::ops::Add<Outer> for Outer` variations.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "References"))]
     AddRefSelf,
     /// `std::ops::Add<Inner> for Outer` variations.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "References"))]
     AddRefInner,
     /// `std::ops::Add<Outer> for Inner` variations.
+    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "References"))]
     AddRefInnerRev,
     /// `std::ops::AddAssign<Outer> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
     AddAssignSelf,
     /// `std::ops::AddAssign<Inner> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
     AddAssignInner,
     /// `std::ops::AddAssign<&Outer> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
     AddAssignRefSelf,
     /// `std::ops::AddAssign<&Inner> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
     AddAssignRefInner,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
@@ -376,78 +386,6 @@ impl Derive {
             ),
             // `std::cmp::Ord` trait.
             (Derive::Ord, _) => cmp::gen_impl_ord(props),
-            // `std::ops::*` binary operator traits.
-            (Derive::AddSelf, _)
-            | (Derive::AddInner, _)
-            | (Derive::AddInnerRev, _)
-            | (Derive::AddRefSelf, _)
-            | (Derive::AddRefInner, _)
-            | (Derive::AddRefInnerRev, _)
-            | (Derive::AddAssignSelf, _)
-            | (Derive::AddAssignInner, _)
-            | (Derive::AddAssignRefSelf, _)
-            | (Derive::AddAssignRefInner, _) => {
-                let op_spec = match *self {
-                    Derive::AddSelf
-                    | Derive::AddInner
-                    | Derive::AddInnerRev
-                    | Derive::AddRefSelf
-                    | Derive::AddRefInner
-                    | Derive::AddRefInnerRev => BinOpSpec::Add,
-                    Derive::AddAssignSelf
-                    | Derive::AddAssignInner
-                    | Derive::AddAssignRefSelf
-                    | Derive::AddAssignRefInner => BinOpSpec::AddAssign,
-                    _ => unreachable!(),
-                };
-                let lhs_spec = match *self {
-                    Derive::AddSelf
-                    | Derive::AddInner
-                    | Derive::AddRefSelf
-                    | Derive::AddRefInner
-                    | Derive::AddAssignSelf
-                    | Derive::AddAssignInner
-                    | Derive::AddAssignRefSelf
-                    | Derive::AddAssignRefInner => OperandTypeSpec::Outer,
-                    | Derive::AddInnerRev | Derive::AddRefInnerRev => OperandTypeSpec::Inner,
-                    _ => unreachable!(),
-                };
-                let rhs_spec = match *self {
-                    Derive::AddSelf
-                    | Derive::AddInnerRev
-                    | Derive::AddRefSelf
-                    | Derive::AddRefInnerRev
-                    | Derive::AddAssignSelf
-                    | Derive::AddAssignRefSelf => OperandTypeSpec::Outer,
-                    | Derive::AddInner
-                    | Derive::AddRefInner
-                    | Derive::AddAssignInner
-                    | Derive::AddAssignRefInner => OperandTypeSpec::Inner,
-                    _ => unreachable!(),
-                };
-                let is_raw = match *self {
-                    Derive::AddSelf
-                    | Derive::AddInner
-                    | Derive::AddInnerRev
-                    | Derive::AddAssignSelf
-                    | Derive::AddAssignInner => true,
-                    | Derive::AddRefSelf
-                    | Derive::AddRefInner
-                    | Derive::AddRefInnerRev
-                    | Derive::AddAssignRefSelf
-                    | Derive::AddAssignRefInner => false,
-                    _ => unreachable!(),
-                };
-                match (is_raw, props.inner_sizedness) {
-                    (true, Sizedness::Sized) => {
-                        ops::binary::gen_impl_sized_raw(props, op_spec, lhs_spec, rhs_spec)
-                    },
-                    (false, Sizedness::Sized) => {
-                        ops::binary::gen_impl_sized_ref(props, op_spec, lhs_spec, rhs_spec)
-                    },
-                    (_, Sizedness::Unsized) => unimplemented!(),
-                }
-            },
             // `std::ascii::AsciiExt` trait.
             (Derive::AsciiExt, _) => {
                 let ty_outer = &props.ty_outer;
@@ -504,6 +442,20 @@ impl Derive {
                         }
                     }
                 }
+            },
+            // Simple operators.
+            _ => match OpSpec::from_derive_target(*self) {
+                Some(op_spec) => match props.inner_sizedness {
+                    Sizedness::Sized => op_spec.gen_impl_sized(props),
+                    Sizedness::Unsized => op_spec.gen_impl_unsized(props),
+                },
+                None => {
+                    panic!(
+                        "Derive target {:?} is expected to be an operator, but \
+                         lacks required properties",
+                        *self
+                    );
+                },
             },
         }
     }
