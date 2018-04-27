@@ -205,6 +205,18 @@ pub enum Derive {
     /// `std::ops::MulAssign<&Inner> for Outer`.
     #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
     MulAssignRefInner,
+    /// `std::ops::Neg for Outer`.
+    #[strum(props(op = "Neg", lhs = "Outer", variation = "Direct"))]
+    Neg,
+    /// `std::ops::Neg for &Outer`.
+    #[strum(props(op = "Neg", lhs = "Outer", variation = "References"))]
+    NegRef,
+    /// `std::ops::Not for Outer`.
+    #[strum(props(op = "Not", lhs = "Outer", variation = "Direct"))]
+    Not,
+    /// `std::ops::Not for &Outer`.
+    #[strum(props(op = "Not", lhs = "Outer", variation = "References"))]
+    NotRef,
     /// `std::ops::Rem<Outer> for Outer`.
     #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
     RemSelf,

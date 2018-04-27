@@ -257,6 +257,36 @@ mod ops {
     test_binop_num!(bitxor, 10, 32, ::std::ops::BitAnd::bitand, direct);
     test_binop_num!(bitxor_ref, 10, 32, ::std::ops::BitAnd::bitand, references);
 
+    macro_rules! test_unaryop_num {
+        ($testname:ident, $x:expr, $method:expr,direct) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_result = $method(raw_x);
+                let result = Int32::from(raw_result);
+                // raw
+                assert_eq!($method(x), result);
+            }
+        };
+        ($testname:ident, $x:expr, $method:expr,references) => {
+            #[test]
+            fn $testname() {
+                let raw_x = $x;
+                let x = Int32::from(raw_x);
+                let raw_result = $method(raw_x);
+                let result = Int32::from(raw_result);
+                // ref
+                assert_eq!($method(&x), result);
+            }
+        };
+    }
+
+    test_unaryop_num!(neg, 42, ::std::ops::Neg::neg, direct);
+    test_unaryop_num!(neg_ref, 42, ::std::ops::Neg::neg, references);
+    test_unaryop_num!(not, 42, ::std::ops::Not::not, direct);
+    test_unaryop_num!(not_ref, 42, ::std::ops::Not::not, references);
+
     macro_rules! test_binop_num_assign {
         ($testname:ident, $x:expr, $y:expr, $method:expr,direct) => {
             #[test]

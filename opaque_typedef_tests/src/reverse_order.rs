@@ -22,6 +22,8 @@
         Display,
         FromInner,
         LowerHex,
+        Not,
+        NotRef,
         Octal,
         Ord,
         PartialOrdSelf,

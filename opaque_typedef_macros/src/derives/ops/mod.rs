@@ -8,6 +8,7 @@ use derives::Derive;
 use type_props::TypeProps;
 
 pub mod binary;
+pub mod unary;
 
 
 /// Operand type (inner or outer).
@@ -131,6 +132,12 @@ pub enum OpImplVariation {
 /// Operator spec.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum OpSpec {
+    /// Unary operator.
+    Unary {
+        op_spec: unary::UnaryOpSpec,
+        variation: OpImplVariation,
+        lhs: OperandTypeSpec,
+    },
     /// Binary operator.
     Binary {
         op_spec: binary::BinOpSpec,
@@ -147,7 +154,37 @@ impl OpSpec {
         use strum::EnumProperty;
 
         let op = target.get_str("op")?;
-        if let Ok(op_spec) = op.parse::<binary::BinOpSpec>() {
+        if let Ok(op_spec) = op.parse::<unary::UnaryOpSpec>() {
+            let lhs = target.get_str("lhs").unwrap_or_else(|| {
+                panic!(
+                    "Unary operator {:?} should have `lhs` property but not",
+                    op_spec
+                );
+            });
+            let lhs: OperandTypeSpec = lhs.parse().unwrap_or_else(|_| {
+                panic!(
+                    "Operator property `lhs` = {:?} for unary operator {:?} is invalid",
+                    lhs, op_spec
+                );
+            });
+            let variation = target.get_str("variation").unwrap_or_else(|| {
+                panic!(
+                    "Unary operator {:?} should have `variation` property but not",
+                    op_spec
+                );
+            });
+            let variation: OpImplVariation = variation.parse().unwrap_or_else(|_| {
+                panic!(
+                    "Operator property `variation` = {:?} for unary operator {:?} is invalid",
+                    variation, op_spec
+                );
+            });
+            Some(OpSpec::Unary {
+                op_spec,
+                variation,
+                lhs,
+            })
+        } else if let Ok(op_spec) = op.parse::<binary::BinOpSpec>() {
             let lhs = target.get_str("lhs").unwrap_or_else(|| {
                 panic!(
                     "Binary operator {:?} should have `lhs` property but not",
@@ -200,6 +237,16 @@ impl OpSpec {
 
     pub fn gen_impl_sized(&self, props: &TypeProps) -> quote::Tokens {
         match *self {
+            OpSpec::Unary {
+                op_spec,
+                variation: OpImplVariation::Direct,
+                lhs,
+            } => unary::gen_impl_sized_raw(props, op_spec, lhs),
+            OpSpec::Unary {
+                op_spec,
+                variation: OpImplVariation::References,
+                lhs,
+            } => unary::gen_impl_sized_ref(props, op_spec, lhs),
             OpSpec::Binary {
                 op_spec,
                 variation: OpImplVariation::Direct,

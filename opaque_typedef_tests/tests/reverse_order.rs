@@ -141,5 +141,25 @@ mod sized {
             }
             */
         }
+
+        #[test]
+        fn not() {
+            let raw_x = 42;
+            let x = ReverseOrderSized::from(raw_x);
+            let raw_result = !raw_x;
+            let result = ReverseOrderSized::from(raw_result);
+            // raw
+            assert_eq!(!x, result);
+        }
+
+        #[test]
+        fn not_ref() {
+            let raw_x = 42;
+            let x = ReverseOrderSized::from(raw_x);
+            let raw_result = !raw_x;
+            let result = ReverseOrderSized::from(raw_result);
+            // ref
+            assert_eq!(!(&x), result);
+        }
     }
 }
