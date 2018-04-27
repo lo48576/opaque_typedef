@@ -132,6 +132,36 @@ pub enum BinOpSpec {
         )
     )]
     RemAssign,
+    /// `std::ops::Shl`.
+    #[strum(
+        props(trait_ = "::std::ops::Shl", method = "shl", self_ = "self", ty_ret = "Self::Output")
+    )]
+    Shl,
+    /// `std::ops::ShlAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::ShlAssign",
+            method = "shl_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
+    ShlAssign,
+    /// `std::ops::Shr`.
+    #[strum(
+        props(trait_ = "::std::ops::Shr", method = "shr", self_ = "self", ty_ret = "Self::Output")
+    )]
+    Shr,
+    /// `std::ops::ShrAssign`.
+    #[strum(
+        props(
+            trait_ = "::std::ops::ShrAssign",
+            method = "shr_assign",
+            self_ = "&mut self",
+            ty_ret = "()"
+        )
+    )]
+    ShrAssign,
     /// `std::ops::Sub`.
     #[strum(
         props(trait_ = "::std::ops::Sub", method = "sub", self_ = "self", ty_ret = "Self::Output")
@@ -197,6 +227,10 @@ impl BinOpSpec {
             | BinOpSpec::MulAssign
             | BinOpSpec::Rem
             | BinOpSpec::RemAssign
+            | BinOpSpec::Shl
+            | BinOpSpec::ShlAssign
+            | BinOpSpec::Shr
+            | BinOpSpec::ShrAssign
             | BinOpSpec::Sub
             | BinOpSpec::SubAssign => ty_rhs.into_tokens(),
         }
@@ -211,6 +245,8 @@ impl BinOpSpec {
             | BinOpSpec::Div
             | BinOpSpec::Mul
             | BinOpSpec::Rem
+            | BinOpSpec::Shl
+            | BinOpSpec::Shr
             | BinOpSpec::Sub => {
                 quote! {
                     type Output = #ty_outer;
@@ -223,6 +259,8 @@ impl BinOpSpec {
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
+            | BinOpSpec::ShlAssign
+            | BinOpSpec::ShrAssign
             | BinOpSpec::SubAssign => quote!(),
         }
     }
@@ -249,6 +287,8 @@ impl BinOpSpec {
             | BinOpSpec::Div
             | BinOpSpec::Mul
             | BinOpSpec::Rem
+            | BinOpSpec::Shl
+            | BinOpSpec::Shr
             | BinOpSpec::Sub => quote!(<#ty_outer as #helper_trait>::from_inner),
             BinOpSpec::AddAssign
             | BinOpSpec::BitAndAssign
@@ -257,6 +297,8 @@ impl BinOpSpec {
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
+            | BinOpSpec::ShlAssign
+            | BinOpSpec::ShrAssign
             | BinOpSpec::SubAssign => quote!(),
         }
     }
@@ -271,6 +313,8 @@ impl BinOpSpec {
             | BinOpSpec::Div
             | BinOpSpec::Mul
             | BinOpSpec::Rem
+            | BinOpSpec::Shl
+            | BinOpSpec::Shr
             | BinOpSpec::Sub => match (lhs_spec.type_, lhs_spec.wrapper) {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
@@ -287,6 +331,8 @@ impl BinOpSpec {
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
+            | BinOpSpec::ShlAssign
+            | BinOpSpec::ShrAssign
             | BinOpSpec::SubAssign => match (lhs_spec.type_, lhs_spec.wrapper) {
                 (OperandTypeSpec::Inner, _) => quote!(&mut #expr),
                 (OperandTypeSpec::Outer, _) => props.tokens_outer_expr_as_inner_mut_nocheck(expr),
@@ -309,6 +355,8 @@ impl BinOpSpec {
             | BinOpSpec::Div
             | BinOpSpec::Mul
             | BinOpSpec::Rem
+            | BinOpSpec::Shl
+            | BinOpSpec::Shr
             | BinOpSpec::Sub
             | BinOpSpec::AddAssign
             | BinOpSpec::BitAndAssign
@@ -317,6 +365,8 @@ impl BinOpSpec {
             | BinOpSpec::DivAssign
             | BinOpSpec::MulAssign
             | BinOpSpec::RemAssign
+            | BinOpSpec::ShlAssign
+            | BinOpSpec::ShrAssign
             | BinOpSpec::SubAssign => inner,
         }
     }
@@ -378,6 +428,8 @@ pub fn gen_impl_sized_ref(
         | BinOpSpec::Div
         | BinOpSpec::Mul
         | BinOpSpec::Rem
+        | BinOpSpec::Shl
+        | BinOpSpec::Shr
         | BinOpSpec::Sub => {
             let raw_ref = gen_raw_ref();
             let ref_raw = gen_ref_raw();
@@ -395,6 +447,8 @@ pub fn gen_impl_sized_ref(
         | BinOpSpec::DivAssign
         | BinOpSpec::MulAssign
         | BinOpSpec::RemAssign
+        | BinOpSpec::ShlAssign
+        | BinOpSpec::ShrAssign
         | BinOpSpec::SubAssign => {
             let raw_ref = gen_raw_ref();
             quote! {

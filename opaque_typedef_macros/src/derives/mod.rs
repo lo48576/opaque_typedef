@@ -235,6 +235,66 @@ pub enum Derive {
     /// `std::ops::RemAssign<&Inner> for Outer`.
     #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
     RemAssignRefInner,
+    /// `std::ops::Shl<Outer> for Outer`.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShlSelf,
+    /// `std::ops::Shl<Inner> for Outer`.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShlInner,
+    /// `std::ops::Shl<Outer> for Inner`.
+    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    ShlInnerRev,
+    /// `std::ops::Shl<Outer> for Outer` variations.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShlRefSelf,
+    /// `std::ops::Shl<Inner> for Outer` variations.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShlRefInner,
+    /// `std::ops::Shl<Outer> for Inner` variations.
+    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    ShlRefInnerRev,
+    /// `std::ops::ShlAssign<Outer> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShlAssignSelf,
+    /// `std::ops::ShlAssign<Inner> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShlAssignInner,
+    /// `std::ops::ShlAssign<&Outer> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShlAssignRefSelf,
+    /// `std::ops::ShlAssign<&Inner> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShlAssignRefInner,
+    /// `std::ops::Shr<Outer> for Outer`.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShrSelf,
+    /// `std::ops::Shr<Inner> for Outer`.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShrInner,
+    /// `std::ops::Shr<Outer> for Inner`.
+    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    ShrInnerRev,
+    /// `std::ops::Shr<Outer> for Outer` variations.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShrRefSelf,
+    /// `std::ops::Shr<Inner> for Outer` variations.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShrRefInner,
+    /// `std::ops::Shr<Outer> for Inner` variations.
+    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    ShrRefInnerRev,
+    /// `std::ops::ShrAssign<Outer> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShrAssignSelf,
+    /// `std::ops::ShrAssign<Inner> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShrAssignInner,
+    /// `std::ops::ShrAssign<&Outer> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShrAssignRefSelf,
+    /// `std::ops::ShrAssign<&Inner> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShrAssignRefInner,
     /// `std::ops::Sub<Outer> for Outer`.
     #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
     SubSelf,
@@ -578,6 +638,42 @@ impl Derive {
                     ("RemAssignRef", &[
                         ("Self_", Derive::RemAssignRefSelf),
                         ("Inner", Derive::RemAssignRefInner),
+                    ]),
+                    ("Shl", &[
+                        ("Self_", Derive::ShlSelf),
+                        ("Inner", Derive::ShlInner),
+                        ("InnerRev", Derive::ShlInnerRev),
+                    ]),
+                    ("ShlRef", &[
+                        ("Self_", Derive::ShlRefSelf),
+                        ("Inner", Derive::ShlRefInner),
+                        ("InnerRev", Derive::ShlRefInnerRev),
+                    ]),
+                    ("ShlAssign", &[
+                        ("Self_", Derive::ShlAssignSelf),
+                        ("Inner", Derive::ShlAssignInner),
+                    ]),
+                    ("ShlAssignRef", &[
+                        ("Self_", Derive::ShlAssignRefSelf),
+                        ("Inner", Derive::ShlAssignRefInner),
+                    ]),
+                    ("Shr", &[
+                        ("Self_", Derive::ShrSelf),
+                        ("Inner", Derive::ShrInner),
+                        ("InnerRev", Derive::ShrInnerRev),
+                    ]),
+                    ("ShrRef", &[
+                        ("Self_", Derive::ShrRefSelf),
+                        ("Inner", Derive::ShrRefInner),
+                        ("InnerRev", Derive::ShrRefInnerRev),
+                    ]),
+                    ("ShrAssign", &[
+                        ("Self_", Derive::ShrAssignSelf),
+                        ("Inner", Derive::ShrAssignInner),
+                    ]),
+                    ("ShrAssignRef", &[
+                        ("Self_", Derive::ShrAssignRefSelf),
+                        ("Inner", Derive::ShrAssignRefInner),
                     ]),
                     ("Sub", &[
                         ("Self_", Derive::SubSelf),

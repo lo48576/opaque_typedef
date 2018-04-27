@@ -245,6 +245,10 @@ mod ops {
     test_binop_num!(rem_ref, 32, 10, ::std::ops::Rem::rem, references);
     test_binop_num!(sub, 10, 32, ::std::ops::Sub::sub, direct);
     test_binop_num!(sub_ref, 10, 32, ::std::ops::Sub::sub, references);
+    test_binop_num!(shl, 8191, 8, ::std::ops::Shl::shl, direct);
+    test_binop_num!(shl_ref, 8191, 8, ::std::ops::Shl::shl, references);
+    test_binop_num!(shr, 8191, 8, ::std::ops::Shr::shr, direct);
+    test_binop_num!(shr_ref, 8191, 8, ::std::ops::Shr::shr, references);
     // Bitwise.
     test_binop_num!(bitand, 10, 32, ::std::ops::BitAnd::bitand, direct);
     test_binop_num!(bitand_ref, 10, 32, ::std::ops::BitAnd::bitand, references);
@@ -415,6 +419,34 @@ mod ops {
         10,
         32,
         ::std::ops::BitXorAssign::bitxor_assign,
+        references
+    );
+    test_binop_num_assign!(
+        shl_assign,
+        8191,
+        8,
+        ::std::ops::ShlAssign::shl_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        shl_assign_ref,
+        8191,
+        8,
+        ::std::ops::ShlAssign::shl_assign,
+        references
+    );
+    test_binop_num_assign!(
+        shr_assign,
+        8191,
+        8,
+        ::std::ops::ShrAssign::shr_assign,
+        direct
+    );
+    test_binop_num_assign!(
+        shr_assign_ref,
+        8191,
+        8,
+        ::std::ops::ShrAssign::shr_assign,
         references
     );
 }
