@@ -135,6 +135,9 @@ Note that some traits can be shortened:
 To see lists of "derive"-able items, read the rest of the document or see
 [the source (`Derive` enum in `opaque_typedef_macros/src/derives/mod.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives/mod.rs).
 
+To see full list of shortened notations for "derive"-able items, see
+[`Derive::append_from_nested_names` method at `opaque_typedef_macros/src/derives/mod.rs`)](https://github.com/lo48576/opaque_typedef/blob/develop/opaque_typedef_macros/src/derives/mod.rs).
+
 ### 4.1. Specify deref target (optional)
 
 If you specify `Deref`, `DerefMut`, `AsRefDeref` or something related to `Deref`, you can also specify "deref target" by `#[opaque_typedef(deref(...))]`.
