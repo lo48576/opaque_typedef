@@ -14,6 +14,8 @@
     derive(
         Add(Self_, Inner),
         AddRef(Self_, Inner),
+        AddAssign(Self_, Inner),
+        AddAssignRef(Self_, Inner),
         AsMut(Deref),
         AsRef(Deref),
         Binary,

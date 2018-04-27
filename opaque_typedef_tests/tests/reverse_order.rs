@@ -110,7 +110,6 @@ mod sized {
 
         #[test]
         fn add_assign() {
-            /*
             let raw_x = 10;
             let x = ReverseOrderSized::from(raw_x);
             let raw_y = 32;
@@ -139,7 +138,6 @@ mod sized {
                 x += &raw_y;
                 assert_eq!(x, sum);
             }
-            */
         }
 
         #[test]

@@ -236,7 +236,7 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<quote::Tokens> {
         match *self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
@@ -247,21 +247,17 @@ impl BinOpSpec {
             | BinOpSpec::Rem
             | BinOpSpec::Shl
             | BinOpSpec::Shr
-            | BinOpSpec::Sub => {
-                quote! {
-                    type Output = #ty_outer;
-                }
+            | BinOpSpec::Sub => Some(ty_outer.into_tokens()),
+            _ => None,
+        }
+    }
+
+    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+        match self.tokens_associated_ty_output(&ty_outer) {
+            Some(ty_output) => quote! {
+                type Output = #ty_output;
             },
-            BinOpSpec::AddAssign
-            | BinOpSpec::BitAndAssign
-            | BinOpSpec::BitOrAssign
-            | BinOpSpec::BitXorAssign
-            | BinOpSpec::DivAssign
-            | BinOpSpec::MulAssign
-            | BinOpSpec::RemAssign
-            | BinOpSpec::ShlAssign
-            | BinOpSpec::ShrAssign
-            | BinOpSpec::SubAssign => quote!(),
+            None => quote!(),
         }
     }
 
@@ -499,15 +495,22 @@ pub fn gen_impl_sized(
             ty_rhs_inner,
         )
     };
+
     let (generics, _) = {
         let extra_preds = if props.has_type_params() {
-            let pred = syn::parse_str::<syn::WherePredicate>(&format!(
-                "{}: {}<{}, Output={}>",
-                ty_lhs_inner,
-                target_trait,
-                ty_rhs_inner,
-                ty_inner.into_tokens()
-            )).expect("Failed to generate `WherePredicate`");
+            let associated_ty_output = op_spec.tokens_associated_ty_output(&ty_outer_generic);
+            let pred_str = match associated_ty_output {
+                Some(_) => format!(
+                    "{}: {}<{}, Output={}>",
+                    ty_lhs_inner,
+                    target_trait,
+                    ty_rhs_inner,
+                    ty_inner.into_tokens()
+                ),
+                None => format!("{}: {}<{}>", ty_lhs_inner, target_trait, ty_rhs_inner),
+            };
+            let pred = syn::parse_str::<syn::WherePredicate>(&pred_str)
+                .expect("Failed to generate `WherePredicate`");
             vec![pred]
         } else {
             Vec::new()

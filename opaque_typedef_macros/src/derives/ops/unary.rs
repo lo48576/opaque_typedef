@@ -59,11 +59,18 @@ impl UnaryOpSpec {
         self.parse_prop::<syn::Expr>("self_").into_tokens()
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<quote::Tokens> {
         match *self {
-            UnaryOpSpec::Neg | UnaryOpSpec::Not => quote! {
-                type Output = #ty_outer;
+            UnaryOpSpec::Neg | UnaryOpSpec::Not => Some(quote!(#ty_outer)),
+        }
+    }
+
+    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+        match self.tokens_associated_ty_output(&ty_outer) {
+            Some(ty_output) => quote! {
+                type Output = #ty_output;
             },
+            None => quote!(),
         }
     }
 
