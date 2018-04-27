@@ -231,6 +231,11 @@ impl BinOpSpec {
         self.parse_prop::<syn::Type>("ty_ret").into_tokens()
     }
 
+    // TODO: Make it configurable to choose inner implementation of `*Assign`.
+    // In other words, users should be able to select `a = a + b;` style or
+    // `a.inner += b.inner;` style, for each `*Assign` trait impls.
+    // Note that this feature also requires trait bounds generation to be
+    // configurable.
     pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> quote::Tokens
     where
         T: ToTokens,
