@@ -890,8 +890,8 @@ impl Derive {
             // Simple operators.
             _ => match OpSpec::from_derive_target(*self) {
                 Some(op_spec) => match props.inner_sizedness {
-                    Sizedness::Sized => op_spec.gen_impl_sized(props),
-                    Sizedness::Unsized => op_spec.gen_impl_unsized(props),
+                    Sizedness::Sized => op_spec.gen_impl_sized(props, *self),
+                    Sizedness::Unsized => op_spec.gen_impl_unsized(props, *self),
                 },
                 None => {
                     panic!(

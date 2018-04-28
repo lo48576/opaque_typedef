@@ -235,7 +235,7 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_sized(&self, props: &TypeProps) -> quote::Tokens {
+    pub fn gen_impl_sized(&self, props: &TypeProps, _target: Derive) -> quote::Tokens {
         match *self {
             OpSpec::Unary {
                 op_spec,
@@ -262,7 +262,10 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_unsized(&self, _props: &TypeProps) -> quote::Tokens {
-        unimplemented!();
+    pub fn gen_impl_unsized(&self, _props: &TypeProps, target: Derive) -> quote::Tokens {
+        panic!(
+            "`#[opaque_typedef(derive({:?}))]` is currently not supported for unsized types",
+            target
+        );
     }
 }
