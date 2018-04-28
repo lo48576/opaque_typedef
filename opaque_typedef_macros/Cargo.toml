@@ -1,6 +1,6 @@
 [package]
 name = "opaque_typedef_macros"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
