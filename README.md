@@ -307,63 +307,81 @@ See <https://docs.rs/opaque_typedef/*/opaque_typedef/trait.OpaqueTypedefUnsized.
 
 ### Automatic derive for many std traits
 
-The traits below are supported:
-
-  * `AsciiExt` implements `std::ascii::AsciiExt for Outer`.
-  * `AsMutDeref` implements `AsMut<DerefTarget> for Outer`.
-  * `AsMutInner` implements `AsMut<Inner> for Outer`.
-  * `AsMutSelf` implements `AsMut<Outer> for Outer`.
-  * `AsRefDeref` implements `AsRef<DerefTarget> for Outer`.
-  * `AsRefInner` implements `AsRef<Inner> for Outer`.
-  * `AsRefSelf` implements `AsRef<Self> for Outer`.
-  * `Binary` implements `std::fmt::Binary for Outer`.
-  * `DefaultRef` implements `Default for &Outer`.
-  * `Deref` implements `std::ops::Deref for Outer`.
-  * `DerefMut` implements `std::ops::DerefMut for Outer`.
-  * `Display` implements `std::fmt::Display for Outer`.
-  * `FromInner` implements `From<Inner> for Outer`.
-  * `IntoArc` implements `From<Outer> for Arc<Outer>` (if possible) or `Into<Arc<Outer>> for Outer`.
-  * `IntoBox` implements `From<Outer> for Box<Outer>` (if possible) or `Into<Box<Outer>> for Outer`.
-  * `IntoInner` implements `From<Outer> for Inner`.
-  * `IntoRc` implements `From<Outer> for Rc<Outer>` (if possible) or `Into<Rc<Outer>> for Outer`.
-  * `LowerExp` implements `std::fmt::LowerExp for Outer`.
-  * `LowerHex` implements `std::fmt::LowerHex for Outer`.
-  * `Octal` implements `std::fmt::Octal for Outer`.
-  * `PartialEqInner` implements `PartialEq<Inner> for Outer` and similar ones.
-  * `PartialEqInnerRev` implements `PartialEq<Outer> for Inner` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialEqInner`.
-  * `PartialEqInnerCow` implements `PartialEq<Cow<Inner>> for Outer` and similar ones.
-  * `PartialEqInnerCowRev` implements `PartialEq<Outer> for Cow<Inner>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialEqInnerCow`.
-  * `PartialEqSelf` implements `PartialEq<Outer> for Outer` and similar ones.
-      + This is very similar to `#[derive(PartialEq)]`, but it will be useful with custom comparison.
-  * `PartialEqSelfCow` implements `PartialEq<Cow<Outer>> for Outer` and similar ones.
-  * `PartialEqSelfCowRev` implements `PartialEq<Outer> for Cow<Outer>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialEqSelfCow`.
-  * `PartialEqSelfCowAndInner` implements `PartialEq<Cow<Outer>> for Inner` and similar ones.
-  * `PartialEqSelfCowAndInnerCow` implements `PartialEq<Inner> for Cow<Outer>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialEqSelfCowAndInner`.
-  * `PartialOrdInner` implements `PartialOrd<Inner> for Outer` and similar ones.
-  * `PartialOrdInnerRev` implements `PartialOrd<Outer> for Inner` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialOrdInner`.
-  * `PartialOrdInnerCow` implements `PartialOrd<Cow<Inner>> for Outer` and similar ones.
-  * `PartialOrdInnerCowRev` implements `PartialOrd<Outer> for Cow<Inner>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialOrdInnerCow`.
-  * `PartialOrdSelf` implements `PartialOrd<Outer> for Outer` and similar ones.
-      + This is very similar to `#[derive(PartialOrd)]`, but it will be useful with custom comparison.
-  * `PartialOrdSelfCow` implements `PartialOrd<Cow<Outer>> for Outer` and similar ones.
-  * `PartialOrdSelfCowRev` implements `PartialOrd<Outer> for Cow<Outer>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialOrdSelfCow`.
-  * `PartialOrdSelfCowAndInner` implements `PartialOrd<Cow<Outer>> for Inner` and similar ones.
-  * `PartialOrdSelfCowAndInnerCow` implements `PartialOrd<Inner> for Cow<Outer>` and similar ones.
-      + This is reverse (operands order swapped) version of `PartialOrdSelfCowAndInner`.
-  * `Pointer` implements `std::fmt::Pointer for Outer`.
-  * `Ord` implements `std::cmp::Ord for Outer`.
-      + This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
-  * `UpperExp` implements `std::fmt::UpperExp for Outer`.
-  * `UpperHex` implements `std::fmt::UpperHex for Outer`.
+The traits below are supported.
 
 Note that some (such as `DefaultRef`) are available only for sized types.
+
+#### `std::convert`, type conversion
+
+  * `As{Mut,Ref}{Deref,Inner,Self}`
+      + `AsMutDeref` implements `AsMut<DerefTarget> for Outer`.
+      + `AsMutInner` implements `AsMut<Inner> for Outer`.
+      + `AsMutSelf` implements `AsMut<Outer> for Outer`.
+      + `AsRefDeref` implements `AsRef<DerefTarget> for Outer`.
+      + `AsRefInner` implements `AsRef<Inner> for Outer`.
+      + `AsRefSelf` implements `AsRef<Self> for Outer`.
+  * `Deref`, `DerefMut`
+      + `Deref` implements `std::ops::Deref for Outer`.
+      + `DerefMut` implements `std::ops::DerefMut for Outer`.
+  * `Into{Arc,Box,Inner,Rc}`, `FromInner`
+      + `IntoArc` implements `From<Outer> for Arc<Outer>` (if possible) or `Into<Arc<Outer>> for Outer`.
+      + `IntoBox` implements `From<Outer> for Box<Outer>` (if possible) or `Into<Box<Outer>> for Outer`.
+      + `IntoInner` implements `From<Outer> for Inner`.
+      + `IntoRc` implements `From<Outer> for Rc<Outer>` (if possible) or `Into<Rc<Outer>> for Outer`.
+      + `FromInner` implements `From<Inner> for Outer`.
+
+#### `std::fmt`
+
+  * `std::fmt::*`
+      + `Binary` implements `std::fmt::Binary for Outer`.
+      + `Display` implements `std::fmt::Display for Outer`.
+      + `LowerExp` implements `std::fmt::LowerExp for Outer`.
+      + `LowerHex` implements `std::fmt::LowerHex for Outer`.
+      + `Octal` implements `std::fmt::Octal for Outer`.
+      + `Pointer` implements `std::fmt::Pointer for Outer`.
+      + `UpperExp` implements `std::fmt::UpperExp for Outer`.
+      + `UpperHex` implements `std::fmt::UpperHex for Outer`.
+
+#### `std::cmp`
+
+  * `Partial{Eq,Ord}{Inner,InnerCow,SelfCow}{,Rev}`
+      + `PartialEqInner` implements `PartialEq<Inner> for Outer` and similar ones.
+      + `PartialEqInnerRev` implements `PartialEq<Outer> for Inner` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialEqInner`.
+      + `PartialEqInnerCow` implements `PartialEq<Cow<Inner>> for Outer` and similar ones.
+      + `PartialEqInnerCowRev` implements `PartialEq<Outer> for Cow<Inner>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialEqInnerCow`.
+      + `PartialEqSelf` implements `PartialEq<Outer> for Outer` and similar ones.
+          - This is very similar to `#[derive(PartialEq)]`, but it will be useful with custom comparison.
+      + `PartialEqSelfCow` implements `PartialEq<Cow<Outer>> for Outer` and similar ones.
+      + `PartialEqSelfCowRev` implements `PartialEq<Outer> for Cow<Outer>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialEqSelfCow`.
+      + `PartialEqSelfCowAndInner` implements `PartialEq<Cow<Outer>> for Inner` and similar ones.
+      + `PartialEqSelfCowAndInnerCow` implements `PartialEq<Inner> for Cow<Outer>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialEqSelfCowAndInner`.
+      + `PartialOrdInner` implements `PartialOrd<Inner> for Outer` and similar ones.
+      + `PartialOrdInnerRev` implements `PartialOrd<Outer> for Inner` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialOrdInner`.
+      + `PartialOrdInnerCow` implements `PartialOrd<Cow<Inner>> for Outer` and similar ones.
+      + `PartialOrdInnerCowRev` implements `PartialOrd<Outer> for Cow<Inner>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialOrdInnerCow`.
+      + `PartialOrdSelf` implements `PartialOrd<Outer> for Outer` and similar ones.
+          - This is very similar to `#[derive(PartialOrd)]`, but it will be useful with custom comparison.
+      + `PartialOrdSelfCow` implements `PartialOrd<Cow<Outer>> for Outer` and similar ones.
+      + `PartialOrdSelfCowRev` implements `PartialOrd<Outer> for Cow<Outer>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialOrdSelfCow`.
+      + `PartialOrdSelfCowAndInner` implements `PartialOrd<Cow<Outer>> for Inner` and similar ones.
+      + `PartialOrdSelfCowAndInnerCow` implements `PartialOrd<Inner> for Cow<Outer>` and similar ones.
+          - This is reverse (operands order swapped) version of `PartialOrdSelfCowAndInner`.
+  * `Ord`
+      + `Ord` implements `std::cmp::Ord for Outer`.
+          - This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
+
+#### Others
+
+  * `AsciiExt` implements `std::ascii::AsciiExt for Outer`.
+  * `DefaultRef` implements `Default for &Outer`.
+
 
 ## TODO
 
