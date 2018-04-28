@@ -1,6 +1,7 @@
 //! Derive targets.
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 use quote;
 use quote::ToTokens;
@@ -10,16 +11,332 @@ use attrs::{get_meta_content_by_path, is_attr_with_path};
 use type_props::{Sizedness, TypeProps};
 use utils::extend_generics;
 
+use self::ops::OpSpec;
+
 mod as_ref;
 mod cmp;
 mod convert;
 mod deref;
 mod fmt;
+mod ops;
 
 
 /// Auto-derive target trait.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString,
+         EnumProperty)]
 pub enum Derive {
+    /// `std::ops::Add<Outer> for Outer`.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    AddSelf,
+    /// `std::ops::Add<Inner> for Outer`.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    AddInner,
+    /// `std::ops::Add<Outer> for Inner`.
+    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    AddInnerRev,
+    /// `std::ops::Add<Outer> for Outer` variations.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    AddRefSelf,
+    /// `std::ops::Add<Inner> for Outer` variations.
+    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    AddRefInner,
+    /// `std::ops::Add<Outer> for Inner` variations.
+    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    AddRefInnerRev,
+    /// `std::ops::AddAssign<Outer> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    AddAssignSelf,
+    /// `std::ops::AddAssign<Inner> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    AddAssignInner,
+    /// `std::ops::AddAssign<&Outer> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    AddAssignRefSelf,
+    /// `std::ops::AddAssign<&Inner> for Outer`.
+    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    AddAssignRefInner,
+    /// `std::ops::BitAnd<Outer> for Outer`.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitAndSelf,
+    /// `std::ops::BitAnd<Inner> for Outer`.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitAndInner,
+    /// `std::ops::BitAnd<Outer> for Inner`.
+    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitAndInnerRev,
+    /// `std::ops::BitAnd<Outer> for Outer` variations.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitAndRefSelf,
+    /// `std::ops::BitAnd<Inner> for Outer` variations.
+    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitAndRefInner,
+    /// `std::ops::BitAnd<Outer> for Inner` variations.
+    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitAndRefInnerRev,
+    /// `std::ops::BitAndAssign<Outer> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitAndAssignSelf,
+    /// `std::ops::BitAndAssign<Inner> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitAndAssignInner,
+    /// `std::ops::BitAndAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitAndAssignRefSelf,
+    /// `std::ops::BitAndAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitAndAssignRefInner,
+    /// `std::ops::BitOr<Outer> for Outer`.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitOrSelf,
+    /// `std::ops::BitOr<Inner> for Outer`.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitOrInner,
+    /// `std::ops::BitOr<Outer> for Inner`.
+    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitOrInnerRev,
+    /// `std::ops::BitOr<Outer> for Outer` variations.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitOrRefSelf,
+    /// `std::ops::BitOr<Inner> for Outer` variations.
+    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitOrRefInner,
+    /// `std::ops::BitOr<Outer> for Inner` variations.
+    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitOrRefInnerRev,
+    /// `std::ops::BitOrAssign<Outer> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitOrAssignSelf,
+    /// `std::ops::BitOrAssign<Inner> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitOrAssignInner,
+    /// `std::ops::BitOrAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitOrAssignRefSelf,
+    /// `std::ops::BitOrAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitOrAssignRefInner,
+    /// `std::ops::BitXor<Outer> for Outer`.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitXorSelf,
+    /// `std::ops::BitXor<Inner> for Outer`.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitXorInner,
+    /// `std::ops::BitXor<Outer> for Inner`.
+    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    BitXorInnerRev,
+    /// `std::ops::BitXor<Outer> for Outer` variations.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitXorRefSelf,
+    /// `std::ops::BitXor<Inner> for Outer` variations.
+    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitXorRefInner,
+    /// `std::ops::BitXor<Outer> for Inner` variations.
+    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    BitXorRefInnerRev,
+    /// `std::ops::BitXorAssign<Outer> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    BitXorAssignSelf,
+    /// `std::ops::BitXorAssign<Inner> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    BitXorAssignInner,
+    /// `std::ops::BitXorAssign<&Outer> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    BitXorAssignRefSelf,
+    /// `std::ops::BitXorAssign<&Inner> for Outer`.
+    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    BitXorAssignRefInner,
+    /// `std::ops::Div<Outer> for Outer`.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    DivSelf,
+    /// `std::ops::Div<Inner> for Outer`.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    DivInner,
+    /// `std::ops::Div<Outer> for Inner`.
+    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    DivInnerRev,
+    /// `std::ops::Div<Outer> for Outer` variations.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    DivRefSelf,
+    /// `std::ops::Div<Inner> for Outer` variations.
+    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    DivRefInner,
+    /// `std::ops::Div<Outer> for Inner` variations.
+    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    DivRefInnerRev,
+    /// `std::ops::DivAssign<Outer> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    DivAssignSelf,
+    /// `std::ops::DivAssign<Inner> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    DivAssignInner,
+    /// `std::ops::DivAssign<&Outer> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    DivAssignRefSelf,
+    /// `std::ops::DivAssign<&Inner> for Outer`.
+    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    DivAssignRefInner,
+    /// `std::ops::Mul<Outer> for Outer`.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    MulSelf,
+    /// `std::ops::Mul<Inner> for Outer`.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    MulInner,
+    /// `std::ops::Mul<Outer> for Inner`.
+    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    MulInnerRev,
+    /// `std::ops::Mul<Outer> for Outer` variations.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    MulRefSelf,
+    /// `std::ops::Mul<Inner> for Outer` variations.
+    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    MulRefInner,
+    /// `std::ops::Mul<Outer> for Inner` variations.
+    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    MulRefInnerRev,
+    /// `std::ops::MulAssign<Outer> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    MulAssignSelf,
+    /// `std::ops::MulAssign<Inner> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    MulAssignInner,
+    /// `std::ops::MulAssign<&Outer> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    MulAssignRefSelf,
+    /// `std::ops::MulAssign<&Inner> for Outer`.
+    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    MulAssignRefInner,
+    /// `std::ops::Neg for Outer`.
+    #[strum(props(op = "Neg", lhs = "Outer", variation = "Direct"))]
+    Neg,
+    /// `std::ops::Neg for &Outer`.
+    #[strum(props(op = "Neg", lhs = "Outer", variation = "References"))]
+    NegRef,
+    /// `std::ops::Not for Outer`.
+    #[strum(props(op = "Not", lhs = "Outer", variation = "Direct"))]
+    Not,
+    /// `std::ops::Not for &Outer`.
+    #[strum(props(op = "Not", lhs = "Outer", variation = "References"))]
+    NotRef,
+    /// `std::ops::Rem<Outer> for Outer`.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    RemSelf,
+    /// `std::ops::Rem<Inner> for Outer`.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    RemInner,
+    /// `std::ops::Rem<Outer> for Inner`.
+    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    RemInnerRev,
+    /// `std::ops::Rem<Outer> for Outer` variations.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    RemRefSelf,
+    /// `std::ops::Rem<Inner> for Outer` variations.
+    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    RemRefInner,
+    /// `std::ops::Rem<Outer> for Inner` variations.
+    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    RemRefInnerRev,
+    /// `std::ops::RemAssign<Outer> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    RemAssignSelf,
+    /// `std::ops::RemAssign<Inner> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    RemAssignInner,
+    /// `std::ops::RemAssign<&Outer> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    RemAssignRefSelf,
+    /// `std::ops::RemAssign<&Inner> for Outer`.
+    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    RemAssignRefInner,
+    /// `std::ops::Shl<Outer> for Outer`.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShlSelf,
+    /// `std::ops::Shl<Inner> for Outer`.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShlInner,
+    /// `std::ops::Shl<Outer> for Inner`.
+    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    ShlInnerRev,
+    /// `std::ops::Shl<Outer> for Outer` variations.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShlRefSelf,
+    /// `std::ops::Shl<Inner> for Outer` variations.
+    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShlRefInner,
+    /// `std::ops::Shl<Outer> for Inner` variations.
+    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    ShlRefInnerRev,
+    /// `std::ops::ShlAssign<Outer> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShlAssignSelf,
+    /// `std::ops::ShlAssign<Inner> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShlAssignInner,
+    /// `std::ops::ShlAssign<&Outer> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShlAssignRefSelf,
+    /// `std::ops::ShlAssign<&Inner> for Outer`.
+    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShlAssignRefInner,
+    /// `std::ops::Shr<Outer> for Outer`.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShrSelf,
+    /// `std::ops::Shr<Inner> for Outer`.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShrInner,
+    /// `std::ops::Shr<Outer> for Inner`.
+    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    ShrInnerRev,
+    /// `std::ops::Shr<Outer> for Outer` variations.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShrRefSelf,
+    /// `std::ops::Shr<Inner> for Outer` variations.
+    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShrRefInner,
+    /// `std::ops::Shr<Outer> for Inner` variations.
+    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    ShrRefInnerRev,
+    /// `std::ops::ShrAssign<Outer> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    ShrAssignSelf,
+    /// `std::ops::ShrAssign<Inner> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    ShrAssignInner,
+    /// `std::ops::ShrAssign<&Outer> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    ShrAssignRefSelf,
+    /// `std::ops::ShrAssign<&Inner> for Outer`.
+    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    ShrAssignRefInner,
+    /// `std::ops::Sub<Outer> for Outer`.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    SubSelf,
+    /// `std::ops::Sub<Inner> for Outer`.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    SubInner,
+    /// `std::ops::Sub<Outer> for Inner`.
+    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    SubInnerRev,
+    /// `std::ops::Sub<Outer> for Outer` variations.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    SubRefSelf,
+    /// `std::ops::Sub<Inner> for Outer` variations.
+    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    SubRefInner,
+    /// `std::ops::Sub<Outer> for Inner` variations.
+    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    SubRefInnerRev,
+    /// `std::ops::SubAssign<Outer> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    SubAssignSelf,
+    /// `std::ops::SubAssign<Inner> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    SubAssignInner,
+    /// `std::ops::SubAssign<&Outer> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    SubAssignRefSelf,
+    /// `std::ops::SubAssign<&Inner> for Outer`.
+    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    SubAssignRefInner,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,
     /// `AsMut<DerefTarget> for Outer`.
@@ -164,64 +481,245 @@ impl Derive {
 
     /// Returns derive targets specified by `parent(child1, child2, ...)` style.
     fn append_from_nested_names(parent: &str, children: &[&str], derives: &mut Vec<Self>) {
-        match parent {
-            "AsMut" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Deref" => Derive::AsMutDeref,
-                    "Inner" => Derive::AsMutInner,
-                    // `Self` cannot be an identifier but parsed as identifier...
-                    "Self_" => Derive::AsMutSelf,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "AsRef" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Deref" => Derive::AsRefDeref,
-                    "Inner" => Derive::AsRefInner,
-                    // `Self` cannot be an identifier but parsed as identifier...
-                    "Self_" => Derive::AsRefSelf,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "Into" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Arc" => Derive::IntoArc,
-                    "Box" => Derive::IntoBox,
-                    "Inner" => Derive::IntoInner,
-                    "Rc" => Derive::IntoRc,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "PartialEq" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Inner" => Derive::PartialEqInner,
-                    "InnerRev" => Derive::PartialEqInnerRev,
-                    "InnerCow" => Derive::PartialEqInnerCow,
-                    "InnerCowRev" => Derive::PartialEqInnerCowRev,
-                    "Self_" => Derive::PartialEqSelf,
-                    "SelfCow" => Derive::PartialEqSelfCow,
-                    "SelfCowRev" => Derive::PartialEqSelfCowRev,
-                    "SelfCowAndInner" => Derive::PartialEqSelfCowAndInner,
-                    "SelfCowAndInnerRev" => Derive::PartialEqSelfCowAndInnerRev,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            "PartialOrd" => {
-                derives.extend(children.into_iter().map(|&child| match child {
-                    "Inner" => Derive::PartialOrdInner,
-                    "InnerRev" => Derive::PartialOrdInnerRev,
-                    "InnerCow" => Derive::PartialOrdInnerCow,
-                    "InnerCowRev" => Derive::PartialOrdInnerCowRev,
-                    "Self_" => Derive::PartialOrdSelf,
-                    "SelfCow" => Derive::PartialOrdSelfCow,
-                    "SelfCowRev" => Derive::PartialOrdSelfCowRev,
-                    "SelfCowAndInner" => Derive::PartialOrdSelfCowAndInner,
-                    "SelfCowAndInnerRev" => Derive::PartialOrdSelfCowAndInnerRev,
-                    _ => abort_on_unknown_derive_target(format_args!("{}({})", parent, child)),
-                }));
-            },
-            _ => abort_on_unknown_derive_target(format_args!("{}(..)", parent)),
+        lazy_static! {
+            static ref NESTED_DERIVES: HashMap<&'static str, HashMap<&'static str, Derive>> = {
+                // Note that `Self` cannot be used for child target, because the
+                // token `Self` cannot be an identifier but parsed as
+                // identifier.
+                const TARGETS: &[(&'static str, &'static [(&'static str, Derive)])] = &[
+                    ("AsMut", &[
+                        ("Deref", Derive::AsMutDeref),
+                        ("Inner", Derive::AsMutInner),
+                        ("Self_", Derive::AsMutSelf),
+                    ]),
+                    ("AsRef", &[
+                        ("Deref", Derive::AsRefDeref),
+                        ("Inner", Derive::AsRefInner),
+                        ("Self_", Derive::AsRefSelf),
+                    ]),
+                    ("Into", &[
+                        ("Arc", Derive::IntoArc),
+                        ("Box", Derive::IntoBox),
+                        ("Inner", Derive::IntoInner),
+                        ("Rc", Derive::IntoRc),
+                    ]),
+                    ("PartialEq", &[
+                        ("Inner", Derive::PartialEqInner),
+                        ("InnerRev", Derive::PartialEqInnerRev),
+                        ("InnerCow", Derive::PartialEqInnerCow),
+                        ("InnerCowRev", Derive::PartialEqInnerCowRev),
+                        ("Self_", Derive::PartialEqSelf),
+                        ("SelfCow", Derive::PartialEqSelfCow),
+                        ("SelfCowRev", Derive::PartialEqSelfCowRev),
+                        ("SelfCowAndInner", Derive::PartialEqSelfCowAndInner),
+                        ("SelfCowAndInnerRev", Derive::PartialEqSelfCowAndInnerRev),
+                    ]),
+                    ("PartialOrd", &[
+                        ("Inner", Derive::PartialOrdInner),
+                        ("InnerRev", Derive::PartialOrdInnerRev),
+                        ("InnerCow", Derive::PartialOrdInnerCow),
+                        ("InnerCowRev", Derive::PartialOrdInnerCowRev),
+                        ("Self_", Derive::PartialOrdSelf),
+                        ("SelfCow", Derive::PartialOrdSelfCow),
+                        ("SelfCowRev", Derive::PartialOrdSelfCowRev),
+                        ("SelfCowAndInner", Derive::PartialOrdSelfCowAndInner),
+                        ("SelfCowAndInnerRev", Derive::PartialOrdSelfCowAndInnerRev),
+                    ]),
+                    ("Add", &[
+                        ("Self_", Derive::AddSelf),
+                        ("Inner", Derive::AddInner),
+                        ("InnerRev", Derive::AddInnerRev),
+                    ]),
+                    ("AddRef", &[
+                        ("Self_", Derive::AddRefSelf),
+                        ("Inner", Derive::AddRefInner),
+                        ("InnerRev", Derive::AddRefInnerRev),
+                    ]),
+                    ("AddAssign", &[
+                        ("Self_", Derive::AddAssignSelf),
+                        ("Inner", Derive::AddAssignInner),
+                    ]),
+                    ("AddAssignRef", &[
+                        ("Self_", Derive::AddAssignRefSelf),
+                        ("Inner", Derive::AddAssignRefInner),
+                    ]),
+                    ("BitAnd", &[
+                        ("Self_", Derive::BitAndSelf),
+                        ("Inner", Derive::BitAndInner),
+                        ("InnerRev", Derive::BitAndInnerRev),
+                    ]),
+                    ("BitAndRef", &[
+                        ("Self_", Derive::BitAndRefSelf),
+                        ("Inner", Derive::BitAndRefInner),
+                        ("InnerRev", Derive::BitAndRefInnerRev),
+                    ]),
+                    ("BitAndAssign", &[
+                        ("Self_", Derive::BitAndAssignSelf),
+                        ("Inner", Derive::BitAndAssignInner),
+                    ]),
+                    ("BitAndAssignRef", &[
+                        ("Self_", Derive::BitAndAssignRefSelf),
+                        ("Inner", Derive::BitAndAssignRefInner),
+                    ]),
+                    ("BitOr", &[
+                        ("Self_", Derive::BitOrSelf),
+                        ("Inner", Derive::BitOrInner),
+                        ("InnerRev", Derive::BitOrInnerRev),
+                    ]),
+                    ("BitOrRef", &[
+                        ("Self_", Derive::BitOrRefSelf),
+                        ("Inner", Derive::BitOrRefInner),
+                        ("InnerRev", Derive::BitOrRefInnerRev),
+                    ]),
+                    ("BitOrAssign", &[
+                        ("Self_", Derive::BitOrAssignSelf),
+                        ("Inner", Derive::BitOrAssignInner),
+                    ]),
+                    ("BitOrAssignRef", &[
+                        ("Self_", Derive::BitOrAssignRefSelf),
+                        ("Inner", Derive::BitOrAssignRefInner),
+                    ]),
+                    ("BitXor", &[
+                        ("Self_", Derive::BitXorSelf),
+                        ("Inner", Derive::BitXorInner),
+                        ("InnerRev", Derive::BitXorInnerRev),
+                    ]),
+                    ("BitXorRef", &[
+                        ("Self_", Derive::BitXorRefSelf),
+                        ("Inner", Derive::BitXorRefInner),
+                        ("InnerRev", Derive::BitXorRefInnerRev),
+                    ]),
+                    ("BitXorAssign", &[
+                        ("Self_", Derive::BitXorAssignSelf),
+                        ("Inner", Derive::BitXorAssignInner),
+                    ]),
+                    ("BitXorAssignRef", &[
+                        ("Self_", Derive::BitXorAssignRefSelf),
+                        ("Inner", Derive::BitXorAssignRefInner),
+                    ]),
+                    ("Div", &[
+                        ("Self_", Derive::DivSelf),
+                        ("Inner", Derive::DivInner),
+                        ("InnerRev", Derive::DivInnerRev),
+                    ]),
+                    ("DivRef", &[
+                        ("Self_", Derive::DivRefSelf),
+                        ("Inner", Derive::DivRefInner),
+                        ("InnerRev", Derive::DivRefInnerRev),
+                    ]),
+                    ("DivAssign", &[
+                        ("Self_", Derive::DivAssignSelf),
+                        ("Inner", Derive::DivAssignInner),
+                    ]),
+                    ("DivAssignRef", &[
+                        ("Self_", Derive::DivAssignRefSelf),
+                        ("Inner", Derive::DivAssignRefInner),
+                    ]),
+                    ("Mul", &[
+                        ("Self_", Derive::MulSelf),
+                        ("Inner", Derive::MulInner),
+                        ("InnerRev", Derive::MulInnerRev),
+                    ]),
+                    ("MulRef", &[
+                        ("Self_", Derive::MulRefSelf),
+                        ("Inner", Derive::MulRefInner),
+                        ("InnerRev", Derive::MulRefInnerRev),
+                    ]),
+                    ("MulAssign", &[
+                        ("Self_", Derive::MulAssignSelf),
+                        ("Inner", Derive::MulAssignInner),
+                    ]),
+                    ("MulAssignRef", &[
+                        ("Self_", Derive::MulAssignRefSelf),
+                        ("Inner", Derive::MulAssignRefInner),
+                    ]),
+                    ("Rem", &[
+                        ("Self_", Derive::RemSelf),
+                        ("Inner", Derive::RemInner),
+                        ("InnerRev", Derive::RemInnerRev),
+                    ]),
+                    ("RemRef", &[
+                        ("Self_", Derive::RemRefSelf),
+                        ("Inner", Derive::RemRefInner),
+                        ("InnerRev", Derive::RemRefInnerRev),
+                    ]),
+                    ("RemAssign", &[
+                        ("Self_", Derive::RemAssignSelf),
+                        ("Inner", Derive::RemAssignInner),
+                    ]),
+                    ("RemAssignRef", &[
+                        ("Self_", Derive::RemAssignRefSelf),
+                        ("Inner", Derive::RemAssignRefInner),
+                    ]),
+                    ("Shl", &[
+                        ("Self_", Derive::ShlSelf),
+                        ("Inner", Derive::ShlInner),
+                        ("InnerRev", Derive::ShlInnerRev),
+                    ]),
+                    ("ShlRef", &[
+                        ("Self_", Derive::ShlRefSelf),
+                        ("Inner", Derive::ShlRefInner),
+                        ("InnerRev", Derive::ShlRefInnerRev),
+                    ]),
+                    ("ShlAssign", &[
+                        ("Self_", Derive::ShlAssignSelf),
+                        ("Inner", Derive::ShlAssignInner),
+                    ]),
+                    ("ShlAssignRef", &[
+                        ("Self_", Derive::ShlAssignRefSelf),
+                        ("Inner", Derive::ShlAssignRefInner),
+                    ]),
+                    ("Shr", &[
+                        ("Self_", Derive::ShrSelf),
+                        ("Inner", Derive::ShrInner),
+                        ("InnerRev", Derive::ShrInnerRev),
+                    ]),
+                    ("ShrRef", &[
+                        ("Self_", Derive::ShrRefSelf),
+                        ("Inner", Derive::ShrRefInner),
+                        ("InnerRev", Derive::ShrRefInnerRev),
+                    ]),
+                    ("ShrAssign", &[
+                        ("Self_", Derive::ShrAssignSelf),
+                        ("Inner", Derive::ShrAssignInner),
+                    ]),
+                    ("ShrAssignRef", &[
+                        ("Self_", Derive::ShrAssignRefSelf),
+                        ("Inner", Derive::ShrAssignRefInner),
+                    ]),
+                    ("Sub", &[
+                        ("Self_", Derive::SubSelf),
+                        ("Inner", Derive::SubInner),
+                        ("InnerRev", Derive::SubInnerRev),
+                    ]),
+                    ("SubRef", &[
+                        ("Self_", Derive::SubRefSelf),
+                        ("Inner", Derive::SubRefInner),
+                        ("InnerRev", Derive::SubRefInnerRev),
+                    ]),
+                    ("SubAssign", &[
+                        ("Self_", Derive::SubAssignSelf),
+                        ("Inner", Derive::SubAssignInner),
+                    ]),
+                    ("SubAssignRef", &[
+                        ("Self_", Derive::SubAssignRefSelf),
+                        ("Inner", Derive::SubAssignRefInner),
+                    ]),
+                ];
+                TARGETS.into_iter().map(|&(parent, subtargets)| {
+                    (parent, subtargets.into_iter().map(|&v| v).collect())
+                }).collect()
+            };
         }
+
+        let submap = NESTED_DERIVES.get(parent).unwrap_or_else(|| {
+            abort_on_unknown_derive_target(format_args!("{}(..)", parent));
+        });
+        derives.extend(children.into_iter().map(|&child| {
+            submap.get(child).unwrap_or_else(|| {
+                abort_on_unknown_derive_target(format_args!("{}({})", parent, child));
+            })
+        }));
     }
 
     /// Generates impls for the auto-derive target.
@@ -388,6 +886,20 @@ impl Derive {
                         }
                     }
                 }
+            },
+            // Simple operators.
+            _ => match OpSpec::from_derive_target(*self) {
+                Some(op_spec) => match props.inner_sizedness {
+                    Sizedness::Sized => op_spec.gen_impl_sized(props, *self),
+                    Sizedness::Unsized => op_spec.gen_impl_unsized(props, *self),
+                },
+                None => {
+                    panic!(
+                        "Derive target {:?} is expected to be an operator, but \
+                         lacks required properties",
+                        *self
+                    );
+                },
             },
         }
     }

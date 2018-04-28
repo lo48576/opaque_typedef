@@ -11,7 +11,6 @@
 // These are specified here for testing purpose.
 #[opaque_typedef(
     derive(
-        AsciiExt,
         AsMut(Deref, Self_),
         AsRef(Deref, Self_),
         Binary,

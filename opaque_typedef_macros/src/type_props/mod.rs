@@ -285,6 +285,19 @@ impl<'a> TypeProps<'a> {
         }
     }
 
+    pub fn tokens_outer_expr_into_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+        // The caller is responsible to ensure the (inner) type is sized.
+        assert_eq!(
+            self.inner_sizedness,
+            Sizedness::Sized,
+            "opaque_typedef internal error: Caller should ensure the (inner) type is sized"
+        );
+        let ty_outer = self.ty_outer;
+        let type_generics = &self.type_generics;
+        let helper_trait = self.helper_trait();
+        quote!(<#ty_outer #type_generics as #helper_trait>::into_inner(#expr))
+    }
+
     pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let type_generics = &self.type_generics;
@@ -299,6 +312,10 @@ impl<'a> TypeProps<'a> {
             "opaque_typedef internal error: Caller should ensure `allow_mut_ref` is specified"
         );
 
+        self.tokens_outer_expr_as_inner_mut_nocheck(expr)
+    }
+
+    pub fn tokens_outer_expr_as_inner_mut_nocheck<T: ToTokens>(&self, expr: T) -> quote::Tokens {
         let ty_outer = self.ty_outer;
         let type_generics = &self.type_generics;
         let helper_trait = self.helper_trait();

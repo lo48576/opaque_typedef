@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+
+## [0.0.3] - 2018-04-28
+
+Many operators are now supported!
+
+### Added
+
+* `std::ops::*` traits (for operators) support
+  ([#7](https://github.com/lo48576/opaque_typedef/issues/7)).
+    + The targets below are added:
+        - Arithmetic unary: `Neg{,Ref}`
+        - Arithmetic binary: `{Add,Div,Mul,Rem,Sub}{,Assign}{,Ref}{Self,Inner,InnerRev}`
+        - Bitwise binary: `{BitAnd,BitOr,BitXor,Shl,Shr}{,Assign}{,Ref}{Self,Inner,InnerRev}`
+        - Logical unary: `Not{,Ref}`
+
+
 ## [0.0.2] - 2018-04-10
 
 * `opaque_typedef_macros` is [(almost) completely rewritten](https://github.com/lo48576/opaque_typedef/commit/5bf3c37aa1e89aff6812785b90f789e73e0f11af)!
@@ -39,7 +55,6 @@
       + Usual error types (typically implements `std::error::Error` implement `std::fmt::Debug` and
         `std::fmt::Display`, so you may not be affected in most cases.
 
-
 ### Changed (non-breaking)
 
   * Bump dependencies.
@@ -70,6 +85,7 @@ Initial release.
 
 
 
-[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.2...develop>
+[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3...develop>
+[0.0.3]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3>
 [0.0.2]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.2>
 [0.0.1]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.1>
