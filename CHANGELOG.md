@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 
-Many operators are now supported!.
+
+## [0.0.3] - 2018-04-28
+
+Many operators are now supported!
 
 ### Added
 
@@ -82,6 +85,7 @@ Initial release.
 
 
 
-[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.2...develop>
+[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3...develop>
+[0.0.3]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3>
 [0.0.2]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.2>
 [0.0.1]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.1>
