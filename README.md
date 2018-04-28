@@ -377,6 +377,17 @@ Note that some (such as `DefaultRef`) are available only for sized types.
       + `Ord` implements `std::cmp::Ord for Outer`.
           - This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
 
+#### `std::ops`
+
+(Poor documentation but it's ok because syntax will soon change largely.)
+
+  * Unary ops
+      + `Neg{,Ref}`
+      + `Not{,Ref}`
+  * Binary ops
+      + `{Add,BitAnd,BitOr,BitXor,Div,Mul,Rem,Shl,Shr,Sub}{,Assign}{,Ref}{Self,Inner,InnerRev}`
+
+
 #### Others
 
   * `AsciiExt` implements `std::ascii::AsciiExt for Outer`.
@@ -386,7 +397,6 @@ Note that some (such as `DefaultRef`) are available only for sized types.
 ## TODO
 
   * More traits
-      + Especially `std::ops::*` binary operators ([#7](https://github.com/lo48576/opaque_typedef/issues/7))
       + Nightly-only traits (`TryFrom`, `TryInto`, ...) ([#6](https://github.com/lo48576/opaque_typedef/issues/6))
   * Support types with multiple fields ([#9](https://github.com/lo48576/opaque_typedef/issues/9))
 
