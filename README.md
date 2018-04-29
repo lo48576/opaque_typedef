@@ -379,8 +379,6 @@ Note that some (such as `DefaultRef`) are available only for sized types.
 
 #### `std::ops`
 
-(Poor documentation but it's ok because syntax will soon change largely.)
-
   * Unary ops
       + `Neg{,Ref}`
       + `Not{,Ref}`
