@@ -49,8 +49,8 @@ Examples are in [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_
 
 ```toml
 [dependencies]
-opaque_typedef = "^0.0.2"
-opaque_typedef_macros = "^0.0.2"
+opaque_typedef = "^0.0.3"
+opaque_typedef_macros = "^0.0.3"
 ```
 
 `lib.rs` or `main.rs`:
