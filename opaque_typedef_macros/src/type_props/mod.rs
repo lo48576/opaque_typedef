@@ -244,10 +244,14 @@ impl<'a> TypeProps<'a> {
                         type Error = #ty_error;
 
                         unsafe fn from_inner_unchecked(__inner: &Self::Inner) -> &Self {
-                            ::std::mem::transmute(__inner)
+                            // See
+                            // <https://rust-lang-nursery.github.io/rust-clippy/v0.0.194/index.html#derive_hash_xor_eq>.
+                            &*(__inner as *const Self::Inner as *const Self)
                         }
                         unsafe fn from_inner_unchecked_mut(__inner: &mut Self::Inner) -> &mut Self {
-                            ::std::mem::transmute(__inner)
+                            // See
+                            // <https://rust-lang-nursery.github.io/rust-clippy/v0.0.194/index.html#derive_hash_xor_eq>.
+                            &mut *(__inner as *mut Self::Inner as *mut Self)
                         }
                         fn try_from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
                             let __inner = #inner_try_validated;

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed (non-breaking)
+
+* Resolve clippy lint `transmute_ptr_to_ptr` warning.
+
 
 ## [0.0.3] - 2018-04-28
 
