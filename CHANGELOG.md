@@ -4,7 +4,7 @@
 
 ### Changed (non-breaking)
 
-* Resolve clippy lint `transmute_ptr_to_ptr` warning.
+* Resolve clippy lints (v0.0.206).
 * Bump dependencies.
     + Now `opaque_typedef_macro` uses syn-0.14 and quote-0.6.
 

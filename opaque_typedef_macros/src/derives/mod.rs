@@ -489,7 +489,7 @@ impl Derive {
                 // Note that `Self` cannot be used for child target, because the
                 // token `Self` cannot be an identifier but parsed as
                 // identifier.
-                const TARGETS: &[(&'static str, &'static [(&'static str, Derive)])] = &[
+                const TARGETS: &[(&str, &[(&str, Derive)])] = &[
                     ("AsMut", &[
                         ("Deref", Derive::AsMutDeref),
                         ("Inner", Derive::AsMutInner),
@@ -710,7 +710,7 @@ impl Derive {
                     ]),
                 ];
                 TARGETS.into_iter().map(|&(parent, subtargets)| {
-                    (parent, subtargets.into_iter().map(|&v| v).collect())
+                    (parent, subtargets.into_iter().cloned().collect())
                 }).collect()
             };
         }
@@ -924,7 +924,7 @@ fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
 }
 
 
-fn abort_on_unknown_derive_target<'a>(target: ::std::fmt::Arguments<'a>) -> ! {
+fn abort_on_unknown_derive_target(target: ::std::fmt::Arguments) -> ! {
     panic!(
         "`#[opaque_typedef(derive({target}))]` is specified, but the target `{target}` is unknown",
         target = target
@@ -932,7 +932,7 @@ fn abort_on_unknown_derive_target<'a>(target: ::std::fmt::Arguments<'a>) -> ! {
 }
 
 
-fn abort_on_unsupported_derive_format<'a>(inner: ::std::fmt::Arguments<'a>) -> ! {
+fn abort_on_unsupported_derive_format(inner: ::std::fmt::Arguments) -> ! {
     panic!(
         "`#[opaque_typedef(derive({}))]` is specified, but this format is not supported",
         inner

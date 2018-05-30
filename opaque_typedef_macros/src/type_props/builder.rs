@@ -47,7 +47,7 @@ fn get_inner_field(data: &syn::Data) -> Field {
     }
     if fields.len() > 1 {
         panic!("Currently, outer type with multiple fields is not supported");
-    } else if fields.len() == 0 {
+    } else if fields.is_empty() {
         panic!("Types with no fields are not supported");
     }
     unreachable!("Currently, outer types with multiple fields are not supported");

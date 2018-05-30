@@ -43,11 +43,11 @@ pub fn get_meta_content_by_path(meta: syn::Meta, path: &[&str]) -> Vec<syn::Nest
 }
 
 
-fn append_meta_content_by_path<'a>(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn::NestedMeta>) {
-    if path.len() == 0 {
+fn append_meta_content_by_path(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn::NestedMeta>) {
+    if path.is_empty() {
         return;
     }
-    assert!(path.len() > 0);
+    assert!(!path.is_empty());
     match meta {
         syn::Meta::List(metalist) => {
             if metalist.ident == path[0] {
@@ -59,16 +59,16 @@ fn append_meta_content_by_path<'a>(meta: syn::Meta, path: &[&str], vec: &mut Vec
 }
 
 
-fn append_meta_items_by_path<'a, I>(nested_items: I, path: &[&str], vec: &mut Vec<syn::NestedMeta>)
+fn append_meta_items_by_path<I>(nested_items: I, path: &[&str], vec: &mut Vec<syn::NestedMeta>)
 where
     I: IntoIterator<Item = syn::NestedMeta>,
 {
-    if path.len() == 0 {
+    if path.is_empty() {
         vec.extend(nested_items);
         return;
     }
-    assert!(path.len() > 0);
-    for nested_meta in nested_items.into_iter() {
+    assert!(!path.is_empty());
+    for nested_meta in nested_items {
         if let syn::NestedMeta::Meta(meta) = nested_meta {
             append_meta_content_by_path(meta, path, vec);
         }

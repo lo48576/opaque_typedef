@@ -27,7 +27,7 @@ mod utils;
 #[proc_macro_derive(OpaqueTypedef, attributes(opaque_typedef))]
 pub fn opaque_typedef(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
-    let gen = gen_opaque_typedef_impls(input, Sizedness::Sized);
+    let gen = gen_opaque_typedef_impls(&input, Sizedness::Sized);
     gen.into()
 }
 
@@ -36,13 +36,13 @@ pub fn opaque_typedef(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 #[proc_macro_derive(OpaqueTypedefUnsized, attributes(opaque_typedef))]
 pub fn opaque_typedef_unsized(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
-    let gen = gen_opaque_typedef_impls(input, Sizedness::Unsized);
+    let gen = gen_opaque_typedef_impls(&input, Sizedness::Unsized);
     gen.into()
 }
 
 
 /// Generates additional impls for a `#[derive(OpaqueTypedef*)]`-ed type.
-fn gen_opaque_typedef_impls(input: DeriveInput, sizedness: Sizedness) -> TokenStream {
+fn gen_opaque_typedef_impls(input: &DeriveInput, sizedness: Sizedness) -> TokenStream {
     let props = TypeProps::load(&input, sizedness);
     props.gen_impls()
 }
