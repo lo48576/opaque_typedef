@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -198,20 +198,20 @@ impl BinOpSpec {
     }
 
     /// Returns target trait path.
-    pub fn tokens_trait_path(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Path>("trait_").into_tokens()
+    pub fn tokens_trait_path(&self) -> TokenStream {
+        self.parse_prop::<syn::Path>("trait_").into_token_stream()
     }
 
     /// Returns method name to implement.
-    pub fn tokens_method(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Ident>("method").into_tokens()
+    pub fn tokens_method(&self) -> TokenStream {
+        self.parse_prop::<syn::Ident>("method").into_token_stream()
     }
 
-    pub fn tokens_arg_self(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Expr>("self_").into_tokens()
+    pub fn tokens_arg_self(&self) -> TokenStream {
+        self.parse_prop::<syn::Expr>("self_").into_token_stream()
     }
 
-    pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> quote::Tokens {
+    pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> TokenStream {
         match *self {
             BinOpSpec::Add
             | BinOpSpec::AddAssign
@@ -232,11 +232,11 @@ impl BinOpSpec {
             | BinOpSpec::Shr
             | BinOpSpec::ShrAssign
             | BinOpSpec::Sub
-            | BinOpSpec::SubAssign => ty_rhs.into_tokens(),
+            | BinOpSpec::SubAssign => ty_rhs.into_token_stream(),
         }
     }
 
-    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<quote::Tokens> {
+    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<TokenStream> {
         match *self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
@@ -247,12 +247,12 @@ impl BinOpSpec {
             | BinOpSpec::Rem
             | BinOpSpec::Shl
             | BinOpSpec::Shr
-            | BinOpSpec::Sub => Some(ty_outer.into_tokens()),
+            | BinOpSpec::Sub => Some(ty_outer.into_token_stream()),
             _ => None,
         }
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> TokenStream {
         match self.tokens_associated_ty_output(&ty_outer) {
             Some(ty_output) => quote! {
                 type Output = #ty_output;
@@ -261,8 +261,8 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_ty_ret(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Type>("ty_ret").into_tokens()
+    pub fn tokens_ty_ret(&self) -> TokenStream {
+        self.parse_prop::<syn::Type>("ty_ret").into_token_stream()
     }
 
     // TODO: Make it configurable to choose inner implementation of `*Assign`.
@@ -270,7 +270,7 @@ impl BinOpSpec {
     // `a.inner += b.inner;` style, for each `*Assign` trait impls.
     // Note that this feature also requires trait bounds generation to be
     // configurable.
-    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> quote::Tokens
+    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> TokenStream
     where
         T: ToTokens,
         U: ToTokens,
@@ -299,7 +299,7 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> quote::Tokens {
+    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
         let expr = quote!(self);
         match *self {
             BinOpSpec::Add
@@ -341,7 +341,7 @@ impl BinOpSpec {
         props: &TypeProps,
         rhs_spec: OperandSpec,
         rhs_expr: T,
-    ) -> quote::Tokens {
+    ) -> TokenStream {
         let inner = rhs_spec.tokens_inner(props, rhs_expr);
         match *self {
             BinOpSpec::Add
@@ -374,7 +374,7 @@ pub fn gen_impl_sized_raw(
     op_spec: BinOpSpec,
     lhs_spec: OperandTypeSpec,
     rhs_spec: OperandTypeSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     assert!(lhs_spec != OperandTypeSpec::Inner || rhs_spec != OperandTypeSpec::Inner);
     gen_impl_sized(
         props,
@@ -390,7 +390,7 @@ pub fn gen_impl_sized_ref(
     op_spec: BinOpSpec,
     lhs_spec: OperandTypeSpec,
     rhs_spec: OperandTypeSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     assert!(lhs_spec != OperandTypeSpec::Inner || rhs_spec != OperandTypeSpec::Inner);
     let gen_raw_ref = || {
         gen_impl_sized(
@@ -460,7 +460,7 @@ pub fn gen_impl_sized(
     op_spec: BinOpSpec,
     lhs_spec: OperandSpec,
     rhs_spec: OperandSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     let ty_outer_generic = {
         let ty_outer = &props.ty_outer;
         let type_generics = &props.type_generics;
@@ -505,7 +505,7 @@ pub fn gen_impl_sized(
                     ty_lhs_inner,
                     target_trait,
                     ty_rhs_inner,
-                    ty_inner.into_tokens()
+                    ty_inner.into_token_stream()
                 ),
                 None => format!("{}: {}<{}>", ty_lhs_inner, target_trait, ty_rhs_inner),
             };

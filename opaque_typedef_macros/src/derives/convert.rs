@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -13,10 +13,10 @@ use super::Derive;
 
 
 /// Generates an impl for the target.
-pub fn gen_impl_from_inner(props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
     let helper_trait = props.helper_trait();
-    let ty_outer = props.ty_outer.into_tokens();
-    let ty_inner = props.field_inner.ty().into_tokens();
+    let ty_outer = props.ty_outer.into_token_stream();
+    let ty_inner = props.field_inner.ty().into_token_stream();
     let type_generics = &props.type_generics;
     let expr = quote! {
         <#ty_outer #type_generics as #helper_trait>::from_inner(__inner)
@@ -38,7 +38,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> quote::Tokens {
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
-            let new_lt = new_lifetimes[0];
+            let new_lt = &new_lifetimes[0];
             quote! {
                 impl #impl_generics
                     ::std::convert::From<&#new_lt #ty_inner> for &#new_lt #ty_outer #type_generics
@@ -55,11 +55,11 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> quote::Tokens {
 
 
 /// Generates an impl for the target.
-pub fn gen_impl_into_inner(props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
     let helper_trait = props.helper_trait();
-    let ty_outer = props.ty_outer.into_tokens();
+    let ty_outer = props.ty_outer.into_token_stream();
     let type_generics = &props.type_generics;
-    let ty_inner = props.field_inner.ty().into_tokens();
+    let ty_inner = props.field_inner.ty().into_token_stream();
     match props.inner_sizedness {
         Sizedness::Sized => {
             let impl_generics = &props.impl_generics;
@@ -77,7 +77,7 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> quote::Tokens {
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
-            let new_lt = new_lifetimes[0];
+            let new_lt = &new_lifetimes[0];
             quote! {
                 impl #impl_generics
                     ::std::convert::Into<&#new_lt #ty_inner> for &#new_lt #ty_outer #type_generics
@@ -94,15 +94,15 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> quote::Tokens {
 
 
 /// Generates an impl for the target.
-pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> TokenStream {
     assert_eq!(
         props.inner_sizedness,
         Sizedness::Unsized,
         "opaque_typedef internal error: `gen_impl_into_smartptr()` works only for unsized types"
     );
 
-    let ty_inner = props.field_inner.ty().into_tokens();
-    let ty_outer = props.ty_outer.into_tokens();
+    let ty_inner = props.field_inner.ty().into_token_stream();
+    let ty_outer = props.ty_outer.into_token_stream();
     let type_generics = &props.type_generics;
     let (ty_smartptr_inner, ty_target, fn_to_inner_smartptr, fn_into_raw, fn_from_raw) =
         match target {
@@ -130,12 +130,13 @@ pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> quote::Token
             _ => unreachable!("Should never happen"),
         };
     let (generics, new_lt) = {
-        let (temp_generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
-        let new_lt = new_lifetimes[0];
+        let (temp_generics, mut new_lifetimes) =
+            extend_generics(Cow::Borrowed(props.generics), 1, &[]);
+        let new_lt = new_lifetimes.remove(0);
         let pred_clone = syn::parse_str::<syn::WherePredicate>(&format!(
             "{}: From<&{} {}>",
             &ty_smartptr_inner,
-            (&new_lt).into_tokens(),
+            (&new_lt).into_token_stream(),
             &ty_inner
         )).expect("Failed to generate `PredicateType`");
         let (generics, _) = extend_generics(temp_generics, 0, &[pred_clone]);

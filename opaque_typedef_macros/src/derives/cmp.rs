@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -12,7 +12,7 @@ use utils::extend_generics;
 use super::Derive;
 
 
-pub fn gen_impl_ord(props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl_ord(props: &TypeProps) -> TokenStream {
     let ty_outer = &props.ty_outer;
     let type_generics = &props.type_generics;
     let ty_outer_generic = quote!(#ty_outer #type_generics);
@@ -35,7 +35,7 @@ pub fn gen_impl_ord(props: &TypeProps) -> quote::Tokens {
 
 
 /// Generates an impl for the target.
-pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
     let trait_spec = match target {
         Derive::PartialEqInner
         | Derive::PartialEqInnerRev
@@ -388,7 +388,7 @@ enum CmpTraitSpec {
 }
 
 impl CmpTraitSpec {
-    pub fn target_trait(&self) -> quote::Tokens {
+    pub fn target_trait(&self) -> TokenStream {
         match *self {
             CmpTraitSpec::PartialEq => quote!(::std::cmp::PartialEq),
             CmpTraitSpec::PartialOrd => quote!(::std::cmp::PartialOrd),
@@ -396,7 +396,7 @@ impl CmpTraitSpec {
         }
     }
 
-    pub fn method_name(&self) -> quote::Tokens {
+    pub fn method_name(&self) -> TokenStream {
         match *self {
             CmpTraitSpec::PartialEq => quote!(eq),
             CmpTraitSpec::PartialOrd => quote!(partial_cmp),
@@ -404,7 +404,7 @@ impl CmpTraitSpec {
         }
     }
 
-    pub fn comparator(&self, cmp_spec: &CmpSpec) -> quote::Tokens {
+    pub fn comparator(&self, cmp_spec: &CmpSpec) -> TokenStream {
         match *self {
             CmpTraitSpec::PartialEq => cmp_spec.partial_eq(),
             CmpTraitSpec::PartialOrd => cmp_spec.partial_ord(),
@@ -412,7 +412,7 @@ impl CmpTraitSpec {
         }
     }
 
-    pub fn ty_ret(&self) -> quote::Tokens {
+    pub fn ty_ret(&self) -> TokenStream {
         match *self {
             CmpTraitSpec::PartialEq => quote!(bool),
             CmpTraitSpec::PartialOrd => quote!(Option<::std::cmp::Ordering>),
@@ -430,18 +430,18 @@ struct CmpImplSpec<'a, TyI, TyL, TyR> {
     cmp_spec: &'a CmpSpec,
     ty_inner: TyI,
     ty_lhs: TyL,
-    lhs_self_as_inner: &'a quote::Tokens,
+    lhs_self_as_inner: &'a TokenStream,
     ty_rhs: TyR,
-    rhs_other_as_inner: &'a quote::Tokens,
+    rhs_other_as_inner: &'a TokenStream,
 }
 
 impl<'a, TyI, TyL, TyR> CmpImplSpec<'a, TyI, TyL, TyR>
 where
-    TyI: quote::ToTokens,
-    TyL: quote::ToTokens,
-    TyR: quote::ToTokens,
+    TyI: ToTokens,
+    TyL: ToTokens,
+    TyR: ToTokens,
 {
-    fn gen_impl(&self) -> quote::Tokens {
+    fn gen_impl(&self) -> TokenStream {
         let CmpImplSpec {
             type_props,
             generics,
@@ -455,7 +455,7 @@ where
         } = *self;
         let target_trait = trait_spec.target_trait();
         let extra_preds = if type_props.has_type_params() {
-            let ty_inner = ty_inner.into_tokens();
+            let ty_inner = ty_inner.into_token_stream();
             let pred = match *trait_spec {
                 CmpTraitSpec::PartialEq | CmpTraitSpec::PartialOrd => {
                     syn::parse_str::<syn::WherePredicate>(&format!(

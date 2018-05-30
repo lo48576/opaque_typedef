@@ -8,7 +8,7 @@ pub fn is_attr_with_path(attr: &syn::Attribute, path: &[&str]) -> bool {
     attr.path
         .segments
         .iter()
-        .map(|seg| seg.ident.as_ref())
+        .map(|seg| &seg.ident)
         .eq(path.into_iter().map(|&s| s))
 }
 
@@ -16,9 +16,9 @@ pub fn is_attr_with_path(attr: &syn::Attribute, path: &[&str]) -> bool {
 /// Checks whether the word meta item with the given path is specified.
 pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
     match *meta {
-        syn::Meta::Word(ref ident) => ident_path.len() == 1 && ident.as_ref() == ident_path[0],
+        syn::Meta::Word(ref ident) => ident_path.len() == 1 && ident == ident_path[0],
         syn::Meta::List(ref metalist) => {
-            if ident_path.len() > 1 && metalist.ident.as_ref() == ident_path[0] {
+            if ident_path.len() > 1 && metalist.ident == ident_path[0] {
                 metalist
                     .nested
                     .iter()
@@ -50,7 +50,7 @@ fn append_meta_content_by_path<'a>(meta: syn::Meta, path: &[&str], vec: &mut Vec
     assert!(path.len() > 0);
     match meta {
         syn::Meta::List(metalist) => {
-            if metalist.ident.as_ref() == path[0] {
+            if metalist.ident == path[0] {
                 append_meta_items_by_path(metalist.nested, &path[1..], vec);
             }
         },

@@ -1,6 +1,6 @@
 //! Impl generators for general unary / binary operator traits.
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -51,13 +51,13 @@ impl OperandSpec {
     }
 
     /// Returns expression converted into the inner type.
-    pub fn tokens_inner<T: ToTokens>(&self, props: &TypeProps, expr: T) -> quote::Tokens {
+    pub fn tokens_inner<T: ToTokens>(&self, props: &TypeProps, expr: T) -> TokenStream {
         match (self.type_, self.wrapper) {
-            (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Raw) => expr.into_tokens(),
+            (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Raw) => expr.into_token_stream(),
             (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                 props.tokens_outer_expr_into_inner(expr)
             },
-            (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Ref) => expr.into_tokens(),
+            (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Ref) => expr.into_token_stream(),
             (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                 props.tokens_outer_expr_as_inner(expr)
             },
@@ -70,7 +70,7 @@ impl OperandSpec {
         extra_lt: &[syn::Lifetime],
         ty_inner: T,
         ty_outer: U,
-    ) -> quote::Tokens
+    ) -> TokenStream
     where
         T: ToTokens,
         U: ToTokens,
@@ -78,11 +78,11 @@ impl OperandSpec {
         assert!(extra_lt.len() >= self.num_required_extra_lifetimes());
         match self.wrapper {
             OperandTypeWrapperSpec::Raw => match self.type_ {
-                OperandTypeSpec::Outer => ty_outer.into_tokens(),
-                OperandTypeSpec::Inner => ty_inner.into_tokens(),
+                OperandTypeSpec::Outer => ty_outer.into_token_stream(),
+                OperandTypeSpec::Inner => ty_inner.into_token_stream(),
             },
             OperandTypeWrapperSpec::Ref => {
-                let lt = extra_lt[0];
+                let lt = &extra_lt[0];
                 match self.type_ {
                     OperandTypeSpec::Outer => quote!(&#lt #ty_outer),
                     OperandTypeSpec::Inner => quote!(&#lt #ty_inner),
@@ -92,19 +92,15 @@ impl OperandSpec {
     }
 
     /// Returns inner type to be propageted.
-    pub fn tokens_ty_operand_inner<T>(
-        &self,
-        extra_lt: &[syn::Lifetime],
-        ty_inner: T,
-    ) -> quote::Tokens
+    pub fn tokens_ty_operand_inner<T>(&self, extra_lt: &[syn::Lifetime], ty_inner: T) -> TokenStream
     where
         T: ToTokens,
     {
         assert!(extra_lt.len() >= self.num_required_extra_lifetimes());
         match self.wrapper {
-            OperandTypeWrapperSpec::Raw => ty_inner.into_tokens(),
+            OperandTypeWrapperSpec::Raw => ty_inner.into_token_stream(),
             OperandTypeWrapperSpec::Ref => {
-                let lt = extra_lt[0];
+                let lt = &extra_lt[0];
                 quote!(&#lt #ty_inner)
             },
         }
@@ -235,7 +231,7 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_sized(&self, props: &TypeProps, _target: Derive) -> quote::Tokens {
+    pub fn gen_impl_sized(&self, props: &TypeProps, _target: Derive) -> TokenStream {
         match *self {
             OpSpec::Unary {
                 op_spec,
@@ -262,7 +258,7 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_unsized(&self, _props: &TypeProps, target: Derive) -> quote::Tokens {
+    pub fn gen_impl_unsized(&self, _props: &TypeProps, target: Derive) -> TokenStream {
         panic!(
             "`#[opaque_typedef(derive({:?}))]` is currently not supported for unsized types",
             target
