@@ -1,6 +1,6 @@
 //! Impl generators for `std::convert::As*` traits.
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 
 use type_props::TypeProps;
@@ -10,14 +10,14 @@ use super::Derive;
 
 
 /// Generates an impl for the target.
-pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let ty_outer = props.ty_outer;
     let impl_generics = &props.impl_generics;
     let type_generics = &props.type_generics;
     let where_clause = &props.where_clause;
     let ty_conv_target = match target {
         Derive::AsMutDeref | Derive::AsRefDeref => props.tokens_ty_deref_target(),
-        Derive::AsMutInner | Derive::AsRefInner => props.field_inner.ty().into_tokens(),
+        Derive::AsMutInner | Derive::AsRefInner => props.field_inner.ty().into_token_stream(),
         Derive::AsMutSelf | Derive::AsRefSelf => quote!(#ty_outer #type_generics),
         _ => unreachable!("Should never happen"),
     };

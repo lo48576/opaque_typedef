@@ -1,6 +1,6 @@
 //! Impl generators for `std::ops::Deref*` traits.
 
-use quote;
+use proc_macro2::TokenStream;
 
 use type_props::TypeProps;
 
@@ -8,7 +8,7 @@ use super::Derive;
 
 
 /// Generates an impl for the target.
-pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let ty_outer = props.ty_outer;
     let impl_generics = &props.impl_generics;
     let type_generics = &props.type_generics;
@@ -54,7 +54,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
 }
 
 
-pub fn gen_deref_expr(props: &TypeProps) -> quote::Tokens {
+pub fn gen_deref_expr(props: &TypeProps) -> TokenStream {
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
     let ty_deref_target = props.tokens_ty_deref_target();
     let fn_name_deref = props.tokens_fn_deref();
@@ -64,7 +64,7 @@ pub fn gen_deref_expr(props: &TypeProps) -> quote::Tokens {
 }
 
 
-pub fn gen_deref_mut_expr(props: &TypeProps) -> quote::Tokens {
+pub fn gen_deref_mut_expr(props: &TypeProps) -> TokenStream {
     // The caller is responsible to ensure `allow_mut_ref` is specified.
     assert!(
         props.is_mut_ref_allowed,
