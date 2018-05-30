@@ -1,6 +1,6 @@
 //! Type properties.
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 use syn::DeriveInput;
@@ -41,16 +41,16 @@ impl<'a> Field<'a> {
     }
 
     /// Returns the name of the field.
-    pub fn name(&self) -> quote::Tokens {
+    pub fn name(&self) -> TokenStream {
         match *self {
             Field::Named(field) => field
                 .ident
                 .as_ref()
                 .expect("Should never happen")
-                .into_tokens(),
+                .into_token_stream(),
             Field::Unnamed(_, index) => syn::parse_str::<syn::LitInt>(&format!("{}", index))
                 .expect("Should never happen")
-                .into_tokens(),
+                .into_token_stream(),
         }
     }
 }
@@ -82,17 +82,17 @@ pub struct ValidationSpec {
 }
 
 impl ValidationSpec {
-    pub fn tokens_try_validated<T: quote::ToTokens>(&self, inner: T) -> quote::Tokens {
+    pub fn tokens_try_validated<T: ToTokens>(&self, inner: T) -> TokenStream {
         match self.fn_validator {
             Some(ref validator) => quote!(#validator(#inner)?),
-            None => inner.into_tokens(),
+            None => inner.into_token_stream(),
         }
     }
 
-    pub fn tokens_validated<T: quote::ToTokens>(&self, inner: T) -> quote::Tokens {
+    pub fn tokens_validated<T: ToTokens>(&self, inner: T) -> TokenStream {
         let validation_result = match self.fn_validator {
             Some(ref validator) => quote!(#validator(#inner)),
-            None => return inner.into_tokens(),
+            None => return inner.into_token_stream(),
         };
         match self.error_msg {
             Some(ref msg) => quote!(#validation_result.expect(#msg)),
@@ -100,9 +100,9 @@ impl ValidationSpec {
         }
     }
 
-    pub fn tokens_ty_error(&self) -> quote::Tokens {
+    pub fn tokens_ty_error(&self) -> TokenStream {
         match self.ty_error {
-            Some(ref ty) => ty.into_tokens(),
+            Some(ref ty) => ty.into_token_stream(),
             None => quote!(::opaque_typedef::Infallible),
         }
     }
@@ -120,23 +120,23 @@ pub struct CmpSpec {
 }
 
 impl CmpSpec {
-    pub fn partial_eq(&self) -> quote::Tokens {
+    pub fn partial_eq(&self) -> TokenStream {
         match self.partial_eq {
-            Some(ref v) => v.into_tokens(),
+            Some(ref v) => v.into_token_stream(),
             None => quote!(PartialEq::eq),
         }
     }
 
-    pub fn partial_ord(&self) -> quote::Tokens {
+    pub fn partial_ord(&self) -> TokenStream {
         match self.partial_ord {
-            Some(ref v) => v.into_tokens(),
+            Some(ref v) => v.into_token_stream(),
             None => quote!(PartialOrd::partial_cmp),
         }
     }
 
-    pub fn ord(&self) -> quote::Tokens {
+    pub fn ord(&self) -> TokenStream {
         match self.ord {
-            Some(ref v) => v.into_tokens(),
+            Some(ref v) => v.into_token_stream(),
             None => quote!(Ord::cmp),
         }
     }
@@ -181,9 +181,10 @@ impl<'a> TypeProps<'a> {
     }
 
     /// Generates implementations for the target type.
-    pub fn gen_impls(&self) -> quote::Tokens {
+    pub fn gen_impls(&self) -> TokenStream {
         let basic_impl = self.impl_basic_helper_trait();
-        let derive_impls = self.derives
+        let derive_impls = self
+            .derives
             .iter()
             .map(|derive| derive.impl_auto_derive(self))
             .collect::<Vec<_>>();
@@ -194,7 +195,7 @@ impl<'a> TypeProps<'a> {
     }
 
     /// Generates impl for `OpaqueTypedef*` trait.
-    pub fn impl_basic_helper_trait(&self) -> quote::Tokens {
+    pub fn impl_basic_helper_trait(&self) -> TokenStream {
         let ty_outer = self.ty_outer;
         let ty_inner = self.field_inner.ty();
         let name_inner = self.field_inner.name();
@@ -244,10 +245,14 @@ impl<'a> TypeProps<'a> {
                         type Error = #ty_error;
 
                         unsafe fn from_inner_unchecked(__inner: &Self::Inner) -> &Self {
-                            ::std::mem::transmute(__inner)
+                            // See
+                            // <https://rust-lang-nursery.github.io/rust-clippy/v0.0.194/index.html#derive_hash_xor_eq>.
+                            &*(__inner as *const Self::Inner as *const Self)
                         }
                         unsafe fn from_inner_unchecked_mut(__inner: &mut Self::Inner) -> &mut Self {
-                            ::std::mem::transmute(__inner)
+                            // See
+                            // <https://rust-lang-nursery.github.io/rust-clippy/v0.0.194/index.html#derive_hash_xor_eq>.
+                            &mut *(__inner as *mut Self::Inner as *mut Self)
                         }
                         fn try_from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
                             let __inner = #inner_try_validated;
@@ -278,14 +283,14 @@ impl<'a> TypeProps<'a> {
     }
 
     /// Returns helper trait path.
-    pub fn helper_trait(&self) -> quote::Tokens {
+    pub fn helper_trait(&self) -> TokenStream {
         match self.inner_sizedness {
             Sizedness::Sized => quote!(::opaque_typedef::OpaqueTypedef),
             Sizedness::Unsized => quote!(::opaque_typedef::OpaqueTypedefUnsized),
         }
     }
 
-    pub fn tokens_outer_expr_into_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+    pub fn tokens_outer_expr_into_inner<T: ToTokens>(&self, expr: T) -> TokenStream {
         // The caller is responsible to ensure the (inner) type is sized.
         assert_eq!(
             self.inner_sizedness,
@@ -298,14 +303,14 @@ impl<'a> TypeProps<'a> {
         quote!(<#ty_outer #type_generics as #helper_trait>::into_inner(#expr))
     }
 
-    pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+    pub fn tokens_outer_expr_as_inner<T: ToTokens>(&self, expr: T) -> TokenStream {
         let ty_outer = self.ty_outer;
         let type_generics = &self.type_generics;
         let helper_trait = self.helper_trait();
         quote!(<#ty_outer #type_generics as #helper_trait>::as_inner(#expr))
     }
 
-    pub fn tokens_outer_expr_as_inner_mut<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+    pub fn tokens_outer_expr_as_inner_mut<T: ToTokens>(&self, expr: T) -> TokenStream {
         // The caller is responsible to ensure `allow_mut_ref` is specified.
         assert!(
             self.is_mut_ref_allowed,
@@ -315,7 +320,7 @@ impl<'a> TypeProps<'a> {
         self.tokens_outer_expr_as_inner_mut_nocheck(expr)
     }
 
-    pub fn tokens_outer_expr_as_inner_mut_nocheck<T: ToTokens>(&self, expr: T) -> quote::Tokens {
+    pub fn tokens_outer_expr_as_inner_mut_nocheck<T: ToTokens>(&self, expr: T) -> TokenStream {
         let ty_outer = self.ty_outer;
         let type_generics = &self.type_generics;
         let helper_trait = self.helper_trait();
@@ -326,25 +331,25 @@ impl<'a> TypeProps<'a> {
         }
     }
 
-    pub fn tokens_ty_deref_target(&self) -> quote::Tokens {
+    pub fn tokens_ty_deref_target(&self) -> TokenStream {
         match self.deref_spec.ty_deref_target {
-            Some(ref ty) => ty.into_tokens(),
-            None => (&self.field_inner.ty()).into_tokens(),
+            Some(ref ty) => ty.into_token_stream(),
+            None => (&self.field_inner.ty()).into_token_stream(),
         }
     }
 
-    pub fn tokens_fn_deref(&self) -> quote::Tokens {
+    pub fn tokens_fn_deref(&self) -> TokenStream {
         self.deref_spec
             .fn_name_deref
             .as_ref()
-            .map_or_else(|| quote!(), |name| name.into_tokens())
+            .map_or_else(|| quote!(), |name| name.into_token_stream())
     }
 
-    pub fn tokens_fn_deref_mut(&self) -> quote::Tokens {
+    pub fn tokens_fn_deref_mut(&self) -> TokenStream {
         self.deref_spec
             .fn_name_deref_mut
             .as_ref()
-            .map_or_else(|| quote!(), |name| name.into_tokens())
+            .map_or_else(|| quote!(), |name| name.into_token_stream())
     }
 
     pub fn has_type_params(&self) -> bool {

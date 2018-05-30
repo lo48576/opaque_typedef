@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -13,7 +13,7 @@ use super::Derive;
 
 
 /// Generates an impl for the target.
-pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
+pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let trait_name = match target {
         Derive::Binary => quote!(Binary),
         Derive::Display => quote!(Display),
@@ -30,7 +30,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> quote::Tokens {
     let ty_inner = props.field_inner.ty();
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
     let extra_preds = if props.has_type_params() {
-        let ty_inner = ty_inner.into_tokens();
+        let ty_inner = ty_inner.into_token_stream();
         let pred = syn::parse_str::<syn::WherePredicate>(&format!(
             "{}: ::std::fmt::{}",
             ty_inner, trait_name,

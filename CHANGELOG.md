@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.0.4] - 2018-05-30
+
+### Changed (non-breaking)
+
+* Resolve clippy lints (v0.0.206).
+* Bump dependencies.
+    + Now `opaque_typedef_macro` uses syn-0.14 and quote-0.6.
+
 
 ## [0.0.3] - 2018-04-28
 
@@ -85,7 +93,8 @@ Initial release.
 
 
 
-[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3...develop>
-[0.0.3]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.3>
+[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.4...develop>
+[0.0.4]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.4>
+[0.0.3]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.3>
 [0.0.2]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.2>
 [0.0.1]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.1>

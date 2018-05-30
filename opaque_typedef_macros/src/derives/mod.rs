@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -431,7 +431,7 @@ impl Derive {
         for metaitem in &metaitems {
             match *metaitem {
                 syn::Meta::Word(ref ident) => {
-                    let target = ident.as_ref();
+                    let target = ident.to_string();
                     match target.parse::<Derive>() {
                         Ok(v) => derives.push(v),
                         Err(_) => {
@@ -440,7 +440,7 @@ impl Derive {
                     }
                 },
                 syn::Meta::List(ref metalist) => {
-                    let parent = metalist.ident.as_ref();
+                    let parent = &metalist.ident;
                     for nested_meta in &metalist.nested {
                         let meta = match *nested_meta {
                             syn::NestedMeta::Meta(ref meta) => meta,
@@ -448,31 +448,34 @@ impl Derive {
                                 abort_on_unsupported_derive_format(format_args!(
                                     "{}({})",
                                     parent,
-                                    lit.into_tokens()
+                                    lit.into_token_stream()
                                 ));
                             },
                         };
                         match *meta {
                             syn::Meta::Word(ref ident) => Self::append_from_nested_names(
-                                parent,
-                                &[ident.as_ref()],
+                                &parent.to_string(),
+                                &[ident.to_string()],
                                 &mut derives,
                             ),
                             syn::Meta::List(ref metalist) => abort_on_unsupported_derive_format(
-                                format_args!("{}({})", parent, metalist.into_tokens()),
+                                format_args!("{}({})", parent, metalist.into_token_stream()),
                             ),
                             syn::Meta::NameValue(ref namevalue) => {
                                 abort_on_unsupported_derive_format(format_args!(
                                     "{}({})",
                                     parent,
-                                    namevalue.into_tokens()
+                                    namevalue.into_token_stream()
                                 ))
                             },
                         }
                     }
                 },
                 syn::Meta::NameValue(ref namevalue) => {
-                    abort_on_unsupported_derive_format(format_args!("{}", namevalue.into_tokens()));
+                    abort_on_unsupported_derive_format(format_args!(
+                        "{}",
+                        namevalue.into_token_stream()
+                    ));
                 },
             }
         }
@@ -480,13 +483,13 @@ impl Derive {
     }
 
     /// Returns derive targets specified by `parent(child1, child2, ...)` style.
-    fn append_from_nested_names(parent: &str, children: &[&str], derives: &mut Vec<Self>) {
+    fn append_from_nested_names(parent: &str, children: &[String], derives: &mut Vec<Self>) {
         lazy_static! {
             static ref NESTED_DERIVES: HashMap<&'static str, HashMap<&'static str, Derive>> = {
                 // Note that `Self` cannot be used for child target, because the
                 // token `Self` cannot be an identifier but parsed as
                 // identifier.
-                const TARGETS: &[(&'static str, &'static [(&'static str, Derive)])] = &[
+                const TARGETS: &[(&str, &[(&str, Derive)])] = &[
                     ("AsMut", &[
                         ("Deref", Derive::AsMutDeref),
                         ("Inner", Derive::AsMutInner),
@@ -707,7 +710,7 @@ impl Derive {
                     ]),
                 ];
                 TARGETS.into_iter().map(|&(parent, subtargets)| {
-                    (parent, subtargets.into_iter().map(|&v| v).collect())
+                    (parent, subtargets.into_iter().cloned().collect())
                 }).collect()
             };
         }
@@ -715,15 +718,15 @@ impl Derive {
         let submap = NESTED_DERIVES.get(parent).unwrap_or_else(|| {
             abort_on_unknown_derive_target(format_args!("{}(..)", parent));
         });
-        derives.extend(children.into_iter().map(|&child| {
-            submap.get(child).unwrap_or_else(|| {
+        derives.extend(children.into_iter().map(|child| {
+            submap.get(child.as_str()).unwrap_or_else(|| {
                 abort_on_unknown_derive_target(format_args!("{}({})", parent, child));
             })
         }));
     }
 
     /// Generates impls for the auto-derive target.
-    pub fn impl_auto_derive(&self, props: &TypeProps) -> quote::Tokens {
+    pub fn impl_auto_derive(&self, props: &TypeProps) -> TokenStream {
         match (*self, props.inner_sizedness) {
             // `std::fmt::*` traits.
             (Derive::Binary, _)
@@ -761,16 +764,16 @@ impl Derive {
                 self.as_ref()
             ),
             (Derive::DefaultRef, Sizedness::Unsized) => {
-                let ty_outer = props.ty_outer.into_tokens();
+                let ty_outer = props.ty_outer.into_token_stream();
                 let type_generics = &props.type_generics;
                 let (generics, new_lifetimes) =
                     extend_generics(Cow::Borrowed(props.generics), 1, &[]);
-                let new_lt = new_lifetimes[0];
-                let ty_inner = props.field_inner.ty().into_tokens();
+                let new_lt = &new_lifetimes[0];
+                let ty_inner = props.field_inner.ty().into_token_stream();
                 let extra_preds = if props.has_type_params() {
                     let pred = syn::parse_str::<syn::WherePredicate>(&format!(
                         "&{} {}: ::std::default::Default",
-                        (&new_lt).into_tokens(),
+                        new_lt.into_token_stream(),
                         ty_inner,
                     )).expect("Failed to generate `WherePredicate`");
                     vec![pred]
@@ -847,7 +850,7 @@ impl Derive {
                 }
                 let self_as_inner_mut = props.tokens_outer_expr_as_inner_mut(quote!(self));
                 let extra_preds = if props.has_type_params() {
-                    let ty_inner = ty_inner.into_tokens();
+                    let ty_inner = ty_inner.into_token_stream();
                     let pred = syn::parse_str::<syn::WherePredicate>(&format!(
                         "{}: ::std::ascii::AsciiExt",
                         ty_inner
@@ -921,7 +924,7 @@ fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
 }
 
 
-fn abort_on_unknown_derive_target<'a>(target: ::std::fmt::Arguments<'a>) -> ! {
+fn abort_on_unknown_derive_target(target: ::std::fmt::Arguments) -> ! {
     panic!(
         "`#[opaque_typedef(derive({target}))]` is specified, but the target `{target}` is unknown",
         target = target
@@ -929,7 +932,7 @@ fn abort_on_unknown_derive_target<'a>(target: ::std::fmt::Arguments<'a>) -> ! {
 }
 
 
-fn abort_on_unsupported_derive_format<'a>(inner: ::std::fmt::Arguments<'a>) -> ! {
+fn abort_on_unsupported_derive_format(inner: ::std::fmt::Arguments) -> ! {
     panic!(
         "`#[opaque_typedef(derive({}))]` is specified, but this format is not supported",
         inner

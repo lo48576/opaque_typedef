@@ -1,12 +1,12 @@
-# Config for rustfmt 0.4.2-nightly (dd807e2 2018-04-18).
-required_version = "0.4.2"
+# Config for rustfmt 0.8.2-nightly (173ae0d 2018-05-28).
+required_version = "0.8.2"
 unstable_features = true
 
 blank_lines_upper_bound = 2
 error_on_line_overflow = false  # Default.
 match_block_trailing_comma = true
 newline_style = "Unix"  # Default.
-reorder_imports = true  # Required for `reorder_imports_in_group = true`.
-reorder_modules = true
+reorder_imports = true  # Default.
+reorder_modules = true  # Default.
 trailing_comma = "Vertical"  # Default.
 wrap_comments = true

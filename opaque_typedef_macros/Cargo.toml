@@ -1,6 +1,6 @@
 [package]
 name = "opaque_typedef_macros"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -13,11 +13,12 @@ proc-macro = true
 
 [dependencies]
 lazy_static = "^1.0"
-quote = "^0.5"
+proc-macro2 = "0.4"
+quote = "^0.6"
 strum = "^0.9"
 strum_macros = "^0.9"
 # `full` feature is required to parse closures.
-syn = { version = "^0.13.1", features = ["full"] }
+syn = { version = "^0.14", features = ["full"] }
 
 [badges]
 travis-ci = { repository = "lo48576/opaque_typedef" }

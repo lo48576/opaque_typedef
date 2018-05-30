@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use quote;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
 
@@ -46,26 +46,26 @@ impl UnaryOpSpec {
     }
 
     /// Returns target trait path.
-    pub fn tokens_trait_path(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Path>("trait_").into_tokens()
+    pub fn tokens_trait_path(&self) -> TokenStream {
+        self.parse_prop::<syn::Path>("trait_").into_token_stream()
     }
 
     /// Returns method name to implement.
-    pub fn tokens_method(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Ident>("method").into_tokens()
+    pub fn tokens_method(&self) -> TokenStream {
+        self.parse_prop::<syn::Ident>("method").into_token_stream()
     }
 
-    pub fn tokens_arg_self(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Expr>("self_").into_tokens()
+    pub fn tokens_arg_self(&self) -> TokenStream {
+        self.parse_prop::<syn::Expr>("self_").into_token_stream()
     }
 
-    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<quote::Tokens> {
+    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<TokenStream> {
         match *self {
             UnaryOpSpec::Neg | UnaryOpSpec::Not => Some(quote!(#ty_outer)),
         }
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> quote::Tokens {
+    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> TokenStream {
         match self.tokens_associated_ty_output(&ty_outer) {
             Some(ty_output) => quote! {
                 type Output = #ty_output;
@@ -74,11 +74,11 @@ impl UnaryOpSpec {
         }
     }
 
-    pub fn tokens_ty_ret(&self) -> quote::Tokens {
-        self.parse_prop::<syn::Type>("ty_ret").into_tokens()
+    pub fn tokens_ty_ret(&self) -> TokenStream {
+        self.parse_prop::<syn::Type>("ty_ret").into_token_stream()
     }
 
-    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> quote::Tokens
+    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> TokenStream
     where
         T: ToTokens,
         U: ToTokens,
@@ -88,7 +88,7 @@ impl UnaryOpSpec {
         }
     }
 
-    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> quote::Tokens {
+    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
         let expr = quote!(self);
         match *self {
             UnaryOpSpec::Neg | UnaryOpSpec::Not => match (lhs_spec.type_, lhs_spec.wrapper) {
@@ -109,7 +109,7 @@ pub fn gen_impl_sized_raw(
     props: &TypeProps,
     op_spec: UnaryOpSpec,
     lhs_spec: OperandTypeSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     assert!(lhs_spec != OperandTypeSpec::Inner);
     gen_impl_sized(
         props,
@@ -123,7 +123,7 @@ pub fn gen_impl_sized_ref(
     props: &TypeProps,
     op_spec: UnaryOpSpec,
     lhs_spec: OperandTypeSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     assert!(lhs_spec != OperandTypeSpec::Inner);
     let gen_ref = || {
         gen_impl_sized(
@@ -147,7 +147,7 @@ pub fn gen_impl_sized(
     props: &TypeProps,
     op_spec: UnaryOpSpec,
     lhs_spec: OperandSpec,
-) -> quote::Tokens {
+) -> TokenStream {
     let ty_outer_generic = {
         let ty_outer = &props.ty_outer;
         let type_generics = &props.type_generics;
@@ -177,7 +177,7 @@ pub fn gen_impl_sized(
                 "{}: {}<Output={}>",
                 ty_lhs_inner,
                 target_trait,
-                ty_inner.into_tokens()
+                ty_inner.into_token_stream()
             )).expect("Failed to generate `WherePredicate`");
             vec![pred]
         } else {

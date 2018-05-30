@@ -47,7 +47,7 @@ fn get_inner_field(data: &syn::Data) -> Field {
     }
     if fields.len() > 1 {
         panic!("Currently, outer type with multiple fields is not supported");
-    } else if fields.len() == 0 {
+    } else if fields.is_empty() {
         panic!("Types with no fields are not supported");
     }
     unreachable!("Currently, outer types with multiple fields are not supported");
@@ -78,7 +78,7 @@ fn check_repr_outer(
          About `#[repr(transparent)]`, see RFC 1758 \
          <https://github.com/rust-lang/rfcs/blob/master/text/1758-repr-transparent.md>.\
          ",
-        ty_outer.as_ref()
+        ty_outer
     );
 }
 
@@ -101,7 +101,7 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
     ) -> Option<&'a syn::LitStr> {
         let iter = namevalues
             .into_iter()
-            .filter(|nv| nv.ident.as_ref() == name)
+            .filter(|nv| nv.ident == name)
             .map(|nv| &nv.lit);
         let lit = expect_singleton_iter(iter)
             .at_most_one()
@@ -118,7 +118,7 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
                 "String value is expected for `#[opaque_typedef(deref({} = ..))]`, \
                  but got `{}` (invalid type)",
                 name,
-                lit.into_tokens()
+                lit.into_token_stream()
             ),
         }
     }
@@ -191,7 +191,7 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
     ) -> Option<&'a syn::LitStr> {
         let iter = namevalues
             .into_iter()
-            .filter(|nv| nv.ident.as_ref() == name)
+            .filter(|nv| nv.ident == name)
             .map(|nv| &nv.lit);
         let lit = expect_singleton_iter(iter)
             .at_most_one()
@@ -208,7 +208,7 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
                 "String value is expected for `#[opaque_typedef(validation({} = ..))]`, \
                  but got `{}` (invalid type)",
                 name,
-                lit.into_tokens()
+                lit.into_token_stream()
             ),
         }
     }
@@ -273,7 +273,7 @@ fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
     ) -> Option<&'a syn::LitStr> {
         let iter = namevalues
             .into_iter()
-            .filter(|nv| nv.ident.as_ref() == name)
+            .filter(|nv| nv.ident == name)
             .map(|nv| &nv.lit);
         let lit = expect_singleton_iter(iter)
             .at_most_one()
@@ -290,7 +290,7 @@ fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
                 "String value is expected for `#[opaque_typedef(cmp({} = ..))]`, \
                  but got `{}` (invalid type)",
                 name,
-                lit.into_tokens()
+                lit.into_token_stream()
             ),
         }
     }

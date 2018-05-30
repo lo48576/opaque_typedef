@@ -49,8 +49,8 @@ Examples are in [`opaque_typedef_tests/src/`](https://github.com/lo48576/opaque_
 
 ```toml
 [dependencies]
-opaque_typedef = "^0.0.3"
-opaque_typedef_macros = "^0.0.3"
+opaque_typedef = "^0.0.4"
+opaque_typedef_macros = "^0.0.4"
 ```
 
 `lib.rs` or `main.rs`:
@@ -378,8 +378,6 @@ Note that some (such as `DefaultRef`) are available only for sized types.
           - This is very similar to `#[derive(Ord)]`, but it will be useful with custom comparison.
 
 #### `std::ops`
-
-(Poor documentation but it's ok because syntax will soon change largely.)
 
   * Unary ops
       + `Neg{,Ref}`
