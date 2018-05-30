@@ -183,7 +183,8 @@ impl<'a> TypeProps<'a> {
     /// Generates implementations for the target type.
     pub fn gen_impls(&self) -> quote::Tokens {
         let basic_impl = self.impl_basic_helper_trait();
-        let derive_impls = self.derives
+        let derive_impls = self
+            .derives
             .iter()
             .map(|derive| derive.impl_auto_derive(self))
             .collect::<Vec<_>>();
