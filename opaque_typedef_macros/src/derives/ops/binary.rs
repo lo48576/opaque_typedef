@@ -17,7 +17,12 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 pub enum BinOpSpec {
     /// `std::ops::Add`.
     #[strum(
-        props(trait_ = "::std::ops::Add", method = "add", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Add",
+            method = "add",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Add,
     /// `std::ops::AddAssign`.
@@ -53,7 +58,10 @@ pub enum BinOpSpec {
     /// `std::ops::BitOr`.
     #[strum(
         props(
-            trait_ = "::std::ops::BitOr", method = "bitor", self_ = "self", ty_ret = "Self::Output"
+            trait_ = "::std::ops::BitOr",
+            method = "bitor",
+            self_ = "self",
+            ty_ret = "Self::Output"
         )
     )]
     BitOr,
@@ -89,7 +97,12 @@ pub enum BinOpSpec {
     BitXorAssign,
     /// `std::ops::Div`.
     #[strum(
-        props(trait_ = "::std::ops::Div", method = "div", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Div",
+            method = "div",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Div,
     /// `std::ops::DivAssign`.
@@ -104,7 +117,12 @@ pub enum BinOpSpec {
     DivAssign,
     /// `std::ops::Mul`.
     #[strum(
-        props(trait_ = "::std::ops::Mul", method = "mul", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Mul",
+            method = "mul",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Mul,
     /// `std::ops::MulAssign`.
@@ -119,7 +137,12 @@ pub enum BinOpSpec {
     MulAssign,
     /// `std::ops::Rem`.
     #[strum(
-        props(trait_ = "::std::ops::Rem", method = "rem", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Rem",
+            method = "rem",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Rem,
     /// `std::ops::RemAssign`.
@@ -134,7 +157,12 @@ pub enum BinOpSpec {
     RemAssign,
     /// `std::ops::Shl`.
     #[strum(
-        props(trait_ = "::std::ops::Shl", method = "shl", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Shl",
+            method = "shl",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Shl,
     /// `std::ops::ShlAssign`.
@@ -149,7 +177,12 @@ pub enum BinOpSpec {
     ShlAssign,
     /// `std::ops::Shr`.
     #[strum(
-        props(trait_ = "::std::ops::Shr", method = "shr", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Shr",
+            method = "shr",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Shr,
     /// `std::ops::ShrAssign`.
@@ -164,7 +197,12 @@ pub enum BinOpSpec {
     ShrAssign,
     /// `std::ops::Sub`.
     #[strum(
-        props(trait_ = "::std::ops::Sub", method = "sub", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Sub",
+            method = "sub",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Sub,
     /// `std::ops::SubAssign`.

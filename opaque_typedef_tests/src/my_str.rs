@@ -63,7 +63,13 @@ impl MyStr {
         PartialOrd(Inner, InnerRev)
     )
 )]
-#[opaque_typedef(deref(target = "str", deref = "String::as_str", deref_mut = "String::as_mut_str"))]
+#[opaque_typedef(
+    deref(
+        target = "str",
+        deref = "String::as_str",
+        deref_mut = "String::as_mut_str"
+    )
+)]
 #[opaque_typedef(allow_mut_ref)]
 pub struct MyString {
     inner: String,

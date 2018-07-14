@@ -22,188 +22,609 @@ mod ops;
 
 
 /// Auto-derive target trait.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString,
-         EnumProperty)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString, EnumProperty,
+)]
 pub enum Derive {
     /// `std::ops::Add<Outer> for Outer`.
-    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     AddSelf,
     /// `std::ops::Add<Inner> for Outer`.
-    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     AddInner,
     /// `std::ops::Add<Outer> for Inner`.
-    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     AddInnerRev,
     /// `std::ops::Add<Outer> for Outer` variations.
-    #[strum(props(op = "Add", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     AddRefSelf,
     /// `std::ops::Add<Inner> for Outer` variations.
-    #[strum(props(op = "Add", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     AddRefInner,
     /// `std::ops::Add<Outer> for Inner` variations.
-    #[strum(props(op = "Add", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Add",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     AddRefInnerRev,
     /// `std::ops::AddAssign<Outer> for Outer`.
-    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "AddAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     AddAssignSelf,
     /// `std::ops::AddAssign<Inner> for Outer`.
-    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "AddAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     AddAssignInner,
     /// `std::ops::AddAssign<&Outer> for Outer`.
-    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "AddAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     AddAssignRefSelf,
     /// `std::ops::AddAssign<&Inner> for Outer`.
-    #[strum(props(op = "AddAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "AddAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     AddAssignRefInner,
     /// `std::ops::BitAnd<Outer> for Outer`.
-    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitAndSelf,
     /// `std::ops::BitAnd<Inner> for Outer`.
-    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitAndInner,
     /// `std::ops::BitAnd<Outer> for Inner`.
-    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitAndInnerRev,
     /// `std::ops::BitAnd<Outer> for Outer` variations.
-    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitAndRefSelf,
     /// `std::ops::BitAnd<Inner> for Outer` variations.
-    #[strum(props(op = "BitAnd", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitAndRefInner,
     /// `std::ops::BitAnd<Outer> for Inner` variations.
-    #[strum(props(op = "BitAnd", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitAnd",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitAndRefInnerRev,
     /// `std::ops::BitAndAssign<Outer> for Outer`.
-    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitAndAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitAndAssignSelf,
     /// `std::ops::BitAndAssign<Inner> for Outer`.
-    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitAndAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitAndAssignInner,
     /// `std::ops::BitAndAssign<&Outer> for Outer`.
-    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitAndAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitAndAssignRefSelf,
     /// `std::ops::BitAndAssign<&Inner> for Outer`.
-    #[strum(props(op = "BitAndAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitAndAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitAndAssignRefInner,
     /// `std::ops::BitOr<Outer> for Outer`.
-    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitOrSelf,
     /// `std::ops::BitOr<Inner> for Outer`.
-    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitOrInner,
     /// `std::ops::BitOr<Outer> for Inner`.
-    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitOrInnerRev,
     /// `std::ops::BitOr<Outer> for Outer` variations.
-    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitOrRefSelf,
     /// `std::ops::BitOr<Inner> for Outer` variations.
-    #[strum(props(op = "BitOr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitOrRefInner,
     /// `std::ops::BitOr<Outer> for Inner` variations.
-    #[strum(props(op = "BitOr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitOr",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitOrRefInnerRev,
     /// `std::ops::BitOrAssign<Outer> for Outer`.
-    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitOrAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitOrAssignSelf,
     /// `std::ops::BitOrAssign<Inner> for Outer`.
-    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitOrAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitOrAssignInner,
     /// `std::ops::BitOrAssign<&Outer> for Outer`.
-    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitOrAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitOrAssignRefSelf,
     /// `std::ops::BitOrAssign<&Inner> for Outer`.
-    #[strum(props(op = "BitOrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitOrAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitOrAssignRefInner,
     /// `std::ops::BitXor<Outer> for Outer`.
-    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitXorSelf,
     /// `std::ops::BitXor<Inner> for Outer`.
-    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitXorInner,
     /// `std::ops::BitXor<Outer> for Inner`.
-    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitXorInnerRev,
     /// `std::ops::BitXor<Outer> for Outer` variations.
-    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitXorRefSelf,
     /// `std::ops::BitXor<Inner> for Outer` variations.
-    #[strum(props(op = "BitXor", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitXorRefInner,
     /// `std::ops::BitXor<Outer> for Inner` variations.
-    #[strum(props(op = "BitXor", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitXor",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitXorRefInnerRev,
     /// `std::ops::BitXorAssign<Outer> for Outer`.
-    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitXorAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     BitXorAssignSelf,
     /// `std::ops::BitXorAssign<Inner> for Outer`.
-    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "BitXorAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     BitXorAssignInner,
     /// `std::ops::BitXorAssign<&Outer> for Outer`.
-    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitXorAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     BitXorAssignRefSelf,
     /// `std::ops::BitXorAssign<&Inner> for Outer`.
-    #[strum(props(op = "BitXorAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "BitXorAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     BitXorAssignRefInner,
     /// `std::ops::Div<Outer> for Outer`.
-    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     DivSelf,
     /// `std::ops::Div<Inner> for Outer`.
-    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     DivInner,
     /// `std::ops::Div<Outer> for Inner`.
-    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     DivInnerRev,
     /// `std::ops::Div<Outer> for Outer` variations.
-    #[strum(props(op = "Div", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     DivRefSelf,
     /// `std::ops::Div<Inner> for Outer` variations.
-    #[strum(props(op = "Div", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     DivRefInner,
     /// `std::ops::Div<Outer> for Inner` variations.
-    #[strum(props(op = "Div", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Div",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     DivRefInnerRev,
     /// `std::ops::DivAssign<Outer> for Outer`.
-    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "DivAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     DivAssignSelf,
     /// `std::ops::DivAssign<Inner> for Outer`.
-    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "DivAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     DivAssignInner,
     /// `std::ops::DivAssign<&Outer> for Outer`.
-    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "DivAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     DivAssignRefSelf,
     /// `std::ops::DivAssign<&Inner> for Outer`.
-    #[strum(props(op = "DivAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "DivAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     DivAssignRefInner,
     /// `std::ops::Mul<Outer> for Outer`.
-    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     MulSelf,
     /// `std::ops::Mul<Inner> for Outer`.
-    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     MulInner,
     /// `std::ops::Mul<Outer> for Inner`.
-    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     MulInnerRev,
     /// `std::ops::Mul<Outer> for Outer` variations.
-    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     MulRefSelf,
     /// `std::ops::Mul<Inner> for Outer` variations.
-    #[strum(props(op = "Mul", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     MulRefInner,
     /// `std::ops::Mul<Outer> for Inner` variations.
-    #[strum(props(op = "Mul", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Mul",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     MulRefInnerRev,
     /// `std::ops::MulAssign<Outer> for Outer`.
-    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "MulAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     MulAssignSelf,
     /// `std::ops::MulAssign<Inner> for Outer`.
-    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "MulAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     MulAssignInner,
     /// `std::ops::MulAssign<&Outer> for Outer`.
-    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "MulAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     MulAssignRefSelf,
     /// `std::ops::MulAssign<&Inner> for Outer`.
-    #[strum(props(op = "MulAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "MulAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     MulAssignRefInner,
     /// `std::ops::Neg for Outer`.
     #[strum(props(op = "Neg", lhs = "Outer", variation = "Direct"))]
@@ -218,124 +639,404 @@ pub enum Derive {
     #[strum(props(op = "Not", lhs = "Outer", variation = "References"))]
     NotRef,
     /// `std::ops::Rem<Outer> for Outer`.
-    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     RemSelf,
     /// `std::ops::Rem<Inner> for Outer`.
-    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     RemInner,
     /// `std::ops::Rem<Outer> for Inner`.
-    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     RemInnerRev,
     /// `std::ops::Rem<Outer> for Outer` variations.
-    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     RemRefSelf,
     /// `std::ops::Rem<Inner> for Outer` variations.
-    #[strum(props(op = "Rem", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     RemRefInner,
     /// `std::ops::Rem<Outer> for Inner` variations.
-    #[strum(props(op = "Rem", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Rem",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     RemRefInnerRev,
     /// `std::ops::RemAssign<Outer> for Outer`.
-    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "RemAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     RemAssignSelf,
     /// `std::ops::RemAssign<Inner> for Outer`.
-    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "RemAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     RemAssignInner,
     /// `std::ops::RemAssign<&Outer> for Outer`.
-    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "RemAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     RemAssignRefSelf,
     /// `std::ops::RemAssign<&Inner> for Outer`.
-    #[strum(props(op = "RemAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "RemAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     RemAssignRefInner,
     /// `std::ops::Shl<Outer> for Outer`.
-    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShlSelf,
     /// `std::ops::Shl<Inner> for Outer`.
-    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     ShlInner,
     /// `std::ops::Shl<Outer> for Inner`.
-    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShlInnerRev,
     /// `std::ops::Shl<Outer> for Outer` variations.
-    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShlRefSelf,
     /// `std::ops::Shl<Inner> for Outer` variations.
-    #[strum(props(op = "Shl", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     ShlRefInner,
     /// `std::ops::Shl<Outer> for Inner` variations.
-    #[strum(props(op = "Shl", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shl",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShlRefInnerRev,
     /// `std::ops::ShlAssign<Outer> for Outer`.
-    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "ShlAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShlAssignSelf,
     /// `std::ops::ShlAssign<Inner> for Outer`.
-    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "ShlAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     ShlAssignInner,
     /// `std::ops::ShlAssign<&Outer> for Outer`.
-    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "ShlAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShlAssignRefSelf,
     /// `std::ops::ShlAssign<&Inner> for Outer`.
-    #[strum(props(op = "ShlAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "ShlAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     ShlAssignRefInner,
     /// `std::ops::Shr<Outer> for Outer`.
-    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShrSelf,
     /// `std::ops::Shr<Inner> for Outer`.
-    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     ShrInner,
     /// `std::ops::Shr<Outer> for Inner`.
-    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShrInnerRev,
     /// `std::ops::Shr<Outer> for Outer` variations.
-    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShrRefSelf,
     /// `std::ops::Shr<Inner> for Outer` variations.
-    #[strum(props(op = "Shr", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     ShrRefInner,
     /// `std::ops::Shr<Outer> for Inner` variations.
-    #[strum(props(op = "Shr", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Shr",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShrRefInnerRev,
     /// `std::ops::ShrAssign<Outer> for Outer`.
-    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "ShrAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     ShrAssignSelf,
     /// `std::ops::ShrAssign<Inner> for Outer`.
-    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "ShrAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     ShrAssignInner,
     /// `std::ops::ShrAssign<&Outer> for Outer`.
-    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "ShrAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     ShrAssignRefSelf,
     /// `std::ops::ShrAssign<&Inner> for Outer`.
-    #[strum(props(op = "ShrAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "ShrAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     ShrAssignRefInner,
     /// `std::ops::Sub<Outer> for Outer`.
-    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     SubSelf,
     /// `std::ops::Sub<Inner> for Outer`.
-    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     SubInner,
     /// `std::ops::Sub<Outer> for Inner`.
-    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     SubInnerRev,
     /// `std::ops::Sub<Outer> for Outer` variations.
-    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     SubRefSelf,
     /// `std::ops::Sub<Inner> for Outer` variations.
-    #[strum(props(op = "Sub", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     SubRefInner,
     /// `std::ops::Sub<Outer> for Inner` variations.
-    #[strum(props(op = "Sub", lhs = "Inner", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "Sub",
+            lhs = "Inner",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     SubRefInnerRev,
     /// `std::ops::SubAssign<Outer> for Outer`.
-    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "SubAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "Direct"
+        )
+    )]
     SubAssignSelf,
     /// `std::ops::SubAssign<Inner> for Outer`.
-    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "Direct"))]
+    #[strum(
+        props(
+            op = "SubAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "Direct"
+        )
+    )]
     SubAssignInner,
     /// `std::ops::SubAssign<&Outer> for Outer`.
-    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Outer", variation = "References"))]
+    #[strum(
+        props(
+            op = "SubAssign",
+            lhs = "Outer",
+            rhs = "Outer",
+            variation = "References"
+        )
+    )]
     SubAssignRefSelf,
     /// `std::ops::SubAssign<&Inner> for Outer`.
-    #[strum(props(op = "SubAssign", lhs = "Outer", rhs = "Inner", variation = "References"))]
+    #[strum(
+        props(
+            op = "SubAssign",
+            lhs = "Outer",
+            rhs = "Inner",
+            variation = "References"
+        )
+    )]
     SubAssignRefInner,
     /// `std::ascii::AsciiExt for Outer`.
     AsciiExt,

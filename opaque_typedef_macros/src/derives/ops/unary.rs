@@ -17,12 +17,22 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 pub enum UnaryOpSpec {
     /// `std::ops::Neg`.
     #[strum(
-        props(trait_ = "::std::ops::Neg", method = "neg", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Neg",
+            method = "neg",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Neg,
     /// `std::ops::Not`.
     #[strum(
-        props(trait_ = "::std::ops::Not", method = "not", self_ = "self", ty_ret = "Self::Output")
+        props(
+            trait_ = "::std::ops::Not",
+            method = "not",
+            self_ = "self",
+            ty_ret = "Self::Output"
+        )
     )]
     Not,
 }

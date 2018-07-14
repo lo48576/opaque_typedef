@@ -62,7 +62,13 @@ impl<T> SliceAtLeast2Items<T> {
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(
     derive(
-        AsRef(Deref, Inner), Deref, Display, FromInner, IntoInner, PartialEqInner, PartialOrdInner
+        AsRef(Deref, Inner),
+        Deref,
+        Display,
+        FromInner,
+        IntoInner,
+        PartialEqInner,
+        PartialOrdInner
     )
 )]
 #[opaque_typedef(deref(target = "[T]", deref = "Vec::<T>::as_slice"))]
