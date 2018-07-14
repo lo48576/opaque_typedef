@@ -5,7 +5,6 @@ extern crate opaque_typedef_tests;
 
 use opaque_typedef_tests::int32::Int32;
 
-
 mod basic {
     use super::*;
 

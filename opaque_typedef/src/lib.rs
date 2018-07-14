@@ -1,11 +1,9 @@
 //! Traits for `opaque_typedef_macros`.
 #![warn(missing_docs)]
 
-
 /// An error type that indicates the error should never happen.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Infallible {}
-
 
 /// Common functions for opaque typedef-ed sized types.
 pub trait OpaqueTypedef: Sized {
@@ -33,7 +31,6 @@ pub trait OpaqueTypedef: Sized {
     /// Returns the mutable reference to the inner value.
     unsafe fn as_inner_mut(&mut self) -> &mut Self::Inner;
 }
-
 
 /// Common functions for opaque typedef-ed unsized types.
 pub trait OpaqueTypedefUnsized {

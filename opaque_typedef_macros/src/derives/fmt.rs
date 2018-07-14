@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let trait_name = match target {

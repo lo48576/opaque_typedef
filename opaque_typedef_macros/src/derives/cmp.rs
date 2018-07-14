@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::Derive;
 
-
 pub fn gen_impl_ord(props: &TypeProps) -> TokenStream {
     let ty_outer = &props.ty_outer;
     let type_generics = &props.type_generics;
@@ -32,7 +31,6 @@ pub fn gen_impl_ord(props: &TypeProps) -> TokenStream {
         rhs_other_as_inner: &other_as_inner,
     }.gen_impl()
 }
-
 
 /// Generates an impl for the target.
 pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
@@ -379,7 +377,6 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 enum CmpTraitSpec {
     PartialEq,
@@ -420,7 +417,6 @@ impl CmpTraitSpec {
         }
     }
 }
-
 
 #[derive(Clone)]
 struct CmpImplSpec<'a, TyI, TyL, TyR> {

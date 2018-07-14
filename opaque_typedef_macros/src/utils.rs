@@ -4,7 +4,6 @@ use std::borrow::Cow;
 
 use syn;
 
-
 /// Result of `expect_singleton_iter()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SingletonIterResult<T> {
@@ -31,7 +30,6 @@ impl<T> SingletonIterResult<T> {
     }
 }
 
-
 /// Checks whether the iterator has at most one item, and returns the items.
 pub fn expect_singleton_iter<I, T>(iter: I) -> SingletonIterResult<T>
 where
@@ -47,7 +45,6 @@ where
         None => SingletonIterResult::Single(first),
     }
 }
-
 
 pub fn extend_generics<'a, G>(
     generics: G,

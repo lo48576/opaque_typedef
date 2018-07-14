@@ -1,6 +1,5 @@
 //! Opaque typedef for `i32`.
 
-
 /// Even `i32`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(
@@ -36,11 +35,9 @@ impl Even32 {
     }
 }
 
-
 /// A type of an error indicating the integer is an odd number, not even.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct OddError;
-
 
 fn validate_even32(v: i32) -> Result<i32, OddError> {
     if v % 2 == 0 {

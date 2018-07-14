@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 
-
 /// Unary operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString, EnumProperty)]
 pub enum UnaryOpSpec {
@@ -114,7 +113,6 @@ impl UnaryOpSpec {
     }
 }
 
-
 pub fn gen_impl_sized_raw(
     props: &TypeProps,
     op_spec: UnaryOpSpec,
@@ -127,7 +125,6 @@ pub fn gen_impl_sized_raw(
         lhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
     )
 }
-
 
 pub fn gen_impl_sized_ref(
     props: &TypeProps,
@@ -151,7 +148,6 @@ pub fn gen_impl_sized_ref(
         },
     }
 }
-
 
 pub fn gen_impl_sized(
     props: &TypeProps,

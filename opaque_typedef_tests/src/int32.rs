@@ -1,6 +1,5 @@
 //! Opaque typedef for `i32`.
 
-
 /// `i32`.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(

@@ -1,6 +1,5 @@
 //! A wrapper type with reverse order.
 
-
 /// A wrapper type with reverse order.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, OpaqueTypedef)]
 // `IntoInner` cannot be used (and even you can't implement it manually),

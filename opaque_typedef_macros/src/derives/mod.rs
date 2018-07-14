@@ -20,7 +20,6 @@ mod deref;
 mod fmt;
 mod ops;
 
-
 /// Auto-derive target trait.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, AsRefStr, EnumString, EnumProperty,
@@ -1609,7 +1608,6 @@ impl Derive {
     }
 }
 
-
 /// Returns metadata in `#[opaque_typedef(derive(..))]` (`..` part).
 fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
     attrs
@@ -1624,14 +1622,12 @@ fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
         .collect()
 }
 
-
 fn abort_on_unknown_derive_target(target: ::std::fmt::Arguments) -> ! {
     panic!(
         "`#[opaque_typedef(derive({target}))]` is specified, but the target `{target}` is unknown",
         target = target
     );
 }
-
 
 fn abort_on_unsupported_derive_format(inner: ::std::fmt::Arguments) -> ! {
     panic!(

@@ -1,6 +1,5 @@
 //! Opaque typedef for `[T]`.
 
-
 /// Slice with at least 2 items.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 // About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
@@ -56,7 +55,6 @@ impl<T> SliceAtLeast2Items<T> {
         &self.inner
     }
 }
-
 
 /// Vec with at least 2 items.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
@@ -114,11 +112,9 @@ impl<T: Clone> ToOwned for SliceAtLeast2Items<T> {
     }
 }
 
-
 /// A type of an error indicating the number of the items are too few.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TooFewItems(usize);
-
 
 fn ensure_at_least_2_items<U, T: AsRef<[U]>>(v: T) -> Result<T, TooFewItems> {
     let len = v.as_ref().len();

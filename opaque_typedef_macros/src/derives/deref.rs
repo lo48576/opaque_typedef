@@ -6,7 +6,6 @@ use type_props::TypeProps;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let ty_outer = props.ty_outer;
@@ -53,7 +52,6 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     }
 }
 
-
 pub fn gen_deref_expr(props: &TypeProps) -> TokenStream {
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
     let ty_deref_target = props.tokens_ty_deref_target();
@@ -62,7 +60,6 @@ pub fn gen_deref_expr(props: &TypeProps) -> TokenStream {
         (#fn_name_deref(#self_as_inner) as &#ty_deref_target)
     }
 }
-
 
 pub fn gen_deref_mut_expr(props: &TypeProps) -> TokenStream {
     // The caller is responsible to ensure `allow_mut_ref` is specified.

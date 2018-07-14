@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
     let helper_trait = props.helper_trait();
@@ -53,7 +52,6 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
     }
 }
 
-
 /// Generates an impl for the target.
 pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
     let helper_trait = props.helper_trait();
@@ -91,7 +89,6 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
         },
     }
 }
-
 
 /// Generates an impl for the target.
 pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> TokenStream {

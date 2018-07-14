@@ -9,7 +9,6 @@ use derives::Derive;
 use type_props::{CmpSpec, DerefSpec, Field, Sizedness, TypeProps, ValidationSpec};
 use utils::expect_singleton_iter;
 
-
 /// Returns `#[repr(..)]` metadata.
 fn get_repr_meta(attrs: &[syn::Attribute]) -> Option<syn::Meta> {
     let iter = attrs
@@ -20,7 +19,6 @@ fn get_repr_meta(attrs: &[syn::Attribute]) -> Option<syn::Meta> {
         .at_most_one()
         .expect("Multiple `#[repr(..)]` are not supported")
 }
-
 
 /// Returns a field marked (explicitly or implicitly) as "inner".
 fn get_inner_field(data: &syn::Data) -> Field {
@@ -53,7 +51,6 @@ fn get_inner_field(data: &syn::Data) -> Field {
     unreachable!("Currently, outer types with multiple fields are not supported");
 }
 
-
 fn check_repr_outer(
     ty_outer: &syn::Ident,
     sizedness: Sizedness,
@@ -81,7 +78,6 @@ fn check_repr_outer(
         ty_outer
     );
 }
-
 
 fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
     let namevalues = attrs
@@ -163,7 +159,6 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
     }
 }
 
-
 fn get_mut_ref_allowed(attrs: &[syn::Attribute]) -> bool {
     attrs
         .into_iter()
@@ -171,7 +166,6 @@ fn get_mut_ref_allowed(attrs: &[syn::Attribute]) -> bool {
         .filter_map(|attr| attr.interpret_meta())
         .any(|meta| has_word_meta(&meta, &["opaque_typedef", "allow_mut_ref"]))
 }
-
 
 fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
     let namevalues = attrs
@@ -254,7 +248,6 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
     }
 }
 
-
 fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
     let namevalues = attrs
         .into_iter()
@@ -334,7 +327,6 @@ fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
         ord,
     }
 }
-
 
 /// A builder of `TypeProps`.
 #[derive(Default, Clone)]

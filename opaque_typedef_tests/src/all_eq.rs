@@ -1,6 +1,5 @@
 //! All same.
 
-
 /// All same.
 #[derive(Default, Debug, Clone, Copy, Eq, OpaqueTypedef)]
 // `IntoInner` cannot be used (and even you can't implement it manually),

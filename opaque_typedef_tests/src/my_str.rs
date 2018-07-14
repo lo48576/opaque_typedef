@@ -1,6 +1,5 @@
 //! Opaque typedef for `str`.
 
-
 /// My string slice.
 // Note:
 //      `PartialEqSelfCowAndInner` cannot be used because it generates
@@ -47,7 +46,6 @@ impl MyStr {
     }
 }
 
-
 /// My owned string.
 #[derive(Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
 #[opaque_typedef(
@@ -91,7 +89,6 @@ impl MyString {
         self.inner.as_mut_str()
     }
 }
-
 
 // Implement `Borrow` and `ToOwned` to test `Cow<Mystr>`.
 impl ::std::borrow::Borrow<MyStr> for MyString {

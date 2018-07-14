@@ -10,7 +10,6 @@ use type_props::TypeProps;
 pub mod binary;
 pub mod unary;
 
-
 /// Operand type (inner or outer).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
 pub enum OperandTypeSpec {
@@ -26,7 +25,6 @@ impl OperandTypeSpec {
     }
 }
 
-
 /// Operand type wrapper (raw, ref, `Cow`, etc...).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum OperandTypeWrapperSpec {
@@ -35,7 +33,6 @@ pub enum OperandTypeWrapperSpec {
     /// Reference.
     Ref,
 }
-
 
 /// Operand type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -114,7 +111,6 @@ impl OperandSpec {
     }
 }
 
-
 /// Operator impl variation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString)]
 pub enum OpImplVariation {
@@ -123,7 +119,6 @@ pub enum OpImplVariation {
     /// Use target (inner / outer) type and their references.
     References,
 }
-
 
 /// Operator spec.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

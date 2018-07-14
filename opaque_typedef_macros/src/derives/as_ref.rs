@@ -8,7 +8,6 @@ use type_props::TypeProps;
 use super::deref::{gen_deref_expr, gen_deref_mut_expr};
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let ty_outer = props.ty_outer;

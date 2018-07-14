@@ -5,7 +5,6 @@ extern crate opaque_typedef_tests;
 
 use opaque_typedef_tests::all_eq::AllEq;
 
-
 mod sized {
     use super::*;
 

@@ -11,7 +11,6 @@ use self::builder::TypePropsBuilder;
 
 mod builder;
 
-
 /// Sizedness of a type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Sizedness {
@@ -20,7 +19,6 @@ pub enum Sizedness {
     /// Unsized.
     Unsized,
 }
-
 
 /// A field with the optional index.
 #[derive(Clone)]
@@ -55,7 +53,6 @@ impl<'a> Field<'a> {
     }
 }
 
-
 #[derive(Default, Clone)]
 pub struct DerefSpec {
     /// Deref target type.
@@ -69,7 +66,6 @@ pub struct DerefSpec {
     /// The function should have `&Inner -> &Target` type.
     pub fn_name_deref_mut: Option<syn::Expr>,
 }
-
 
 #[derive(Default, Clone)]
 pub struct ValidationSpec {
@@ -108,7 +104,6 @@ impl ValidationSpec {
     }
 }
 
-
 #[derive(Default, Clone)]
 pub struct CmpSpec {
     /// `PartialEq` and `Eq` comparator.
@@ -141,7 +136,6 @@ impl CmpSpec {
         }
     }
 }
-
 
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
