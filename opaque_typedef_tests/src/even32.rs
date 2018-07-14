@@ -31,7 +31,7 @@ pub struct Even32(i32);
 
 impl Even32 {
     /// Returns the inner `i32` even value.
-    pub fn to_i32(&self) -> i32 {
+    pub fn to_i32(self) -> i32 {
         self.0
     }
 }

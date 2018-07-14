@@ -66,7 +66,7 @@ pub struct Int32(i32);
 
 impl Int32 {
     /// Returns the inner `i32` value.
-    pub fn to_i32(&self) -> i32 {
+    pub fn to_i32(self) -> i32 {
         self.0
     }
 }

@@ -28,44 +28,44 @@ pub enum UnaryOpSpec {
 }
 
 impl UnaryOpSpec {
-    fn parse_prop<T: syn::synom::Synom>(&self, prop_name: &str) -> T {
+    fn parse_prop<T: syn::synom::Synom>(self, prop_name: &str) -> T {
         use strum::EnumProperty;
 
         let val = self.get_str(prop_name).unwrap_or_else(|| {
             panic!(
                 "`UnaryOpSpec::{:?}` should have property `{}` but not found",
-                *self, prop_name
+                self, prop_name
             );
         });
         syn::parse_str::<T>(val).unwrap_or_else(|e| {
             panic!(
                 "`UnaryOpSpec::{:?}` has property `{} = {:?}`, but failed to parse: {}",
-                *self, prop_name, val, e
+                self, prop_name, val, e
             );
         })
     }
 
     /// Returns target trait path.
-    pub fn tokens_trait_path(&self) -> TokenStream {
+    pub fn tokens_trait_path(self) -> TokenStream {
         self.parse_prop::<syn::Path>("trait_").into_token_stream()
     }
 
     /// Returns method name to implement.
-    pub fn tokens_method(&self) -> TokenStream {
+    pub fn tokens_method(self) -> TokenStream {
         self.parse_prop::<syn::Ident>("method").into_token_stream()
     }
 
-    pub fn tokens_arg_self(&self) -> TokenStream {
+    pub fn tokens_arg_self(self) -> TokenStream {
         self.parse_prop::<syn::Expr>("self_").into_token_stream()
     }
 
-    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<TokenStream> {
-        match *self {
+    pub fn tokens_associated_ty_output<T: ToTokens>(self, ty_outer: T) -> Option<TokenStream> {
+        match self {
             UnaryOpSpec::Neg | UnaryOpSpec::Not => Some(quote!(#ty_outer)),
         }
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> TokenStream {
+    pub fn tokens_associated_stuff<T: ToTokens>(self, ty_outer: T) -> TokenStream {
         match self.tokens_associated_ty_output(&ty_outer) {
             Some(ty_output) => quote! {
                 type Output = #ty_output;
@@ -74,23 +74,23 @@ impl UnaryOpSpec {
         }
     }
 
-    pub fn tokens_ty_ret(&self) -> TokenStream {
+    pub fn tokens_ty_ret(self) -> TokenStream {
         self.parse_prop::<syn::Type>("ty_ret").into_token_stream()
     }
 
-    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> TokenStream
+    pub fn tokens_from_inner_result<T, U>(self, ty_outer: T, helper_trait: U) -> TokenStream
     where
         T: ToTokens,
         U: ToTokens,
     {
-        match *self {
+        match self {
             UnaryOpSpec::Neg | UnaryOpSpec::Not => quote!(<#ty_outer as #helper_trait>::from_inner),
         }
     }
 
-    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
+    pub fn tokens_lhs_inner_arg(self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
         let expr = quote!(self);
-        match *self {
+        match self {
             UnaryOpSpec::Neg | UnaryOpSpec::Not => match (lhs_spec.type_, lhs_spec.wrapper) {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {

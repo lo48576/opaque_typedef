@@ -388,32 +388,32 @@ enum CmpTraitSpec {
 }
 
 impl CmpTraitSpec {
-    pub fn target_trait(&self) -> TokenStream {
-        match *self {
+    pub fn target_trait(self) -> TokenStream {
+        match self {
             CmpTraitSpec::PartialEq => quote!(::std::cmp::PartialEq),
             CmpTraitSpec::PartialOrd => quote!(::std::cmp::PartialOrd),
             CmpTraitSpec::Ord => quote!(::std::cmp::Ord),
         }
     }
 
-    pub fn method_name(&self) -> TokenStream {
-        match *self {
+    pub fn method_name(self) -> TokenStream {
+        match self {
             CmpTraitSpec::PartialEq => quote!(eq),
             CmpTraitSpec::PartialOrd => quote!(partial_cmp),
             CmpTraitSpec::Ord => quote!(cmp),
         }
     }
 
-    pub fn comparator(&self, cmp_spec: &CmpSpec) -> TokenStream {
-        match *self {
+    pub fn comparator(self, cmp_spec: &CmpSpec) -> TokenStream {
+        match self {
             CmpTraitSpec::PartialEq => cmp_spec.partial_eq(),
             CmpTraitSpec::PartialOrd => cmp_spec.partial_ord(),
             CmpTraitSpec::Ord => cmp_spec.ord(),
         }
     }
 
-    pub fn ty_ret(&self) -> TokenStream {
-        match *self {
+    pub fn ty_ret(self) -> TokenStream {
+        match self {
             CmpTraitSpec::PartialEq => quote!(bool),
             CmpTraitSpec::PartialOrd => quote!(Option<::std::cmp::Ordering>),
             CmpTraitSpec::Ord => quote!(::std::cmp::Ordering),

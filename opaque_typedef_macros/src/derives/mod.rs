@@ -726,8 +726,8 @@ impl Derive {
     }
 
     /// Generates impls for the auto-derive target.
-    pub fn impl_auto_derive(&self, props: &TypeProps) -> TokenStream {
-        match (*self, props.inner_sizedness) {
+    pub fn impl_auto_derive(self, props: &TypeProps) -> TokenStream {
+        match (self, props.inner_sizedness) {
             // `std::fmt::*` traits.
             (Derive::Binary, _)
             | (Derive::Display, _)
@@ -736,16 +736,16 @@ impl Derive {
             | (Derive::Octal, _)
             | (Derive::Pointer, _)
             | (Derive::UpperExp, _)
-            | (Derive::UpperHex, _) => fmt::gen_impl(*self, props),
+            | (Derive::UpperHex, _) => fmt::gen_impl(self, props),
             // `std::ops::Deref*` traits.
-            (Derive::Deref, _) | (Derive::DerefMut, _) => deref::gen_impl(*self, props),
+            (Derive::Deref, _) | (Derive::DerefMut, _) => deref::gen_impl(self, props),
             // `std::conevert::As*` traits.
             (Derive::AsMutDeref, _)
             | (Derive::AsMutInner, _)
             | (Derive::AsMutSelf, _)
             | (Derive::AsRefDeref, _)
             | (Derive::AsRefInner, _)
-            | (Derive::AsRefSelf, _) => as_ref::gen_impl(*self, props),
+            | (Derive::AsRefSelf, _) => as_ref::gen_impl(self, props),
             // `std::convert::{From, Into}` traits.
             (Derive::FromInner, _) => convert::gen_impl_from_inner(props),
             (Derive::IntoArc, _) | (Derive::IntoBox, _) | (Derive::IntoRc, _) => {
@@ -754,7 +754,7 @@ impl Derive {
                         "`#[opaque_typedef(derive({}))]` is not supported for sized types",
                         self.as_ref()
                     ),
-                    Sizedness::Unsized => convert::gen_impl_into_smartptr(*self, props),
+                    Sizedness::Unsized => convert::gen_impl_into_smartptr(self, props),
                 }
             },
             (Derive::IntoInner, _) => convert::gen_impl_into_inner(props),
@@ -814,7 +814,7 @@ impl Derive {
             | (Derive::PartialOrdSelfCowRev, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Unsized) => {
-                cmp::gen_impl_partial_cmp(*self, props)
+                cmp::gen_impl_partial_cmp(self, props)
             },
             (Derive::PartialEqInnerCow, Sizedness::Sized)
             | (Derive::PartialEqInnerCowRev, Sizedness::Sized)
@@ -891,16 +891,16 @@ impl Derive {
                 }
             },
             // Simple operators.
-            _ => match OpSpec::from_derive_target(*self) {
+            _ => match OpSpec::from_derive_target(self) {
                 Some(op_spec) => match props.inner_sizedness {
-                    Sizedness::Sized => op_spec.gen_impl_sized(props, *self),
-                    Sizedness::Unsized => op_spec.gen_impl_unsized(props, *self),
+                    Sizedness::Sized => op_spec.gen_impl_sized(props, self),
+                    Sizedness::Unsized => op_spec.gen_impl_unsized(props, self),
                 },
                 None => {
                     panic!(
                         "Derive target {:?} is expected to be an operator, but \
                          lacks required properties",
-                        *self
+                        self
                     );
                 },
             },

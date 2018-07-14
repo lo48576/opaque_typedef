@@ -51,7 +51,7 @@ impl OperandSpec {
     }
 
     /// Returns expression converted into the inner type.
-    pub fn tokens_inner<T: ToTokens>(&self, props: &TypeProps, expr: T) -> TokenStream {
+    pub fn tokens_inner<T: ToTokens>(self, props: &TypeProps, expr: T) -> TokenStream {
         match (self.type_, self.wrapper) {
             (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Raw) => expr.into_token_stream(),
             (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
@@ -66,7 +66,7 @@ impl OperandSpec {
 
     /// Returns operand type.
     pub fn tokens_ty_operand<T, U>(
-        &self,
+        self,
         extra_lt: &[syn::Lifetime],
         ty_inner: T,
         ty_outer: U,
@@ -92,7 +92,7 @@ impl OperandSpec {
     }
 
     /// Returns inner type to be propageted.
-    pub fn tokens_ty_operand_inner<T>(&self, extra_lt: &[syn::Lifetime], ty_inner: T) -> TokenStream
+    pub fn tokens_ty_operand_inner<T>(self, extra_lt: &[syn::Lifetime], ty_inner: T) -> TokenStream
     where
         T: ToTokens,
     {
@@ -106,7 +106,7 @@ impl OperandSpec {
         }
     }
 
-    pub fn num_required_extra_lifetimes(&self) -> usize {
+    pub fn num_required_extra_lifetimes(self) -> usize {
         match self.wrapper {
             OperandTypeWrapperSpec::Raw => 0,
             OperandTypeWrapperSpec::Ref => 1,
@@ -231,8 +231,8 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_sized(&self, props: &TypeProps, _target: Derive) -> TokenStream {
-        match *self {
+    pub fn gen_impl_sized(self, props: &TypeProps, _target: Derive) -> TokenStream {
+        match self {
             OpSpec::Unary {
                 op_spec,
                 variation: OpImplVariation::Direct,
@@ -258,7 +258,7 @@ impl OpSpec {
         }
     }
 
-    pub fn gen_impl_unsized(&self, _props: &TypeProps, target: Derive) -> TokenStream {
+    pub fn gen_impl_unsized(self, _props: &TypeProps, target: Derive) -> TokenStream {
         panic!(
             "`#[opaque_typedef(derive({:?}))]` is currently not supported for unsized types",
             target
