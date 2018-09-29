@@ -112,7 +112,7 @@ For example:
 ```rust
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 #[repr(C)]
-#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self_), AsRef(Deref, Self_), DefaultRef, Deref,
+#[opaque_typedef(derive(AsciiExt, AsMut(Deref, Self), AsRef(Deref, Self), DefaultRef, Deref,
                         DerefMut, Display, FromInner, Into(Arc, Box, Rc, Inner),
                         PartialEq(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev),
                         PartialOrd(Inner, InnerRev, InnerCow, InnerCowRev, SelfCow, SelfCowRev)))]
@@ -120,14 +120,11 @@ For example:
 pub struct MyStr(str);
 ```
 
-Note that some traits can be shortened:
+Note that some traits can be shortened.
+Examples:
 
   * `AsMutDeref` can be written as `AsMut(Deref)`
-      + There is an exception:
-        `AsMutSelf` can be written as `AsMut(Self_)`, but not as `AsMut(Self)`.
-        This is because rustc expected identifiers inside the parens but `Self` is a keyword...
-  * `AsRefDeref` can be written as `AsRef(Deref)`, same way as `AsMut*`
-      + Shortened notation of `AsRefSelf` is `AsRef(Self_)`, same as that of `AsMutSelf`.
+  * `AsRefSelf` can be written as `AsRef(Self)`
   * `IntoRc` can be written as `Into(Rc)`
   * `PartialEqInner` can be written as `PartialEq(Inner)`
   * `PartialOrdInner, PartialOrdSelfCow` can be written as `PartialOrd(Inner, SelfCow)`

@@ -11,8 +11,8 @@
 #[repr(C)]
 #[opaque_typedef(
     derive(
-        AsMut(Deref, Self_),
-        AsRef(Deref, Self_),
+        AsMut(Deref, Self),
+        AsRef(Deref, Self),
         DefaultRef,
         Deref,
         DerefMut,

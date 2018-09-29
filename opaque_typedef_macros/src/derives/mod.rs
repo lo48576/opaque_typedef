@@ -1186,19 +1186,20 @@ impl Derive {
     fn append_from_nested_names(parent: &str, children: &[String], derives: &mut Vec<Self>) {
         lazy_static! {
             static ref NESTED_DERIVES: HashMap<&'static str, HashMap<&'static str, Derive>> = {
-                // Note that `Self` cannot be used for child target, because the
-                // token `Self` cannot be an identifier but parsed as
-                // identifier.
+                // NOTE: `Self_` is deprecated, but left here for compatibility reason.
+                // It would be removed eventually.
                 const TARGETS: &[(&str, &[(&str, Derive)])] = &[
                     ("AsMut", &[
                         ("Deref", Derive::AsMutDeref),
                         ("Inner", Derive::AsMutInner),
                         ("Self_", Derive::AsMutSelf),
+                        ("Self", Derive::AsMutSelf),
                     ]),
                     ("AsRef", &[
                         ("Deref", Derive::AsRefDeref),
                         ("Inner", Derive::AsRefInner),
                         ("Self_", Derive::AsRefSelf),
+                        ("Self", Derive::AsRefSelf),
                     ]),
                     ("Into", &[
                         ("Arc", Derive::IntoArc),
@@ -1212,6 +1213,7 @@ impl Derive {
                         ("InnerCow", Derive::PartialEqInnerCow),
                         ("InnerCowRev", Derive::PartialEqInnerCowRev),
                         ("Self_", Derive::PartialEqSelf),
+                        ("Self", Derive::PartialEqSelf),
                         ("SelfCow", Derive::PartialEqSelfCow),
                         ("SelfCowRev", Derive::PartialEqSelfCowRev),
                         ("SelfCowAndInner", Derive::PartialEqSelfCowAndInner),
@@ -1223,6 +1225,7 @@ impl Derive {
                         ("InnerCow", Derive::PartialOrdInnerCow),
                         ("InnerCowRev", Derive::PartialOrdInnerCowRev),
                         ("Self_", Derive::PartialOrdSelf),
+                        ("Self", Derive::PartialOrdSelf),
                         ("SelfCow", Derive::PartialOrdSelfCow),
                         ("SelfCowRev", Derive::PartialOrdSelfCowRev),
                         ("SelfCowAndInner", Derive::PartialOrdSelfCowAndInner),
@@ -1230,182 +1233,222 @@ impl Derive {
                     ]),
                     ("Add", &[
                         ("Self_", Derive::AddSelf),
+                        ("Self", Derive::AddSelf),
                         ("Inner", Derive::AddInner),
                         ("InnerRev", Derive::AddInnerRev),
                     ]),
                     ("AddRef", &[
                         ("Self_", Derive::AddRefSelf),
+                        ("Self", Derive::AddRefSelf),
                         ("Inner", Derive::AddRefInner),
                         ("InnerRev", Derive::AddRefInnerRev),
                     ]),
                     ("AddAssign", &[
                         ("Self_", Derive::AddAssignSelf),
+                        ("Self", Derive::AddAssignSelf),
                         ("Inner", Derive::AddAssignInner),
                     ]),
                     ("AddAssignRef", &[
                         ("Self_", Derive::AddAssignRefSelf),
+                        ("Self", Derive::AddAssignRefSelf),
                         ("Inner", Derive::AddAssignRefInner),
                     ]),
                     ("BitAnd", &[
                         ("Self_", Derive::BitAndSelf),
+                        ("Self", Derive::BitAndSelf),
                         ("Inner", Derive::BitAndInner),
                         ("InnerRev", Derive::BitAndInnerRev),
                     ]),
                     ("BitAndRef", &[
                         ("Self_", Derive::BitAndRefSelf),
+                        ("Self", Derive::BitAndRefSelf),
                         ("Inner", Derive::BitAndRefInner),
                         ("InnerRev", Derive::BitAndRefInnerRev),
                     ]),
                     ("BitAndAssign", &[
                         ("Self_", Derive::BitAndAssignSelf),
+                        ("Self", Derive::BitAndAssignSelf),
                         ("Inner", Derive::BitAndAssignInner),
                     ]),
                     ("BitAndAssignRef", &[
                         ("Self_", Derive::BitAndAssignRefSelf),
+                        ("Self", Derive::BitAndAssignRefSelf),
                         ("Inner", Derive::BitAndAssignRefInner),
                     ]),
                     ("BitOr", &[
                         ("Self_", Derive::BitOrSelf),
+                        ("Self", Derive::BitOrSelf),
                         ("Inner", Derive::BitOrInner),
                         ("InnerRev", Derive::BitOrInnerRev),
                     ]),
                     ("BitOrRef", &[
                         ("Self_", Derive::BitOrRefSelf),
+                        ("Self", Derive::BitOrRefSelf),
                         ("Inner", Derive::BitOrRefInner),
                         ("InnerRev", Derive::BitOrRefInnerRev),
                     ]),
                     ("BitOrAssign", &[
                         ("Self_", Derive::BitOrAssignSelf),
+                        ("Self", Derive::BitOrAssignSelf),
                         ("Inner", Derive::BitOrAssignInner),
                     ]),
                     ("BitOrAssignRef", &[
                         ("Self_", Derive::BitOrAssignRefSelf),
+                        ("Self", Derive::BitOrAssignRefSelf),
                         ("Inner", Derive::BitOrAssignRefInner),
                     ]),
                     ("BitXor", &[
                         ("Self_", Derive::BitXorSelf),
+                        ("Self", Derive::BitXorSelf),
                         ("Inner", Derive::BitXorInner),
                         ("InnerRev", Derive::BitXorInnerRev),
                     ]),
                     ("BitXorRef", &[
                         ("Self_", Derive::BitXorRefSelf),
+                        ("Self", Derive::BitXorRefSelf),
                         ("Inner", Derive::BitXorRefInner),
                         ("InnerRev", Derive::BitXorRefInnerRev),
                     ]),
                     ("BitXorAssign", &[
                         ("Self_", Derive::BitXorAssignSelf),
+                        ("Self", Derive::BitXorAssignSelf),
                         ("Inner", Derive::BitXorAssignInner),
                     ]),
                     ("BitXorAssignRef", &[
                         ("Self_", Derive::BitXorAssignRefSelf),
+                        ("Self", Derive::BitXorAssignRefSelf),
                         ("Inner", Derive::BitXorAssignRefInner),
                     ]),
                     ("Div", &[
                         ("Self_", Derive::DivSelf),
+                        ("Self", Derive::DivSelf),
                         ("Inner", Derive::DivInner),
                         ("InnerRev", Derive::DivInnerRev),
                     ]),
                     ("DivRef", &[
                         ("Self_", Derive::DivRefSelf),
+                        ("Self", Derive::DivRefSelf),
                         ("Inner", Derive::DivRefInner),
                         ("InnerRev", Derive::DivRefInnerRev),
                     ]),
                     ("DivAssign", &[
                         ("Self_", Derive::DivAssignSelf),
+                        ("Self", Derive::DivAssignSelf),
                         ("Inner", Derive::DivAssignInner),
                     ]),
                     ("DivAssignRef", &[
                         ("Self_", Derive::DivAssignRefSelf),
+                        ("Self", Derive::DivAssignRefSelf),
                         ("Inner", Derive::DivAssignRefInner),
                     ]),
                     ("Mul", &[
                         ("Self_", Derive::MulSelf),
+                        ("Self", Derive::MulSelf),
                         ("Inner", Derive::MulInner),
                         ("InnerRev", Derive::MulInnerRev),
                     ]),
                     ("MulRef", &[
                         ("Self_", Derive::MulRefSelf),
+                        ("Self", Derive::MulRefSelf),
                         ("Inner", Derive::MulRefInner),
                         ("InnerRev", Derive::MulRefInnerRev),
                     ]),
                     ("MulAssign", &[
                         ("Self_", Derive::MulAssignSelf),
+                        ("Self", Derive::MulAssignSelf),
                         ("Inner", Derive::MulAssignInner),
                     ]),
                     ("MulAssignRef", &[
                         ("Self_", Derive::MulAssignRefSelf),
+                        ("Self", Derive::MulAssignRefSelf),
                         ("Inner", Derive::MulAssignRefInner),
                     ]),
                     ("Rem", &[
                         ("Self_", Derive::RemSelf),
+                        ("Self", Derive::RemSelf),
                         ("Inner", Derive::RemInner),
                         ("InnerRev", Derive::RemInnerRev),
                     ]),
                     ("RemRef", &[
                         ("Self_", Derive::RemRefSelf),
+                        ("Self", Derive::RemRefSelf),
                         ("Inner", Derive::RemRefInner),
                         ("InnerRev", Derive::RemRefInnerRev),
                     ]),
                     ("RemAssign", &[
                         ("Self_", Derive::RemAssignSelf),
+                        ("Self", Derive::RemAssignSelf),
                         ("Inner", Derive::RemAssignInner),
                     ]),
                     ("RemAssignRef", &[
                         ("Self_", Derive::RemAssignRefSelf),
+                        ("Self", Derive::RemAssignRefSelf),
                         ("Inner", Derive::RemAssignRefInner),
                     ]),
                     ("Shl", &[
                         ("Self_", Derive::ShlSelf),
+                        ("Self", Derive::ShlSelf),
                         ("Inner", Derive::ShlInner),
                         ("InnerRev", Derive::ShlInnerRev),
                     ]),
                     ("ShlRef", &[
                         ("Self_", Derive::ShlRefSelf),
+                        ("Self", Derive::ShlRefSelf),
                         ("Inner", Derive::ShlRefInner),
                         ("InnerRev", Derive::ShlRefInnerRev),
                     ]),
                     ("ShlAssign", &[
                         ("Self_", Derive::ShlAssignSelf),
+                        ("Self", Derive::ShlAssignSelf),
                         ("Inner", Derive::ShlAssignInner),
                     ]),
                     ("ShlAssignRef", &[
                         ("Self_", Derive::ShlAssignRefSelf),
+                        ("Self", Derive::ShlAssignRefSelf),
                         ("Inner", Derive::ShlAssignRefInner),
                     ]),
                     ("Shr", &[
                         ("Self_", Derive::ShrSelf),
+                        ("Self", Derive::ShrSelf),
                         ("Inner", Derive::ShrInner),
                         ("InnerRev", Derive::ShrInnerRev),
                     ]),
                     ("ShrRef", &[
                         ("Self_", Derive::ShrRefSelf),
+                        ("Self", Derive::ShrRefSelf),
                         ("Inner", Derive::ShrRefInner),
                         ("InnerRev", Derive::ShrRefInnerRev),
                     ]),
                     ("ShrAssign", &[
                         ("Self_", Derive::ShrAssignSelf),
+                        ("Self", Derive::ShrAssignSelf),
                         ("Inner", Derive::ShrAssignInner),
                     ]),
                     ("ShrAssignRef", &[
                         ("Self_", Derive::ShrAssignRefSelf),
+                        ("Self", Derive::ShrAssignRefSelf),
                         ("Inner", Derive::ShrAssignRefInner),
                     ]),
                     ("Sub", &[
                         ("Self_", Derive::SubSelf),
+                        ("Self", Derive::SubSelf),
                         ("Inner", Derive::SubInner),
                         ("InnerRev", Derive::SubInnerRev),
                     ]),
                     ("SubRef", &[
                         ("Self_", Derive::SubRefSelf),
+                        ("Self", Derive::SubRefSelf),
                         ("Inner", Derive::SubRefInner),
                         ("InnerRev", Derive::SubRefInnerRev),
                     ]),
                     ("SubAssign", &[
                         ("Self_", Derive::SubAssignSelf),
+                        ("Self", Derive::SubAssignSelf),
                         ("Inner", Derive::SubAssignInner),
                     ]),
                     ("SubAssignRef", &[
                         ("Self_", Derive::SubAssignRefSelf),
+                        ("Self", Derive::SubAssignRefSelf),
                         ("Inner", Derive::SubAssignRefInner),
                     ]),
                 ];
