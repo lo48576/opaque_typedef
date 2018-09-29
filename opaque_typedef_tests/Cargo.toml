@@ -6,5 +6,5 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-opaque_typedef = "^0.0.4"
-opaque_typedef_macros = "^0.0.4"
+opaque_typedef = "0.0.4"
+opaque_typedef_macros = "0.0.4"

@@ -23,12 +23,11 @@ pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
                     .filter_map(|nested_meta| match *nested_meta {
                         syn::NestedMeta::Meta(ref meta) => Some(meta),
                         syn::NestedMeta::Literal(..) => None,
-                    })
-                    .any(|meta| has_word_meta(meta, &ident_path[1..]))
+                    }).any(|meta| has_word_meta(meta, &ident_path[1..]))
             } else {
                 false
             }
-        },
+        }
         syn::Meta::NameValue(..) => false,
     }
 }
@@ -49,7 +48,7 @@ fn append_meta_content_by_path(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn
             if metalist.ident == path[0] {
                 append_meta_items_by_path(metalist.nested, &path[1..], vec);
             }
-        },
+        }
         syn::Meta::Word(..) | syn::Meta::NameValue(..) => return,
     }
 }

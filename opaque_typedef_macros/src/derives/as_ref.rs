@@ -29,8 +29,8 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     target.as_ref()
                 );
             }
-        },
-        _ => {},
+        }
+        _ => {}
     }
     let expr = match target {
         Derive::AsMutDeref => gen_deref_mut_expr(props),
@@ -54,7 +54,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Derive::AsRefDeref | Derive::AsRefInner | Derive::AsRefSelf => {
             quote! {
                 impl #impl_generics
@@ -66,7 +66,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         _ => unreachable!("Should never happen"),
     }
 }

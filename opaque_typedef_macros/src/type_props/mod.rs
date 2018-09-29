@@ -228,7 +228,7 @@ impl<'a> TypeProps<'a> {
                         }
                     }
                 }
-            },
+            }
             Sizedness::Unsized => {
                 quote! {
                     impl #impl_generics
@@ -272,7 +272,7 @@ impl<'a> TypeProps<'a> {
                         }
                     }
                 }
-            },
+            }
         }
     }
 

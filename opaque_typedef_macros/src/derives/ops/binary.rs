@@ -217,7 +217,7 @@ pub enum BinOpSpec {
 }
 
 impl BinOpSpec {
-    fn parse_prop<T: syn::synom::Synom>(self, prop_name: &str) -> T {
+    fn parse_prop<T: syn::parse::Parse>(self, prop_name: &str) -> T {
         use strum::EnumProperty;
 
         let val = self.get_str(prop_name).unwrap_or_else(|| {
@@ -352,10 +352,10 @@ impl BinOpSpec {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                     props.tokens_outer_expr_into_inner(expr)
-                },
+                }
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                     props.tokens_outer_expr_as_inner(expr)
-                },
+                }
             },
             BinOpSpec::AddAssign
             | BinOpSpec::BitAndAssign
@@ -470,7 +470,7 @@ pub fn gen_impl_sized_ref(
                 #ref_raw
                 #ref_ref
             }
-        },
+        }
         BinOpSpec::AddAssign
         | BinOpSpec::BitAndAssign
         | BinOpSpec::BitOrAssign
@@ -485,7 +485,7 @@ pub fn gen_impl_sized_ref(
             quote! {
                 #raw_ref
             }
-        },
+        }
     }
 }
 
