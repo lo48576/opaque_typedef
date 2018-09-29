@@ -25,7 +25,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Derive::DerefMut => {
             if !props.is_mut_ref_allowed {
                 panic!(
@@ -44,7 +44,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         _ => unreachable!(
             "Should never happen: `derives::deref::gen_impl` got `{}` target",
             target.as_ref()

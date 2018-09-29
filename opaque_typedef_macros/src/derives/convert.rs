@@ -33,7 +33,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
@@ -48,7 +48,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
     }
 }
 
@@ -71,7 +71,7 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
@@ -86,7 +86,7 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
     }
 }
 

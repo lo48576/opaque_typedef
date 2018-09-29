@@ -1136,9 +1136,9 @@ impl Derive {
                         Ok(v) => derives.push(v),
                         Err(_) => {
                             abort_on_unknown_derive_target(format_args!("{}", target));
-                        },
+                        }
                     }
-                },
+                }
                 syn::Meta::List(ref metalist) => {
                     let parent = &metalist.ident;
                     for nested_meta in &metalist.nested {
@@ -1150,7 +1150,7 @@ impl Derive {
                                     parent,
                                     lit.into_token_stream()
                                 ));
-                            },
+                            }
                         };
                         match *meta {
                             syn::Meta::Word(ref ident) => Self::append_from_nested_names(
@@ -1167,16 +1167,16 @@ impl Derive {
                                     parent,
                                     namevalue.into_token_stream()
                                 ))
-                            },
+                            }
                         }
                     }
-                },
+                }
                 syn::Meta::NameValue(ref namevalue) => {
                     abort_on_unsupported_derive_format(format_args!(
                         "{}",
                         namevalue.into_token_stream()
                     ));
-                },
+                }
             }
         }
         derives
@@ -1456,7 +1456,7 @@ impl Derive {
                     ),
                     Sizedness::Unsized => convert::gen_impl_into_smartptr(self, props),
                 }
-            },
+            }
             (Derive::IntoInner, _) => convert::gen_impl_into_inner(props),
             // `std::default::Default` trait.
             (Derive::DefaultRef, Sizedness::Sized) => panic!(
@@ -1494,7 +1494,7 @@ impl Derive {
                         }
                     }
                 }
-            },
+            }
             // `std::cmp::Partial{Eq,Ord}` traits.
             (Derive::PartialEqInner, _)
             | (Derive::PartialEqInnerRev, _)
@@ -1515,7 +1515,7 @@ impl Derive {
             | (Derive::PartialOrdSelfCowAndInner, Sizedness::Unsized)
             | (Derive::PartialOrdSelfCowAndInnerRev, Sizedness::Unsized) => {
                 cmp::gen_impl_partial_cmp(self, props)
-            },
+            }
             (Derive::PartialEqInnerCow, Sizedness::Sized)
             | (Derive::PartialEqInnerCowRev, Sizedness::Sized)
             | (Derive::PartialEqSelfCow, Sizedness::Sized)
@@ -1589,7 +1589,7 @@ impl Derive {
                         }
                     }
                 }
-            },
+            }
             // Simple operators.
             _ => match OpSpec::from_derive_target(self) {
                 Some(op_spec) => match props.inner_sizedness {
@@ -1602,7 +1602,7 @@ impl Derive {
                          lacks required properties",
                         self
                     );
-                },
+                }
             },
         }
     }
@@ -1618,8 +1618,7 @@ fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
         .filter_map(|nested_meta| match nested_meta {
             syn::NestedMeta::Meta(meta) => Some(meta),
             syn::NestedMeta::Literal(..) => None,
-        })
-        .collect()
+        }).collect()
 }
 
 fn abort_on_unknown_derive_target(target: ::std::fmt::Arguments) -> ! {

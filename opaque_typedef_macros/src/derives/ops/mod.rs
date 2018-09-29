@@ -53,11 +53,11 @@ impl OperandSpec {
             (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Raw) => expr.into_token_stream(),
             (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                 props.tokens_outer_expr_into_inner(expr)
-            },
+            }
             (OperandTypeSpec::Inner, OperandTypeWrapperSpec::Ref) => expr.into_token_stream(),
             (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                 props.tokens_outer_expr_as_inner(expr)
-            },
+            }
         }
     }
 
@@ -84,7 +84,7 @@ impl OperandSpec {
                     OperandTypeSpec::Outer => quote!(&#lt #ty_outer),
                     OperandTypeSpec::Inner => quote!(&#lt #ty_inner),
                 }
-            },
+            }
         }
     }
 
@@ -99,7 +99,7 @@ impl OperandSpec {
             OperandTypeWrapperSpec::Ref => {
                 let lt = &extra_lt[0];
                 quote!(&#lt #ty_inner)
-            },
+            }
         }
     }
 

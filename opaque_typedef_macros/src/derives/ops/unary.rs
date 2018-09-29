@@ -104,10 +104,10 @@ impl UnaryOpSpec {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                     props.tokens_outer_expr_into_inner(expr)
-                },
+                }
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                     props.tokens_outer_expr_as_inner(expr)
-                },
+                }
             },
         }
     }
@@ -145,7 +145,7 @@ pub fn gen_impl_sized_ref(
             quote! {
                 #ref_
             }
-        },
+        }
     }
 }
 

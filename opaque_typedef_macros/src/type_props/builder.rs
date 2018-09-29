@@ -88,8 +88,7 @@ fn get_deref_spec(attrs: &[syn::Attribute]) -> DerefSpec {
         .filter_map(|meta| match meta {
             syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
             _ => None,
-        })
-        .collect::<Vec<_>>();
+        }).collect::<Vec<_>>();
 
     fn get_attr_by_name<'a>(
         namevalues: &'a [syn::MetaNameValue],
@@ -176,8 +175,7 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
         .filter_map(|meta| match meta {
             syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
             _ => None,
-        })
-        .collect::<Vec<_>>();
+        }).collect::<Vec<_>>();
 
     fn get_attr_by_name<'a>(
         namevalues: &'a [syn::MetaNameValue],
@@ -238,7 +236,7 @@ fn get_validation_spec(attrs: &[syn::Attribute]) -> ValidationSpec {
             "`#[opaque_typedef(validation(error_type = ..))]` is specified but \
              `#[opaque_typedef(validation(validator = ..))]` is not found"
         ),
-        _ => {},
+        _ => {}
     }
 
     ValidationSpec {
@@ -257,8 +255,7 @@ fn get_cmp_spec(attrs: &[syn::Attribute]) -> CmpSpec {
         .filter_map(|meta| match meta {
             syn::NestedMeta::Meta(syn::Meta::NameValue(nv)) => Some(nv),
             _ => None,
-        })
-        .collect::<Vec<_>>();
+        }).collect::<Vec<_>>();
 
     fn get_attr_by_name<'a>(
         namevalues: &'a [syn::MetaNameValue],

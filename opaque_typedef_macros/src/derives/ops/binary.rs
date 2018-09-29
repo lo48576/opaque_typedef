@@ -352,10 +352,10 @@ impl BinOpSpec {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                     props.tokens_outer_expr_into_inner(expr)
-                },
+                }
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                     props.tokens_outer_expr_as_inner(expr)
-                },
+                }
             },
             BinOpSpec::AddAssign
             | BinOpSpec::BitAndAssign
@@ -470,7 +470,7 @@ pub fn gen_impl_sized_ref(
                 #ref_raw
                 #ref_ref
             }
-        },
+        }
         BinOpSpec::AddAssign
         | BinOpSpec::BitAndAssign
         | BinOpSpec::BitOrAssign
@@ -485,7 +485,7 @@ pub fn gen_impl_sized_ref(
             quote! {
                 #raw_ref
             }
-        },
+        }
     }
 }
 
