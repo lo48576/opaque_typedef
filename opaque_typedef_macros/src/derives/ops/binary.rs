@@ -217,7 +217,7 @@ pub enum BinOpSpec {
 }
 
 impl BinOpSpec {
-    fn parse_prop<T: syn::synom::Synom>(self, prop_name: &str) -> T {
+    fn parse_prop<T: syn::parse::Parse>(self, prop_name: &str) -> T {
         use strum::EnumProperty;
 
         let val = self.get_str(prop_name).unwrap_or_else(|| {
