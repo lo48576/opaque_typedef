@@ -11,10 +11,10 @@
 // `From<ReverseOrderSized<MyType>> for MyType`).
 #[opaque_typedef(
     derive(
-        Add(Self_, Inner),
-        AddRef(Self_, Inner),
-        AddAssign(Self_, Inner),
-        AddAssignRef(Self_, Inner),
+        Add(Self, Inner),
+        AddRef(Self, Inner),
+        AddAssign(Self, Inner),
+        AddAssignRef(Self, Inner),
         AsMut(Deref),
         AsRef(Deref),
         Binary,

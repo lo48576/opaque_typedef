@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+* Now `Self` is available for shortened notation instead of `Self_`
+  (44604fa9d6d954ba0b45f20aea9fd84133507a2a).
+    + Users can use `Foo(Self)` instead of `Foo(Self_)`.
+    + `Self_` will removed in future (but not now).
+
+
 ## [0.0.4] - 2018-05-30
 
 ### Changed (non-breaking)

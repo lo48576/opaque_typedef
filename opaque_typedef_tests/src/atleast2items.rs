@@ -10,8 +10,8 @@
 // These are specified here for testing purpose.
 #[opaque_typedef(
     derive(
-        AsMut(Deref, Self_),
-        AsRef(Deref, Self_),
+        AsMut(Deref, Self),
+        AsRef(Deref, Self),
         Binary,
         DefaultRef,
         Deref,
