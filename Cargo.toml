@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "opaque_typedef",
+    "opaque_typedef_codegen",
     "opaque_typedef_macros",
     "opaque_typedef_tests",
 ]
