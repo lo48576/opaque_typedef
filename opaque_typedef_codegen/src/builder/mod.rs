@@ -5,9 +5,11 @@ use std::fmt;
 
 pub use self::generics::GenericsBuilder;
 pub use self::impl_item_method::ImplItemMethodBuilder;
+pub use self::item_impl::ItemImplBuilder;
 
 mod generics;
 mod impl_item_method;
+mod item_impl;
 
 /// Builder error.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
