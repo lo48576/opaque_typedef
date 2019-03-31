@@ -20,7 +20,7 @@ pub enum SingletonIterResult<T> {
 impl<T> SingletonIterResult<T> {
     /// Returns `Some(None)` for no items, `Some(Some(T))` for a single item,
     /// `None` for multiple items.
-    #[allow(unknown_lints, option_option)]
+    #[allow(clippy::option_option)]
     pub fn at_most_one(self) -> Option<Option<T>> {
         match self {
             SingletonIterResult::None => Some(None),
