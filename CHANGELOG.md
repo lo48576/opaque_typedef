@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed (breaking)
+
+* Now automatically-generated codes uses correct `Result` type
+  (46ba3eb4defa).
+    + Not `Result` (which can be local type), but `std::result::Result`.
+    + Now it uses `std::...` path, `opaque_typedef` crate supports only Rust 2018.
+
 ### Added
 
 * Now `Self` is available for shortened notation instead of `Self_`
