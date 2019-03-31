@@ -8,32 +8,28 @@
 // `[T]` types, but this is should not an error because it is implemeted only
 // when `[T]: Binary` (or some other traits).
 // These are specified here for testing purpose.
-#[opaque_typedef(
-    derive(
-        AsMut(Deref, Self),
-        AsRef(Deref, Self),
-        Binary,
-        DefaultRef,
-        Deref,
-        DerefMut,
-        Display,
-        FromInner,
-        Into(Arc, Box, Inner, Rc),
-        LowerHex,
-        Octal,
-        PartialEq(Inner),
-        PartialOrd(Inner),
-        UpperHex
-    )
-)]
+#[opaque_typedef(derive(
+    AsMut(Deref, Self),
+    AsRef(Deref, Self),
+    Binary,
+    DefaultRef,
+    Deref,
+    DerefMut,
+    Display,
+    FromInner,
+    Into(Arc, Box, Inner, Rc),
+    LowerHex,
+    Octal,
+    PartialEq(Inner),
+    PartialOrd(Inner),
+    UpperHex
+))]
 #[opaque_typedef(allow_mut_ref)]
-#[opaque_typedef(
-    validation(
-        validator = "ensure_at_least_2_items",
-        error_type = "TooFewItems",
-        error_msg = "Failed to create `SliceAtLeast2Items`"
-    )
-)]
+#[opaque_typedef(validation(
+    validator = "ensure_at_least_2_items",
+    error_type = "TooFewItems",
+    error_msg = "Failed to create `SliceAtLeast2Items`"
+))]
 pub struct SliceAtLeast2Items<T> {
     #[opaque_typedef(inner)]
     inner: [T],
@@ -58,25 +54,21 @@ impl<T> SliceAtLeast2Items<T> {
 
 /// Vec with at least 2 items.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedef)]
-#[opaque_typedef(
-    derive(
-        AsRef(Deref, Inner),
-        Deref,
-        Display,
-        FromInner,
-        IntoInner,
-        PartialEqInner,
-        PartialOrdInner
-    )
-)]
+#[opaque_typedef(derive(
+    AsRef(Deref, Inner),
+    Deref,
+    Display,
+    FromInner,
+    IntoInner,
+    PartialEqInner,
+    PartialOrdInner
+))]
 #[opaque_typedef(deref(target = "[T]", deref = "Vec::<T>::as_slice"))]
-#[opaque_typedef(
-    validation(
-        validator = "ensure_at_least_2_items",
-        error_type = "TooFewItems",
-        error_msg = "Failed to create `VecAtLeast2Items`"
-    )
-)]
+#[opaque_typedef(validation(
+    validator = "ensure_at_least_2_items",
+    error_type = "TooFewItems",
+    error_msg = "Failed to create `VecAtLeast2Items`"
+))]
 pub struct VecAtLeast2Items<T> {
     inner: Vec<T>,
 }

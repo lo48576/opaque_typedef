@@ -15,204 +15,164 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString, EnumProperty)]
 pub enum BinOpSpec {
     /// `std::ops::Add`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Add",
-            method = "add",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Add",
+        method = "add",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Add,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::AddAssign",
-            method = "add_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::AddAssign",
+        method = "add_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     AddAssign,
     /// `std::ops::BitAnd`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitAnd",
-            method = "bitand",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitAnd",
+        method = "bitand",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitAnd,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitAndAssign",
-            method = "bitand_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitAndAssign",
+        method = "bitand_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitAndAssign,
     /// `std::ops::BitOr`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitOr",
-            method = "bitor",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitOr",
+        method = "bitor",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitOr,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitOrAssign",
-            method = "bitor_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitOrAssign",
+        method = "bitor_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitOrAssign,
     /// `std::ops::BitXor`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitXor",
-            method = "bitxor",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitXor",
+        method = "bitxor",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitXor,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitXorAssign",
-            method = "bitxor_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitXorAssign",
+        method = "bitxor_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitXorAssign,
     /// `std::ops::Div`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Div",
-            method = "div",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Div",
+        method = "div",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Div,
     /// `std::ops::DivAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::DivAssign",
-            method = "div_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::DivAssign",
+        method = "div_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     DivAssign,
     /// `std::ops::Mul`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Mul",
-            method = "mul",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Mul",
+        method = "mul",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Mul,
     /// `std::ops::MulAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::MulAssign",
-            method = "mul_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::MulAssign",
+        method = "mul_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     MulAssign,
     /// `std::ops::Rem`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Rem",
-            method = "rem",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Rem",
+        method = "rem",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Rem,
     /// `std::ops::RemAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::RemAssign",
-            method = "rem_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::RemAssign",
+        method = "rem_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     RemAssign,
     /// `std::ops::Shl`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Shl",
-            method = "shl",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Shl",
+        method = "shl",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Shl,
     /// `std::ops::ShlAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::ShlAssign",
-            method = "shl_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::ShlAssign",
+        method = "shl_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     ShlAssign,
     /// `std::ops::Shr`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Shr",
-            method = "shr",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Shr",
+        method = "shr",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Shr,
     /// `std::ops::ShrAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::ShrAssign",
-            method = "shr_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::ShrAssign",
+        method = "shr_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     ShrAssign,
     /// `std::ops::Sub`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Sub",
-            method = "sub",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Sub",
+        method = "sub",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Sub,
     /// `std::ops::SubAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::SubAssign",
-            method = "sub_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::SubAssign",
+        method = "sub_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     SubAssign,
 }
 

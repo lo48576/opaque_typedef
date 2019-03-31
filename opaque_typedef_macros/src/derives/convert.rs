@@ -135,7 +135,8 @@ pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> TokenStream 
             &ty_smartptr_inner,
             (&new_lt).into_token_stream(),
             &ty_inner
-        )).expect("Failed to generate `PredicateType`");
+        ))
+        .expect("Failed to generate `PredicateType`");
         let (generics, _) = extend_generics(temp_generics, 0, &[pred_clone]);
         (generics, new_lt)
     };

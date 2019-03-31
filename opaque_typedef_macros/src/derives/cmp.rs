@@ -29,7 +29,8 @@ pub fn gen_impl_ord(props: &TypeProps) -> TokenStream {
         lhs_self_as_inner: &self_as_inner,
         ty_rhs: &ty_outer_generic,
         rhs_other_as_inner: &other_as_inner,
-    }.gen_impl()
+    }
+    .gen_impl()
 }
 
 /// Generates an impl for the target.
@@ -72,7 +73,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &self_as_inner,
                 ty_rhs: ty_inner,
                 rhs_other_as_inner: &quote!(other),
-            }.gen_impl();
+            }
+            .gen_impl();
             let extra = if props.inner_sizedness == Sizedness::Sized && props.has_type_params() {
                 quote!()
             } else {
@@ -88,7 +90,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                     lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
                     ty_rhs: ty_inner,
                     rhs_other_as_inner: &quote!(other),
-                }.gen_impl();
+                }
+                .gen_impl();
                 let inner_ref_and_outer = CmpImplSpec {
                     type_props: &props,
                     generics: &generics,
@@ -99,7 +102,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                     lhs_self_as_inner: &self_as_inner,
                     ty_rhs: quote!(&#new_lt #ty_inner),
                     rhs_other_as_inner: &quote!(*other),
-                }.gen_impl();
+                }
+                .gen_impl();
                 quote! {
                     #inner_and_outer_ref
                     #inner_ref_and_outer
@@ -121,7 +125,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &quote!(self),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
-            }.gen_impl();
+            }
+            .gen_impl();
             let extra = if props.inner_sizedness == Sizedness::Sized && props.has_type_params() {
                 quote!()
             } else {
@@ -137,7 +142,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                     lhs_self_as_inner: &quote!(self),
                     ty_rhs: quote!(&#new_lt #ty_outer #type_generics),
                     rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
-                }.gen_impl();
+                }
+                .gen_impl();
                 let inner_ref_and_outer_rev = CmpImplSpec {
                     type_props: &props,
                     generics: &generics,
@@ -148,7 +154,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                     lhs_self_as_inner: &quote!(*self),
                     ty_rhs: quote!(#ty_outer #type_generics),
                     rhs_other_as_inner: &other_as_inner,
-                }.gen_impl();
+                }
+                .gen_impl();
                 quote! {
                     #inner_and_outer_ref_rev
                     #inner_ref_and_outer_rev
@@ -172,7 +179,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &quote!(&*self),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -186,7 +194,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &quote!(&*self),
                 ty_rhs: quote!(&#new_lt1 #ty_outer #type_generics),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #inner_cow_and_outer
                 #inner_cow_and_outer_ref
@@ -205,7 +214,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &self_as_inner,
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_inner>),
                 rhs_other_as_inner: &quote!(&*other),
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -219,7 +229,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_inner>),
                 rhs_other_as_inner: &quote!(&*other),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #inner_cow_and_outer_rev
                 #inner_cow_and_outer_ref_rev
@@ -236,7 +247,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &self_as_inner,
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #outer_and_outer
             }
@@ -254,7 +266,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: quote!(#ty_outer #type_generics),
                 rhs_other_as_inner: &other_as_inner,
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -268,7 +281,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: quote!(&#new_lt1 #ty_outer #type_generics),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #outer_cow_and_outer
                 #outer_cow_and_outer_ref
@@ -287,7 +301,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &self_as_inner,
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -301,7 +316,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(*self)),
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #outer_cow_and_outer_rev
                 #outer_cow_and_outer_ref_rev
@@ -320,7 +336,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: ty_inner,
                 rhs_other_as_inner: &quote!(other),
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -334,7 +351,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*self)),
                 ty_rhs: quote!(&#new_lt1 #ty_inner),
                 rhs_other_as_inner: &quote!(*other),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #outer_cow_and_inner
                 #outer_cow_and_inner_ref
@@ -353,7 +371,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &quote!(self),
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             let (generics, new_lts) = extend_generics(Cow::Borrowed(props.generics), 2, &[]);
             let new_lt0 = &new_lts[0];
             let new_lt1 = &new_lts[1];
@@ -367,7 +386,8 @@ pub fn gen_impl_partial_cmp(target: Derive, props: &TypeProps) -> TokenStream {
                 lhs_self_as_inner: &quote!(*self),
                 ty_rhs: quote!(::std::borrow::Cow<#new_lt1, #ty_outer #type_generics>),
                 rhs_other_as_inner: &props.tokens_outer_expr_as_inner(quote!(&*other)),
-            }.gen_impl();
+            }
+            .gen_impl();
             quote! {
                 #outer_cow_and_inner_rev
                 #outer_cow_and_inner_ref_rev
@@ -457,12 +477,14 @@ where
                     syn::parse_str::<syn::WherePredicate>(&format!(
                         "{}: {}<{}>",
                         ty_inner, target_trait, ty_inner
-                    )).expect("Failed to generate `WherePredicate`")
+                    ))
+                    .expect("Failed to generate `WherePredicate`")
                 }
                 CmpTraitSpec::Ord => syn::parse_str::<syn::WherePredicate>(&format!(
                     "{}: {}",
                     ty_inner, target_trait
-                )).expect("Failed to generate `WherePredicate`"),
+                ))
+                .expect("Failed to generate `WherePredicate`"),
             };
             vec![pred]
         } else {

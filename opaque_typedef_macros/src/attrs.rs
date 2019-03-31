@@ -23,7 +23,8 @@ pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
                     .filter_map(|nested_meta| match *nested_meta {
                         syn::NestedMeta::Meta(ref meta) => Some(meta),
                         syn::NestedMeta::Literal(..) => None,
-                    }).any(|meta| has_word_meta(meta, &ident_path[1..]))
+                    })
+                    .any(|meta| has_word_meta(meta, &ident_path[1..]))
             } else {
                 false
             }

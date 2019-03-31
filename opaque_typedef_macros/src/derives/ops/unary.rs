@@ -15,24 +15,20 @@ use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString, EnumProperty)]
 pub enum UnaryOpSpec {
     /// `std::ops::Neg`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Neg",
-            method = "neg",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Neg",
+        method = "neg",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Neg,
     /// `std::ops::Not`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::Not",
-            method = "not",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Not",
+        method = "not",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Not,
 }
 
@@ -184,7 +180,8 @@ pub fn gen_impl_sized(
                 ty_lhs_inner,
                 target_trait,
                 ty_inner.into_token_stream()
-            )).expect("Failed to generate `WherePredicate`");
+            ))
+            .expect("Failed to generate `WherePredicate`");
             vec![pred]
         } else {
             Vec::new()
