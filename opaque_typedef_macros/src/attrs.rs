@@ -8,7 +8,7 @@ pub fn is_attr_with_path(attr: &syn::Attribute, path: &[&str]) -> bool {
         .segments
         .iter()
         .map(|seg| &seg.ident)
-        .eq(path.into_iter().map(|&s| s))
+        .eq(path.iter().cloned())
 }
 
 /// Checks whether the word meta item with the given path is specified.

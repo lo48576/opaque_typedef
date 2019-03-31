@@ -872,8 +872,8 @@ impl Derive {
                         ("Inner", Derive::SubAssignRefInner),
                     ]),
                 ];
-                TARGETS.into_iter().map(|&(parent, subtargets)| {
-                    (parent, subtargets.into_iter().cloned().collect())
+                TARGETS.iter().map(|&(parent, subtargets)| {
+                    (parent, subtargets.iter().cloned().collect())
                 }).collect()
             };
         }
@@ -881,7 +881,7 @@ impl Derive {
         let submap = NESTED_DERIVES.get(parent).unwrap_or_else(|| {
             abort_on_unknown_derive_target(format_args!("{}(..)", parent));
         });
-        derives.extend(children.into_iter().map(|child| {
+        derives.extend(children.iter().map(|child| {
             submap.get(child.as_str()).unwrap_or_else(|| {
                 abort_on_unknown_derive_target(format_args!("{}({})", parent, child));
             })
@@ -1076,7 +1076,7 @@ impl Derive {
 /// Returns metadata in `#[opaque_typedef(derive(..))]` (`..` part).
 fn get_derive_meta(attrs: &[syn::Attribute]) -> Vec<syn::Meta> {
     attrs
-        .into_iter()
+        .iter()
         .filter(|attr| is_attr_with_path(attr, &["opaque_typedef"]))
         .filter_map(|attr| attr.interpret_meta())
         .flat_map(|meta| get_meta_content_by_path(meta, &["opaque_typedef", "derive"]))
