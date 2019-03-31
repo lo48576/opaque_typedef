@@ -2,16 +2,14 @@
 
 use syn;
 
-
 /// Checks whether the attribute has the given path.
 pub fn is_attr_with_path(attr: &syn::Attribute, path: &[&str]) -> bool {
     attr.path
         .segments
         .iter()
         .map(|seg| &seg.ident)
-        .eq(path.into_iter().map(|&s| s))
+        .eq(path.iter().cloned())
 }
-
 
 /// Checks whether the word meta item with the given path is specified.
 pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
@@ -30,18 +28,16 @@ pub fn has_word_meta(meta: &syn::Meta, ident_path: &[&str]) -> bool {
             } else {
                 false
             }
-        },
+        }
         syn::Meta::NameValue(..) => false,
     }
 }
-
 
 pub fn get_meta_content_by_path(meta: syn::Meta, path: &[&str]) -> Vec<syn::NestedMeta> {
     let mut res = Vec::new();
     append_meta_content_by_path(meta, path, &mut res);
     res
 }
-
 
 fn append_meta_content_by_path(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn::NestedMeta>) {
     if path.is_empty() {
@@ -53,11 +49,10 @@ fn append_meta_content_by_path(meta: syn::Meta, path: &[&str], vec: &mut Vec<syn
             if metalist.ident == path[0] {
                 append_meta_items_by_path(metalist.nested, &path[1..], vec);
             }
-        },
+        }
         syn::Meta::Word(..) | syn::Meta::NameValue(..) => return,
     }
 }
-
 
 fn append_meta_items_by_path<I>(nested_items: I, path: &[&str], vec: &mut Vec<syn::NestedMeta>)
 where

@@ -11,7 +11,6 @@ use self::builder::TypePropsBuilder;
 
 mod builder;
 
-
 /// Sizedness of a type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Sizedness {
@@ -20,7 +19,6 @@ pub enum Sizedness {
     /// Unsized.
     Unsized,
 }
-
 
 /// A field with the optional index.
 #[derive(Clone)]
@@ -55,7 +53,6 @@ impl<'a> Field<'a> {
     }
 }
 
-
 #[derive(Default, Clone)]
 pub struct DerefSpec {
     /// Deref target type.
@@ -69,7 +66,6 @@ pub struct DerefSpec {
     /// The function should have `&Inner -> &Target` type.
     pub fn_name_deref_mut: Option<syn::Expr>,
 }
-
 
 #[derive(Default, Clone)]
 pub struct ValidationSpec {
@@ -108,7 +104,6 @@ impl ValidationSpec {
     }
 }
 
-
 #[derive(Default, Clone)]
 pub struct CmpSpec {
     /// `PartialEq` and `Eq` comparator.
@@ -141,7 +136,6 @@ impl CmpSpec {
         }
     }
 }
-
 
 /// Properties of a type with `#[derive(OpaqueTypedef*)]`.
 #[derive(Clone)]
@@ -217,7 +211,7 @@ impl<'a> TypeProps<'a> {
                         unsafe fn from_inner_unchecked(__inner: Self::Inner) -> Self {
                             Self { #name_inner: __inner }
                         }
-                        fn try_from_inner(__inner: Self::Inner) -> Result<Self, Self::Error> {
+                        fn try_from_inner(__inner: Self::Inner) -> std::result::Result<Self, Self::Error> {
                             Ok(Self { #name_inner: #inner_try_validated })
                         }
                         fn from_inner(__inner: Self::Inner) -> Self {
@@ -234,7 +228,7 @@ impl<'a> TypeProps<'a> {
                         }
                     }
                 }
-            },
+            }
             Sizedness::Unsized => {
                 quote! {
                     impl #impl_generics
@@ -254,7 +248,7 @@ impl<'a> TypeProps<'a> {
                             // <https://rust-lang-nursery.github.io/rust-clippy/v0.0.194/index.html#derive_hash_xor_eq>.
                             &mut *(__inner as *mut Self::Inner as *mut Self)
                         }
-                        fn try_from_inner(__inner: &Self::Inner) -> Result<&Self, Self::Error> {
+                        fn try_from_inner(__inner: &Self::Inner) -> std::result::Result<&Self, Self::Error> {
                             let __inner = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) })
                         }
@@ -262,7 +256,7 @@ impl<'a> TypeProps<'a> {
                             let __inner = #inner_validated;
                             unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked(__inner) }
                         }
-                        fn try_from_inner_mut(__inner: &mut Self::Inner) -> Result<&mut Self, Self::Error> {
+                        fn try_from_inner_mut(__inner: &mut Self::Inner) -> std::result::Result<&mut Self, Self::Error> {
                             let __inner = #inner_try_validated;
                             Ok(unsafe { <Self as ::opaque_typedef::OpaqueTypedefUnsized>::from_inner_unchecked_mut(__inner) })
                         }
@@ -278,7 +272,7 @@ impl<'a> TypeProps<'a> {
                         }
                     }
                 }
-            },
+            }
         }
     }
 

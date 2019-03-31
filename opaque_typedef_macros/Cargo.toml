@@ -1,8 +1,8 @@
 [package]
 name = "opaque_typedef_macros"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Supports defining opaque typedefs"
 repository = "https://github.com/lo48576/opaque_typedef"
@@ -12,13 +12,14 @@ keywords = ["derive", "opaque", "strong", "typedef"]
 proc-macro = true
 
 [dependencies]
-lazy_static = "^1.0"
+lazy_static = "1.1"
 proc-macro2 = "0.4"
-quote = "^0.6"
-strum = "^0.9"
-strum_macros = "^0.9"
+quote = "0.6"
+strum = "0.15"
+strum_macros = "0.15"
 # `full` feature is required to parse closures.
-syn = { version = "^0.14", features = ["full"] }
+syn = { version = "0.15", features = ["full"] }
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/opaque_typedef" }

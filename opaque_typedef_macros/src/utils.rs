@@ -4,7 +4,6 @@ use std::borrow::Cow;
 
 use syn;
 
-
 /// Result of `expect_singleton_iter()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SingletonIterResult<T> {
@@ -21,7 +20,7 @@ pub enum SingletonIterResult<T> {
 impl<T> SingletonIterResult<T> {
     /// Returns `Some(None)` for no items, `Some(Some(T))` for a single item,
     /// `None` for multiple items.
-    #[allow(unknown_lints, option_option)]
+    #[allow(clippy::option_option)]
     pub fn at_most_one(self) -> Option<Option<T>> {
         match self {
             SingletonIterResult::None => Some(None),
@@ -30,7 +29,6 @@ impl<T> SingletonIterResult<T> {
         }
     }
 }
-
 
 /// Checks whether the iterator has at most one item, and returns the items.
 pub fn expect_singleton_iter<I, T>(iter: I) -> SingletonIterResult<T>
@@ -47,7 +45,6 @@ where
         None => SingletonIterResult::Single(first),
     }
 }
-
 
 pub fn extend_generics<'a, G>(
     generics: G,

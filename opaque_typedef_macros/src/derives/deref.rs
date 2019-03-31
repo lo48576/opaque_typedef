@@ -6,7 +6,6 @@ use type_props::TypeProps;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let ty_outer = props.ty_outer;
@@ -26,7 +25,7 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Derive::DerefMut => {
             if !props.is_mut_ref_allowed {
                 panic!(
@@ -45,14 +44,13 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         _ => unreachable!(
             "Should never happen: `derives::deref::gen_impl` got `{}` target",
             target.as_ref()
         ),
     }
 }
-
 
 pub fn gen_deref_expr(props: &TypeProps) -> TokenStream {
     let self_as_inner = props.tokens_outer_expr_as_inner(quote!(self));
@@ -62,7 +60,6 @@ pub fn gen_deref_expr(props: &TypeProps) -> TokenStream {
         (#fn_name_deref(#self_as_inner) as &#ty_deref_target)
     }
 }
-
 
 pub fn gen_deref_mut_expr(props: &TypeProps) -> TokenStream {
     // The caller is responsible to ensure `allow_mut_ref` is specified.

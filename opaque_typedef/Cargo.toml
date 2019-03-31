@@ -1,8 +1,8 @@
 [package]
 name = "opaque_typedef"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["YOSHIOKA Takuma <tashioka.256@gmail.com>"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Supports defining opaque typedefs"
 repository = "https://github.com/lo48576/opaque_typedef"
@@ -11,4 +11,5 @@ keywords = ["derive", "opaque", "strong", "typedef"]
 [dependencies]
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/opaque_typedef" }

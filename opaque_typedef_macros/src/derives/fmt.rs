@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
     let trait_name = match target {
@@ -34,7 +33,8 @@ pub fn gen_impl(target: Derive, props: &TypeProps) -> TokenStream {
         let pred = syn::parse_str::<syn::WherePredicate>(&format!(
             "{}: ::std::fmt::{}",
             ty_inner, trait_name,
-        )).expect("Failed to generate `WherePredicate`");
+        ))
+        .expect("Failed to generate `WherePredicate`");
         vec![pred]
     } else {
         Vec::new()

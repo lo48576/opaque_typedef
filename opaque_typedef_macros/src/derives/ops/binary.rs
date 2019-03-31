@@ -11,208 +11,205 @@ use utils::extend_generics;
 
 use super::{OperandSpec, OperandTypeSpec, OperandTypeWrapperSpec};
 
-
 /// Binary operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumString, EnumProperty)]
 pub enum BinOpSpec {
     /// `std::ops::Add`.
-    #[strum(
-        props(trait_ = "::std::ops::Add", method = "add", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Add",
+        method = "add",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Add,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::AddAssign",
-            method = "add_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::AddAssign",
+        method = "add_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     AddAssign,
     /// `std::ops::BitAnd`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitAnd",
-            method = "bitand",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitAnd",
+        method = "bitand",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitAnd,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitAndAssign",
-            method = "bitand_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitAndAssign",
+        method = "bitand_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitAndAssign,
     /// `std::ops::BitOr`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitOr", method = "bitor", self_ = "self", ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitOr",
+        method = "bitor",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitOr,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitOrAssign",
-            method = "bitor_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitOrAssign",
+        method = "bitor_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitOrAssign,
     /// `std::ops::BitXor`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitXor",
-            method = "bitxor",
-            self_ = "self",
-            ty_ret = "Self::Output"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitXor",
+        method = "bitxor",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     BitXor,
     /// `std::ops::AddAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::BitXorAssign",
-            method = "bitxor_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::BitXorAssign",
+        method = "bitxor_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     BitXorAssign,
     /// `std::ops::Div`.
-    #[strum(
-        props(trait_ = "::std::ops::Div", method = "div", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Div",
+        method = "div",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Div,
     /// `std::ops::DivAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::DivAssign",
-            method = "div_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::DivAssign",
+        method = "div_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     DivAssign,
     /// `std::ops::Mul`.
-    #[strum(
-        props(trait_ = "::std::ops::Mul", method = "mul", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Mul",
+        method = "mul",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Mul,
     /// `std::ops::MulAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::MulAssign",
-            method = "mul_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::MulAssign",
+        method = "mul_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     MulAssign,
     /// `std::ops::Rem`.
-    #[strum(
-        props(trait_ = "::std::ops::Rem", method = "rem", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Rem",
+        method = "rem",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Rem,
     /// `std::ops::RemAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::RemAssign",
-            method = "rem_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::RemAssign",
+        method = "rem_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     RemAssign,
     /// `std::ops::Shl`.
-    #[strum(
-        props(trait_ = "::std::ops::Shl", method = "shl", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Shl",
+        method = "shl",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Shl,
     /// `std::ops::ShlAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::ShlAssign",
-            method = "shl_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::ShlAssign",
+        method = "shl_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     ShlAssign,
     /// `std::ops::Shr`.
-    #[strum(
-        props(trait_ = "::std::ops::Shr", method = "shr", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Shr",
+        method = "shr",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Shr,
     /// `std::ops::ShrAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::ShrAssign",
-            method = "shr_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::ShrAssign",
+        method = "shr_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     ShrAssign,
     /// `std::ops::Sub`.
-    #[strum(
-        props(trait_ = "::std::ops::Sub", method = "sub", self_ = "self", ty_ret = "Self::Output")
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::Sub",
+        method = "sub",
+        self_ = "self",
+        ty_ret = "Self::Output"
+    ))]
     Sub,
     /// `std::ops::SubAssign`.
-    #[strum(
-        props(
-            trait_ = "::std::ops::SubAssign",
-            method = "sub_assign",
-            self_ = "&mut self",
-            ty_ret = "()"
-        )
-    )]
+    #[strum(props(
+        trait_ = "::std::ops::SubAssign",
+        method = "sub_assign",
+        self_ = "&mut self",
+        ty_ret = "()"
+    ))]
     SubAssign,
 }
 
 impl BinOpSpec {
-    fn parse_prop<T: syn::synom::Synom>(&self, prop_name: &str) -> T {
+    fn parse_prop<T: syn::parse::Parse>(self, prop_name: &str) -> T {
         use strum::EnumProperty;
 
         let val = self.get_str(prop_name).unwrap_or_else(|| {
             panic!(
                 "`BinOpSpec::{:?}` should have property `{}` but not found",
-                *self, prop_name
+                self, prop_name
             );
         });
         syn::parse_str::<T>(val).unwrap_or_else(|e| {
             panic!(
                 "`BinOpSpec::{:?}` has property `{} = {:?}`, but failed to parse: {}",
-                *self, prop_name, val, e
+                self, prop_name, val, e
             );
         })
     }
 
     /// Returns target trait path.
-    pub fn tokens_trait_path(&self) -> TokenStream {
+    pub fn tokens_trait_path(self) -> TokenStream {
         self.parse_prop::<syn::Path>("trait_").into_token_stream()
     }
 
     /// Returns method name to implement.
-    pub fn tokens_method(&self) -> TokenStream {
+    pub fn tokens_method(self) -> TokenStream {
         self.parse_prop::<syn::Ident>("method").into_token_stream()
     }
 
-    pub fn tokens_arg_self(&self) -> TokenStream {
+    pub fn tokens_arg_self(self) -> TokenStream {
         self.parse_prop::<syn::Expr>("self_").into_token_stream()
     }
 
-    pub fn tokens_ty_rhs_arg<T: ToTokens>(&self, ty_rhs: T) -> TokenStream {
-        match *self {
+    pub fn tokens_ty_rhs_arg<T: ToTokens>(self, ty_rhs: T) -> TokenStream {
+        match self {
             BinOpSpec::Add
             | BinOpSpec::AddAssign
             | BinOpSpec::BitAnd
@@ -236,8 +233,8 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_associated_ty_output<T: ToTokens>(&self, ty_outer: T) -> Option<TokenStream> {
-        match *self {
+    pub fn tokens_associated_ty_output<T: ToTokens>(self, ty_outer: T) -> Option<TokenStream> {
+        match self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
             | BinOpSpec::BitOr
@@ -252,7 +249,7 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_associated_stuff<T: ToTokens>(&self, ty_outer: T) -> TokenStream {
+    pub fn tokens_associated_stuff<T: ToTokens>(self, ty_outer: T) -> TokenStream {
         match self.tokens_associated_ty_output(&ty_outer) {
             Some(ty_output) => quote! {
                 type Output = #ty_output;
@@ -261,7 +258,7 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_ty_ret(&self) -> TokenStream {
+    pub fn tokens_ty_ret(self) -> TokenStream {
         self.parse_prop::<syn::Type>("ty_ret").into_token_stream()
     }
 
@@ -270,12 +267,12 @@ impl BinOpSpec {
     // `a.inner += b.inner;` style, for each `*Assign` trait impls.
     // Note that this feature also requires trait bounds generation to be
     // configurable.
-    pub fn tokens_from_inner_result<T, U>(&self, ty_outer: T, helper_trait: U) -> TokenStream
+    pub fn tokens_from_inner_result<T, U>(self, ty_outer: T, helper_trait: U) -> TokenStream
     where
         T: ToTokens,
         U: ToTokens,
     {
-        match *self {
+        match self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
             | BinOpSpec::BitOr
@@ -299,9 +296,9 @@ impl BinOpSpec {
         }
     }
 
-    pub fn tokens_lhs_inner_arg(&self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
+    pub fn tokens_lhs_inner_arg(self, props: &TypeProps, lhs_spec: OperandSpec) -> TokenStream {
         let expr = quote!(self);
-        match *self {
+        match self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
             | BinOpSpec::BitOr
@@ -315,10 +312,10 @@ impl BinOpSpec {
                 (OperandTypeSpec::Inner, _) => expr,
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Raw) => {
                     props.tokens_outer_expr_into_inner(expr)
-                },
+                }
                 (OperandTypeSpec::Outer, OperandTypeWrapperSpec::Ref) => {
                     props.tokens_outer_expr_as_inner(expr)
-                },
+                }
             },
             BinOpSpec::AddAssign
             | BinOpSpec::BitAndAssign
@@ -337,13 +334,13 @@ impl BinOpSpec {
     }
 
     pub fn tokens_rhs_inner_arg<T: ToTokens>(
-        &self,
+        self,
         props: &TypeProps,
         rhs_spec: OperandSpec,
         rhs_expr: T,
     ) -> TokenStream {
         let inner = rhs_spec.tokens_inner(props, rhs_expr);
-        match *self {
+        match self {
             BinOpSpec::Add
             | BinOpSpec::BitAnd
             | BinOpSpec::BitOr
@@ -368,7 +365,6 @@ impl BinOpSpec {
     }
 }
 
-
 pub fn gen_impl_sized_raw(
     props: &TypeProps,
     op_spec: BinOpSpec,
@@ -383,7 +379,6 @@ pub fn gen_impl_sized_raw(
         rhs_spec.with_wrapper(OperandTypeWrapperSpec::Raw),
     )
 }
-
 
 pub fn gen_impl_sized_ref(
     props: &TypeProps,
@@ -435,7 +430,7 @@ pub fn gen_impl_sized_ref(
                 #ref_raw
                 #ref_ref
             }
-        },
+        }
         BinOpSpec::AddAssign
         | BinOpSpec::BitAndAssign
         | BinOpSpec::BitOrAssign
@@ -450,10 +445,9 @@ pub fn gen_impl_sized_ref(
             quote! {
                 #raw_ref
             }
-        },
+        }
     }
 }
-
 
 pub fn gen_impl_sized(
     props: &TypeProps,

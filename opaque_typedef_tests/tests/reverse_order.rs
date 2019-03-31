@@ -5,7 +5,6 @@ extern crate opaque_typedef_tests;
 
 use opaque_typedef_tests::reverse_order::ReverseOrderSized;
 
-
 mod sized {
     use super::*;
 

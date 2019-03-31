@@ -11,7 +11,6 @@ use utils::extend_generics;
 
 use super::Derive;
 
-
 /// Generates an impl for the target.
 pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
     let helper_trait = props.helper_trait();
@@ -34,7 +33,7 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
@@ -49,10 +48,9 @@ pub fn gen_impl_from_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
     }
 }
-
 
 /// Generates an impl for the target.
 pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
@@ -73,7 +71,7 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
         Sizedness::Unsized => {
             let (generics, new_lifetimes) = extend_generics(Cow::Borrowed(props.generics), 1, &[]);
             let (impl_generics, _, where_clause) = generics.split_for_impl();
@@ -88,10 +86,9 @@ pub fn gen_impl_into_inner(props: &TypeProps) -> TokenStream {
                     }
                 }
             }
-        },
+        }
     }
 }
-
 
 /// Generates an impl for the target.
 pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> TokenStream {
@@ -138,7 +135,8 @@ pub fn gen_impl_into_smartptr(target: Derive, props: &TypeProps) -> TokenStream 
             &ty_smartptr_inner,
             (&new_lt).into_token_stream(),
             &ty_inner
-        )).expect("Failed to generate `PredicateType`");
+        ))
+        .expect("Failed to generate `PredicateType`");
         let (generics, _) = extend_generics(temp_generics, 0, &[pred_clone]);
         (generics, new_lt)
     };
