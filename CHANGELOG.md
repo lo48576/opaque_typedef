@@ -2,10 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.5]
+
 ### Changed (breaking)
 
 * Now automatically-generated codes uses correct `Result` type
   (46ba3eb4defa).
+    + This is a bugfix.
     + Not `Result` (which can be local type), but `std::result::Result`.
     + Now it uses `std::...` path, `opaque_typedef` crate supports only Rust 2018.
 
@@ -108,7 +111,8 @@ Initial release.
 
 
 
-[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.4...develop>
+[Unreleased]: <https://github.com/lo48576/opaque_typedef/compare/v0.0.5...develop>
+[0.0.5]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.5>
 [0.0.4]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.4>
 [0.0.3]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.3>
 [0.0.2]: <https://github.com/lo48576/opaque_typedef/releases/tag/v0.0.2>
