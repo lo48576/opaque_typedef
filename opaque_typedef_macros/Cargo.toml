@@ -21,4 +21,5 @@ strum_macros = "0.15"
 syn = { version = "0.15", features = ["full"] }
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/opaque_typedef" }

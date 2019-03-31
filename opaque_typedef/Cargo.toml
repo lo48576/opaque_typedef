@@ -11,4 +11,5 @@ keywords = ["derive", "opaque", "strong", "typedef"]
 [dependencies]
 
 [badges]
+maintenance = { status = "experimental" }
 travis-ci = { repository = "lo48576/opaque_typedef" }
