@@ -1,5 +1,11 @@
 //! Opaque typedef for `[T]`.
 
+/// Local result type.
+///
+/// If the `opaque_typedef` crate has some kind of bug, this may used instead of
+/// `std::result::Result` for impl of `Opaquetypedef{,Unsized}` crate, and compile will fail.
+pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync + 'static>>;
+
 /// Slice with at least 2 items.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, OpaqueTypedefUnsized)]
 // About the necessity of `#[repr(C)]`, see <https://github.com/lo48576/opaque_typedef/issues/1>.
@@ -108,7 +114,7 @@ impl<T: Clone> ToOwned for SliceAtLeast2Items<T> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TooFewItems(usize);
 
-fn ensure_at_least_2_items<U, T: AsRef<[U]>>(v: T) -> Result<T, TooFewItems> {
+fn ensure_at_least_2_items<U, T: AsRef<[U]>>(v: T) -> std::result::Result<T, TooFewItems> {
     let len = v.as_ref().len();
     if len >= 2 {
         Ok(v)
